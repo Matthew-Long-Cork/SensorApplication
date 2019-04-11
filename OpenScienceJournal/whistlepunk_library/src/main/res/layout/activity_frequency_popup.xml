@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frequency_setup"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/run_review_graph_label_fill_color">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="0dp"
+        android:gravity="center|center_horizontal|center_vertical"
+        android:minWidth="200dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/frequency_setup_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/frequency_setup"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/frequency_note_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="@string/frequency_setup_note"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/selected_sensor_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:gravity="center"
+            android:text="@string/selected_sensor_to_set_frequency"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/selected_sensor_display_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="26sp" />
+
+
+        <TextView
+            android:id="@+id/frequency_units_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:text="@string/select_frequency_units"
+            android:textSize="26sp" />
+
+        <Spinner
+            android:id="@+id/sensor_spinner"
+            android:layout_width="200dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="70dp"
+            android:layout_marginEnd="70dp"
+            android:gravity="center|center_horizontal|center_vertical"
+            android:minWidth="225dp"
+            android:spinnerMode="dropdown" />
+
+        <TextView
+            android:id="@+id/select_frequency_lbl"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:text="@string/select_frequency"
+            android:textSize="26sp" />
+
+        <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
+            android:id="@+id/frequency_picker"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:background="@drawable/number_picker"
+            android:gravity="center"
+            app:snp_buttonIconDown="@drawable/ic_action_down_arrow"
+            app:snp_buttonIconUp="@drawable/ic_action_up_arrow"
+            app:snp_maxValue="10"
+            app:snp_minValue="1"
+            app:snp_orientation="vertical"
+            app:snp_stepSize="1" />
+
+
+        <Button
+            android:id="@+id/set_frequency_btn"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/rounded_button"
+            android:text="@string/connnection_btn"
+            android:textColor="@color/text_color_black" />
+
+    </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2016 Google Inc. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/run_review_margin_sides"
+    android:paddingEnd="@dimen/run_review_margin_sides"
+    android:layout_marginTop="@dimen/run_review_section_margin"
+    android:layout_marginBottom="@dimen/run_review_section_margin"
+    android:layout_margin="@dimen/run_review_section_margin"
+    app:layout_scrollFlags="scroll"
+    >
+
+            <include layout="@layout/archived_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="@dimen/archive_badge_margin"
+                android:layout_marginEnd="@dimen/archive_badge_margin"
+                android:id="@+id/light_archived_indicator"
+                />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/run_title_text"
+                android:textSize="@dimen/run_review_run_name_text_size"
+                android:textColor="@color/text_color_black"
+                android:singleLine="true"
+                android:layout_below="@id/light_archived_indicator"
+                android:layout_alignWithParentIfMissing="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/run_review_duration_label"
+                android:layout_marginEnd="48dp"
+                />
+
+            <com.google.android.apps.forscience.whistlepunk.RelativeTimeTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/run_details_text"
+                android:layout_below="@id/run_title_text"
+                android:textSize="@dimen/run_review_label_text_size"
+                android:layout_marginTop="@dimen/run_review_header_text_margin_top"
+                android:textColor="@color/text_color_dark_grey"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/run_review_duration_text_height"
+                android:textColor="@color/text_color_dark_grey"
+                android:text="@string/run_review_duration"
+                android:id="@id/run_review_duration_label"
+                android:textSize="@dimen/run_review_label_text_size"
+                android:gravity="end"
+                android:layout_alignParentEnd="true"
+                android:layout_alignTop="@id/run_title_text"
+                android:layout_marginTop="4dp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/run_review_run_name_text_size"
+                android:textColor="@color/color_accent"
+                android:id="@+id/run_review_duration"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/run_review_duration_label"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:gravity="end"
+                />
+
+</RelativeLayout>

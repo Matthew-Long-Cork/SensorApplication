@@ -1,0 +1,55 @@
+apply plugin: 'com.android.application'
+
+apply from: project(':whistlepunk_library').projectDir.absolutePath + '/version.gradle'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        applicationId "com.google.android.apps.forscience.whistlepunk.opensource"
+        minSdkVersion 19
+        targetSdkVersion 26
+        versionCode buildVersionCode()
+        versionName buildVersionName()
+        multiDexEnabled true
+    }
+    buildTypes {
+        debug {
+            // For debug builds, include the job name and the string "debug"
+            versionNameSuffix ".$buildJob-debug" 
+            pseudoLocalesEnabled true
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError true
+
+        // Due to b/36261865, don't try to check icon shape when linting.
+        disable 'IconLauncherShape'
+        
+        // b/64679950
+        warning "InvalidPackage"
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+}
+
+dependencies {
+    implementation project(':whistlepunk_library')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:support-annotations:25.3.1'
+    implementation 'com.android.support:support-v4:26.0.1'
+    implementation 'com.android.support:support-v13:26.0.1'
+    implementation 'com.android.support:appcompat-v7:26.0.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.11'
+    implementation 'com.google.dagger:dagger:2.11'
+    compileOnly 'javax.annotation:jsr250-api:1.0'
+}
