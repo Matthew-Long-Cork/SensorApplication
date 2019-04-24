@@ -17,6 +17,10 @@
 package com.google.android.apps.forscience.whistlepunk.devicemanager;
 
 import android.app.Fragment;
+
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -31,9 +35,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
+import com.google.android.apps.forscience.whistlepunk.DeviceScanner;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.R;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearanceProvider;
@@ -45,6 +51,7 @@ import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.sensors.SystemScheduler;
 import com.squareup.leakcanary.RefWatcher;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -62,6 +69,14 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
 
+    private SharedPreferences storedData;
+
+
+
+    private DeviceScanner deviceScanner;
+
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,20 +92,29 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         mRegistry = new ConnectableSensorRegistry(dc, discoverers, this, new SystemScheduler(),
                 new CurrentTimeClock(), ManageDevicesActivity.getOptionsListener(getActivity()),
                 deviceRegistry, appearanceProvider, tracker, appSingleton.getSensorConnector());
+
         mSensorRegistry = appSingleton.getSensorRegistry();
 
+
+
+        //
+        // creating empty adapters
+        //
         mMyDevices = ExpandableDeviceAdapter.createEmpty(mRegistry, deviceRegistry,
                 appearanceProvider, mSensorRegistry, 0);
 
         mAvailableDevices = ExpandableServiceAdapter.createEmpty(mSensorRegistry, mRegistry, 1,
-                deviceRegistry, getFragmentManager(), appearanceProvider);
+               deviceRegistry, getFragmentManager(), appearanceProvider);
         setHasOptionsMenu(true);
+
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
+
 
         View view = inflater.inflate(R.layout.fragment_manage_devices, container, false);
 
@@ -203,6 +227,15 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 });
     }
 
+    //==========================================================================================
+    //              ADDED CODE BLOCK
+    //==========================================================================================
+
+
+
+    //==========================================================================================
+    //              END OF ADDED CODE BLOCK
+    //==========================================================================================
     private void stopScanning() {
         mRegistry.stopScanningInDiscoverers();
     }
@@ -234,6 +267,10 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         settings.show(experimentId, sensorId, getFragmentManager(), false);
     }
 
+
+    //==============================================================================================
+    //          THESE ARE THE PAIRED DEVICES AND THE NEW DEVICES!!
+    //==============================================================================================
     @Override
     public SensorGroup getPairedSensorGroup() {
         return mMyDevices;
@@ -244,6 +281,9 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         return mAvailableDevices;
     }
 
+    //==============================================================================================
+    //
+    //==============================================================================================
     @Override
     public void unpair(String experimentId, String sensorId) {
         ((DeviceOptionsDialog.DeviceOptionsListener) getActivity()).onRemoveSensorFromExperiment(

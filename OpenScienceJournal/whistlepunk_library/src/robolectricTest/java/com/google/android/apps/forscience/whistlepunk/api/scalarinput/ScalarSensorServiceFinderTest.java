@@ -38,11 +38,20 @@ import java.util.List;
 @Config(constants = BuildConfig.class)
 public class ScalarSensorServiceFinderTest {
     @Test
+    //
+    //makeTheConnection()
+    //
     public void testUseFlattenedComponentName() {
         RecordingCallbacks callbacks = new RecordingCallbacks();
         ComponentName name = new ComponentName("packageName", "packageName.MyClass");
+
+
+
         ServiceConnection connection = ScalarSensorServiceFinder.makeServiceConnection(
                 new HashMap<String, ServiceConnection>(), name, callbacks, null);
+
+        // does this pause until callback ?? then runs onServiceConnected() in BleClientImpl.java
+
         connection.onServiceConnected(name, new TestSensorDiscoverer("serviceName"));
         assertEquals("packageName/.MyClass", callbacks.serviceId);
     }

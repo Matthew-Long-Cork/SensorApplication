@@ -17,12 +17,15 @@
 package com.google.android.apps.forscience.whistlepunk.devicemanager;
 
 import android.app.FragmentManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.VisibleForTesting;
 
 import com.google.android.apps.forscience.ble.DeviceDiscoverer;
 import com.google.android.apps.forscience.javalib.FailureListener;
+import com.google.android.apps.forscience.whistlepunk.MainActivity;
 import com.google.android.apps.forscience.whistlepunk.PermissionUtils;
 import com.google.android.apps.forscience.whistlepunk.SensorProvider;
 import com.google.android.apps.forscience.whistlepunk.R;
@@ -68,7 +71,19 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
 
     @Override
     public boolean startScanning(final ScanListener listener, FailureListener onScanError) {
-        stopScanning();
+       // MainActivity.DEVICE_SCANNER.scanLeDevice(false);
+       // MainActivity.DEVICE_SCANNER.setContext(mContext);
+        BluetoothAdapter.LeScanCallback leScanCallback =
+                new BluetoothAdapter.LeScanCallback() {
+                    @Override
+                    public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
+                        int kl = 1121;
+                    }
+                };
+
+       // MainActivity.DEVICE_SCANNER.setLeScanCallback(leScanCallback);
+       // MainActivity.DEVICE_SCANNER.scanLeDevice(true);
+        //stopScanning();
 
         // BLE scan is only done when it times out (which is imposed from fragment)
         // TODO: consider making that timeout internal (like it is for API sensor services)
@@ -132,6 +147,7 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
             return false;
         }
 
+
         mDeviceDiscoverer.startScanning(new DeviceDiscoverer.Callback() {
             @Override
             public void onDeviceFound(final DeviceDiscoverer.DeviceRecord record) {
@@ -143,6 +159,7 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
                 // TODO: handle errors
             }
         });
+
         return true;
     }
 

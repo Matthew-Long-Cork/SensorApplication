@@ -99,6 +99,12 @@ public class ScalarInputDiscovererTest {
     public void testStartScanningWithBadScanDevices() {
         final ScalarInputScenario s = new ScalarInputScenario();
         ExplicitExecutor uiThread = new ExplicitExecutor();
+        //
+        //
+        // goes to here!!!!!!
+        //
+        //
+        //
         final TestSensorDiscoverer discoverer = new TestSensorDiscoverer(s.getServiceName()) {
             @Override
             public void scanDevices(IDeviceConsumer c) throws RemoteException {

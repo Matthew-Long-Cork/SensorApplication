@@ -16,6 +16,7 @@
 package com.google.android.apps.forscience.whistlepunk.devicemanager;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.view.View;
@@ -25,6 +26,7 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.ViewHolder.ChildViewHolder;
 import com.google.android.apps.forscience.javalib.Consumer;
@@ -80,8 +82,12 @@ public class SensorChildViewHolder extends ChildViewHolder {
                 econtroller.setChecked(sensorKey, isChecked);
                 if (isChecked) {
                     registry.pair(sensorKey);
+                    Toast.makeText(itemView.getContext(), "check" +
+                            "!!!", Toast.LENGTH_SHORT).show();
                 } else {
                     registry.unpair(sensorKey);
+                    Toast.makeText(itemView.getContext(), "uncheck" +
+                            "!!!", Toast.LENGTH_SHORT).show();
                 }
                 updateCheckboxContentDescription(isChecked);
             }
@@ -92,7 +98,9 @@ public class SensorChildViewHolder extends ChildViewHolder {
             @Override
             public void onClick(View v) {
                 if (mPairedCheckbox.isEnabled()) {
+
                     mPairedCheckbox.setChecked(!mPairedCheckbox.isChecked());
+
                 }
             }
         });

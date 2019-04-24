@@ -54,11 +54,15 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
-    <string name="cancel_btn">"Cancel"</string>
+    <string name="cancel_btn">"Clear Text"</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
     <string name="confirm_btn">"Comfirm"</string>
+
+    <!--added:-->
+    <!-- main_activty_top_right_menu -->
+    <string name="change_connnection_setup">"Change Connection Setup"</string>
 
     <!-- Menu option to set data transfer frequency [CHAR_LIMIT=30] -->
     <string name="set_frequency">Set transmission frequency</string>

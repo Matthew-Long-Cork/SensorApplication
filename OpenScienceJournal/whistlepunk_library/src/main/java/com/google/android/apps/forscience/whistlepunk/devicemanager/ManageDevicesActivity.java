@@ -132,6 +132,7 @@ public class ManageDevicesActivity extends AppCompatActivity implements
     private void setupFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragmentById = fragmentManager.findFragmentById(R.id.fragment);
+
         if (fragmentById != null) {
             mManageFragment = (ManageDevicesRecyclerFragment) fragmentById;
         } else {

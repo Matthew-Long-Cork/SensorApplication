@@ -18,6 +18,7 @@ package com.google.android.apps.forscience.whistlepunk.project;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -56,6 +57,7 @@ import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
+import com.google.android.apps.forscience.whistlepunk.intro.ConnectionSetup;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciCaption;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciLabel;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciPictureLabelValue;
@@ -299,6 +301,10 @@ public class ExperimentListFragment extends Fragment implements
             mIncludeArchived = false;
             loadExperiments();
             getActivity().invalidateOptionsMenu();
+            return true;
+        } else if (id == R.id.action_change_connection_setup) {
+            Intent SetupIntent = new Intent(getActivity(), ConnectionSetup.class);
+            startActivity(SetupIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);

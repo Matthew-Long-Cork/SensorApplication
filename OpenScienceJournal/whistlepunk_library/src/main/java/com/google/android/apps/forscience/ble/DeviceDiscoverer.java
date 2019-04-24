@@ -18,6 +18,7 @@ package com.google.android.apps.forscience.ble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanCallback;
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemClock;
@@ -43,7 +44,10 @@ public abstract class DeviceDiscoverer {
      * Receives notification of devices being discovered or errors.
      */
     public static class Callback {
-        public void onDeviceFound(DeviceRecord record) {}
+        public void onDeviceFound(DeviceRecord record) {
+
+            int i = 0;
+        }
 
         public void onError(int error) {
             // TODO: define error codes
@@ -79,9 +83,9 @@ public abstract class DeviceDiscoverer {
     public static DeviceDiscoverer getNewInstance(Context context) {
         DeviceDiscoverer discoverer;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            discoverer = new DeviceDiscovererV21(context);
+            discoverer = new DeviceDiscovererV21(context);              // API 21+
         } else {
-            discoverer = new DeviceDiscovererLegacy(context);
+            discoverer = new DeviceDiscovererLegacy(context);           // under API 21
         }
         return discoverer;
     }
@@ -99,17 +103,23 @@ public abstract class DeviceDiscoverer {
     }
 
     public void startScanning(Callback callback) {
+
         if (callback == null) {
-            throw new IllegalArgumentException("Callback must not be null");
+            throw new IllegalArgumentException(" DeviceDiscoverer - Callback must not be null");
         }
 
         mCallback = callback;
         // Clear out the older devices so we don't think they're still there.
-        mDevices.clear();
+       // mDevices.clear();
+        //mBluetoothAdapter.startLeScan((BluetoothAdapter.LeScanCallback)callback);
+
         onStartScanning();
     }
 
-    public abstract void onStartScanning();
+    public   void onStartScanning(){
+        int j = 0;
+        mCallback = new Callback();
+    }
 
     public void stopScanning() {
         onStopScanning();
@@ -134,7 +144,7 @@ public abstract class DeviceDiscoverer {
         deviceRecord.lastRssi = rssi;
         deviceRecord.lastSeenTimestampMs = SystemClock.uptimeMillis();
 
-        if (!previouslyFound && mCallback != null) {
+        if (!previouslyFound && mCallback != null){ //&& mCallback != null) {
             mCallback.onDeviceFound(deviceRecord);
         }
     }

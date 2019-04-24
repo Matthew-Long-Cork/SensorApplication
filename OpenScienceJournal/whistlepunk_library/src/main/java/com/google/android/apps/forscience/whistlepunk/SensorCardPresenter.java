@@ -48,6 +48,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
@@ -457,6 +458,8 @@ public class SensorCardPresenter {
         mCardViewHolder = cardViewHolder;
         mCloseListener = closeListener;
         mCardTriggerPresenter.setViews(mCardViewHolder);
+                Toast.makeText(mCardViewHolder.getContext(), "sensors tab!!", Toast.LENGTH_SHORT).show();
+
         String formatString =
                 cardViewHolder.getContext().getResources().getString(R.string.data_with_units);
         mDataFormat = getDataFormatter(formatString);
@@ -481,6 +484,7 @@ public class SensorCardPresenter {
         }
 
         if (mSensorPresenter != null) {
+
             mSensorPresenter.startShowing(mCardViewHolder.chartView, mInteractionListener);
         }
 
@@ -511,6 +515,9 @@ public class SensorCardPresenter {
         refreshTabLayout();
 
         RxView.clicks(mCardViewHolder.sensorSettingsGear).subscribe(click -> {
+
+            Toast.makeText(mCardViewHolder.getContext(), "setting gear clicked in presenter!!!", Toast.LENGTH_SHORT).show();
+
             ManageDevicesActivity.launch(mCardViewHolder.getContext(), mExperimentId);
         });
 

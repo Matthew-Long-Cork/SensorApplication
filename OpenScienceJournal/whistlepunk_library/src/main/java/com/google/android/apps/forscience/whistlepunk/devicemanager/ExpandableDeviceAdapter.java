@@ -77,6 +77,22 @@ public class ExpandableDeviceAdapter extends
         mEnablementController = new EnablementController();
     }
 
+    //==============================================================================================
+    //          added code block
+    //==============================================================================================
+
+
+
+
+
+
+    //==============================================================================================
+    //          end of added code block
+    //==============================================================================================
+
+
+
+
     @Override
     public long getItemId(int position) {
         Object item = getListItem(position);
@@ -221,6 +237,7 @@ public class ExpandableDeviceAdapter extends
         }
         return -1;
     }
+
 
     @Override
     public void addAvailableDevice(SensorDiscoverer.DiscoveredDevice device) {

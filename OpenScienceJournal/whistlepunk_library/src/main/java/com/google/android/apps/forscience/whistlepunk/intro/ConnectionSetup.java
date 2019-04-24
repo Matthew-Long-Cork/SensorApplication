@@ -1,6 +1,7 @@
-package com.google.android.apps.forscience.whistlepunk;
+package com.google.android.apps.forscience.whistlepunk.intro;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -9,8 +10,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.android.apps.forscience.whistlepunk.MainActivity;
+import com.google.android.apps.forscience.whistlepunk.R;
 
 public class ConnectionSetup extends Activity {
 
@@ -42,6 +43,20 @@ public class ConnectionSetup extends Activity {
         cancelBtn.setVisibility(View.INVISIBLE);
         confirmBtn.setVisibility(View.INVISIBLE);
         message2.setVisibility(View.INVISIBLE);
+
+        //=====================================================================================
+        // check if there is stored data for these values
+        // Note: The user may want to connection the current connection configuration
+        //=====================================================================================
+        storedData = getSharedPreferences("info", MODE_PRIVATE);
+
+        websiteAddress = storedData.getString("websiteAddress", websiteAddress);
+        websiteToken = storedData.getString("websiteToken", websiteToken);
+
+        if(websiteAddress != null && websiteToken != null){
+            websiteAddressTxtBox.setText(websiteAddress);
+            websiteTokenTxtBox.setText(websiteToken);
+        }
 
         //=====================================================================================
         // call function when 'enter' button is clicked
@@ -83,7 +98,7 @@ public class ConnectionSetup extends Activity {
 
             CONNECT_SETUP = true;
             // get the stored data
-            storedData = getSharedPreferences("info", MODE_PRIVATE);
+           // storedData = getSharedPreferences("info", MODE_PRIVATE); <-- above
             // interface used for modifying values in a sharedPreference object
             SharedPreferences.Editor editor = storedData.edit();
             editor.putString("websiteAddress", websiteAddress);
@@ -92,6 +107,9 @@ public class ConnectionSetup extends Activity {
             //finally, when you are done adding the values, call the commit() method.
             editor.commit();
             finish();
+            // go back to the main activity window
+            Intent intent = new Intent(ConnectionSetup.this, MainActivity.class);
+            ConnectionSetup.this.startActivity(intent);
         });
 
         //=====================================================================================

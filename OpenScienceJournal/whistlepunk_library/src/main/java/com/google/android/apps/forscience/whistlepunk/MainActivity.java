@@ -19,9 +19,15 @@ package com.google.android.apps.forscience.whistlepunk;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+
 import android.content.Context;
 import android.content.Intent;
+
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -37,11 +43,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
+import com.google.android.apps.forscience.ble.BleClientImpl;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.feedback.FeedbackProvider;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.intro.AgeVerifier;
+import com.google.android.apps.forscience.whistlepunk.intro.ConnectionSetup;
+
 import com.google.android.apps.forscience.whistlepunk.project.ExperimentListFragment;
 import com.google.android.apps.forscience.whistlepunk.review.RunReviewActivity;
 
@@ -51,6 +61,7 @@ public class MainActivity extends AppCompatActivity
     public static final String ARG_SELECTED_NAV_ITEM_ID = "selected_nav_item_id";
     public static final String ARG_USE_PANES = "use_panes";
     protected static final int NO_SELECTED_ITEM = -1;
+
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -62,7 +73,9 @@ public class MainActivity extends AppCompatActivity
     private MultiTouchDrawerLayout mDrawerLayout;
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
-
+    private BleClientImpl  bleClientImpl;
+    public static DeviceScanner DEVICE_SCANNER;
+    public static BluetoothAdapter BLUETOOTH_ADAPTER;
     Boolean isSetup;
     String myWebsite ="";
     String myWriteToken = "";
@@ -72,15 +85,31 @@ public class MainActivity extends AppCompatActivity
 
     private SharedPreferences storedData;
 
+    private BluetoothAdapter bluetoothAdapter;
+
+    private DeviceScanner deviceScanner;
+
+    final int REQUEST_ENABLE_BT = 210;
+    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
+            int kl = 2;
+        }
+    };
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         setContentView(R.layout.activity_main);
 
         super.onCreate(savedInstanceState);
+
+
         WhistlePunkApplication.getPerfTrackerProvider(this).onActivityInit();
 
-        if (showScreensIfNeeded()) {
+        if (showAgeVerifierScreenIfNeeded()) {
             return;
         }
 
@@ -140,6 +169,41 @@ public class MainActivity extends AppCompatActivity
         onNavigationItemSelected(item);
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        BLUETOOTH_ADAPTER = bluetoothAdapter;
+
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE NOT SUPPORTED", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
+
+        //startService(new Intent(this, MyBleService.class));
+
+        //bleClientImpl = new BleClientImpl(this);
+        //bleClientImpl.create();
+        //
+        //
+       // thing =  new robolectricTest.java.ScalarSensorServiceFinderTest(this);
+        //ScalarSensorServiceFinderTest.makeTheConnection();
+        //
+        // need to run onServiceConnected() in BleClientImpl first!!
+
+        // test work:
+       /// thing = new ScalarSensorServiceFinderTest(this);
+       // thing.testUseFlattenedComponentName();
+
+        // called to soon BleService in BleClientImpl.java is still 'NULL'
+        //bleClientImpl.scanForDevices(null, 10);
     }
 
     private int getSavedItemId(Bundle savedInstanceState) {
@@ -159,14 +223,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-        if (showScreensIfNeeded()) {
+        if (showAgeVerifierScreenIfNeeded()) {
             return;
         }
-
         if (showConnectionSetupScreenIfNeeded()){
             return;
         }
-
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
         }
@@ -256,7 +318,7 @@ public class MainActivity extends AppCompatActivity
      *
      * @return true if the activity has been finished
      */
-    private boolean showScreensIfNeeded() {
+    private boolean showAgeVerifierScreenIfNeeded() {
 
         // if the user has not verified age
         if (AgeVerifier.shouldShowUserAge(this)) {
@@ -267,6 +329,7 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return false;
+
     }
 
     private boolean showConnectionSetupScreenIfNeeded() {
@@ -283,6 +346,7 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return false;
+
     }
 
     // TODO: need a more principled way of keeping the action bar current
@@ -437,11 +501,30 @@ public class MainActivity extends AppCompatActivity
         return intent;
     }
 
+    private void initDeviceScanner(){
+        DEVICE_SCANNER = new DeviceScanner(bluetoothAdapter);
+        /*
+        BluetoothAdapter.LeScanCallback leScanCallback =
+                new BluetoothAdapter.LeScanCallback() {
+                    @Override
+                    public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
+                        int kl = 1121;
+                    }
+                };
+
+        deviceScanner.setLeScanCallback(leScanCallback);
+        deviceScanner.scanLeDevice(true);
+        */
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO: Do this for all possible IDs in case others have activity results.
         Fragment fragment = getFragmentManager().findFragmentByTag(
                 String.valueOf(R.id.navigation_item_experiments));
+
+        if(requestCode == 210 && resultCode != 0){
+            initDeviceScanner();
+        }
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
