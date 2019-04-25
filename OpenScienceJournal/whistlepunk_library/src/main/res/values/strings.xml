@@ -96,6 +96,10 @@
     <string name="selected_milliseconds">"Milliseconds"</string>
 
 
+    <!--added:-->
+    <!-- devicemanager - ServiceParentViewHolder - display BT internal devices availeble -->
+    <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
+
     <!--===============================================================================-->
     <!--===============================================================================-->
 

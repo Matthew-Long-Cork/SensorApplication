@@ -44,10 +44,7 @@ public abstract class DeviceDiscoverer {
      * Receives notification of devices being discovered or errors.
      */
     public static class Callback {
-        public void onDeviceFound(DeviceRecord record) {
-
-            int i = 0;
-        }
+        public void onDeviceFound(DeviceRecord record) {}
 
         public void onError(int error) {
             // TODO: define error codes
@@ -83,9 +80,16 @@ public abstract class DeviceDiscoverer {
     public static DeviceDiscoverer getNewInstance(Context context) {
         DeviceDiscoverer discoverer;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            discoverer = new DeviceDiscovererV21(context);              // API 21+
+
+            //================================================
+            // v21 extends abstract DeviceDiscoverer
+            discoverer = new DeviceDiscovererV21(context);              // if API 21+
+            //================================================
         } else {
-            discoverer = new DeviceDiscovererLegacy(context);           // under API 21
+            //================================================
+            // Legacy extends abstract DeviceDiscoverer
+            discoverer = new DeviceDiscovererLegacy(context);           // if under API 21
+            //================================================
         }
         return discoverer;
     }
@@ -109,17 +113,10 @@ public abstract class DeviceDiscoverer {
         }
 
         mCallback = callback;
-        // Clear out the older devices so we don't think they're still there.
-       // mDevices.clear();
-        //mBluetoothAdapter.startLeScan((BluetoothAdapter.LeScanCallback)callback);
-
         onStartScanning();
     }
 
-    public   void onStartScanning(){
-        int j = 0;
-        mCallback = new Callback();
-    }
+    public void onStartScanning(){}
 
     public void stopScanning() {
         onStopScanning();
@@ -133,6 +130,9 @@ public abstract class DeviceDiscoverer {
     }
 
     protected void addOrUpdateDevice(WhistlepunkBleDevice device, int rssi) {
+
+
+
         DeviceRecord deviceRecord = mDevices.get(device.getAddress());
         boolean previouslyFound = deviceRecord != null;
         if (!previouslyFound) {

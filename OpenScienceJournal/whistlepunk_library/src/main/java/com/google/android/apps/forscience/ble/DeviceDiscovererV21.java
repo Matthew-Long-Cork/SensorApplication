@@ -39,7 +39,6 @@ import java.util.List;
 @TargetApi(21)
 /* package */ class DeviceDiscovererV21 extends DeviceDiscoverer {
 
-    private BluetoothAdapter x;
     private BluetoothLeScanner mScanner;
 
     private ScanCallback mCallback = new ScanCallback() {
@@ -65,7 +64,6 @@ import java.util.List;
         }
     };
 
-
     DeviceDiscovererV21(Context context) {
         super(context);
     }
@@ -74,18 +72,9 @@ import java.util.List;
     @Override
     public void onStartScanning() {
 
-
-
         mScanner = getBluetoothAdapter().getBluetoothLeScanner();
         List<ScanFilter> filters = new ArrayList<>();
 
-        /*
-        for (BleServiceSpec spec : BluetoothSensor.SUPPORTED_SERVICES) {
-            filters.add(new ScanFilter.Builder()
-                    .setServiceUuid(ParcelUuid.fromString(spec.getServiceId().toString()))
-                    .build());
-        }
-        */
         ScanSettings settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
                 .build();

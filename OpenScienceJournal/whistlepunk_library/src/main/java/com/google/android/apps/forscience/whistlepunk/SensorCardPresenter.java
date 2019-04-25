@@ -448,6 +448,7 @@ public class SensorCardPresenter {
         mCardStatus.setHasError(hasError);
         mCardStatus.setStatus(SensorStatusListener.STATUS_CONNECTING);
         if (mCardViewHolder != null) {
+            //mCardViewHolder.headerText.setText(mSensorDisplayName);
             mCardViewHolder.headerText.setText(mSensorDisplayName);
             setMeterIcon();
             updateStatusUi();
@@ -467,6 +468,7 @@ public class SensorCardPresenter {
         updateRecordingUi();
 
         mCardViewHolder.headerText.setText(mSensorDisplayName);
+        //mCardViewHolder.headerText.setText("SensorCardPresenter");
 
         if (mSensorAnimationBehavior != null) {
             setMeterIcon();

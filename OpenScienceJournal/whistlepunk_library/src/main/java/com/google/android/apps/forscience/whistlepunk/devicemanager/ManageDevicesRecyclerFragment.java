@@ -39,7 +39,7 @@ import android.widget.TextView;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
-import com.google.android.apps.forscience.whistlepunk.DeviceScanner;
+//import com.google.android.apps.forscience.whistlepunk.DeviceScanner;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.R;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearanceProvider;
@@ -51,7 +51,6 @@ import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.sensors.SystemScheduler;
 import com.squareup.leakcanary.RefWatcher;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -68,14 +67,6 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     private Menu mMainMenu;
     private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
-
-    private SharedPreferences storedData;
-
-
-
-    private DeviceScanner deviceScanner;
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,9 +85,6 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 deviceRegistry, appearanceProvider, tracker, appSingleton.getSensorConnector());
 
         mSensorRegistry = appSingleton.getSensorRegistry();
-
-
-
         //
         // creating empty adapters
         //
@@ -114,18 +102,18 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
-
-
         View view = inflater.inflate(R.layout.fragment_manage_devices, container, false);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recycler);
         HeaderAdapter myHeader = new HeaderAdapter(R.layout.device_header, R.string.my_devices);
         HeaderAdapter availableHeader = new HeaderAdapter(R.layout.device_header,
                 R.string.available_devices);
+
         if (savedInstanceState != null) {
             mMyDevices.onRestoreInstanceState(savedInstanceState.getBundle(KEY_MY_DEVICES));
             mAvailableDevices.onRestoreInstanceState(
                     savedInstanceState.getBundle(KEY_AVAILABLE_DEVICES));
+
         }
         CompositeRecyclerAdapter adapter = new CompositeRecyclerAdapter(myHeader, mMyDevices,
                 availableHeader, mAvailableDevices);

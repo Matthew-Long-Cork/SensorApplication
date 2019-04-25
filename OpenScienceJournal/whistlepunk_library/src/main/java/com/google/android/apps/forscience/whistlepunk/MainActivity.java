@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
     private BleClientImpl  bleClientImpl;
-    public static DeviceScanner DEVICE_SCANNER;
+    //public static DeviceScanner DEVICE_SCANNER;
     public static BluetoothAdapter BLUETOOTH_ADAPTER;
     Boolean isSetup;
     String myWebsite ="";
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity
 
     private BluetoothAdapter bluetoothAdapter;
 
-    private DeviceScanner deviceScanner;
+    //private DeviceScanner deviceScanner;
 
     final int REQUEST_ENABLE_BT = 210;
     private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initDeviceScanner(){
-        DEVICE_SCANNER = new DeviceScanner(bluetoothAdapter);
+        //DEVICE_SCANNER = new DeviceScanner(bluetoothAdapter);
         /*
         BluetoothAdapter.LeScanCallback leScanCallback =
                 new BluetoothAdapter.LeScanCallback() {

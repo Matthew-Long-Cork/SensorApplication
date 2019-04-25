@@ -232,7 +232,6 @@ public class ConnectableSensorRegistry {
         final long timeout = clearDeviceCache ? 0 : ASSUME_GONE_TIMEOUT_MILLIS;
         final Set<String> keysSeen = new HashSet<>();
 
-
         final TaskPool pool = new TaskPool(() -> {
             long nowMillis = mClock.getNow();
 

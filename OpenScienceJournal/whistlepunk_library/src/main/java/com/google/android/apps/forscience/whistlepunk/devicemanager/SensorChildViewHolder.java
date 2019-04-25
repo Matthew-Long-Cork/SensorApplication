@@ -68,6 +68,12 @@ public class SensorChildViewHolder extends ChildViewHolder {
         SensorAppearance appearance = sensor.getAppearance(mAppearanceProvider);
         Context context = itemView.getContext();
         mNameView.setText(appearance.getName(context));
+        //========================================================================
+        // [above] sets the name of the sensor.
+        // note: if external sensor is connected:
+        //      the expandable arrow will display the device
+        //      the device value/[sensor] will display sensor name
+        //========================================================================
 
         mIcon.setImageDrawable(appearance.getIconDrawable(context));
 

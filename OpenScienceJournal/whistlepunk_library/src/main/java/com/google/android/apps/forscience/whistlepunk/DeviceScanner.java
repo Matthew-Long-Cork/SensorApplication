@@ -1,3 +1,4 @@
+/*
 package com.google.android.apps.forscience.whistlepunk;
 
 import android.bluetooth.BluetoothAdapter;
@@ -21,7 +22,6 @@ public class DeviceScanner {
 
         this.bluetoothAdapter = bluetoothAdapter;
     }
-
 
     public void setContext(Context context){
         this.context = context;
@@ -49,6 +49,6 @@ public class DeviceScanner {
             mScanning = false;
             bluetoothAdapter.stopLeScan(leScanCallback);
         }
-
     }
 }
+*/

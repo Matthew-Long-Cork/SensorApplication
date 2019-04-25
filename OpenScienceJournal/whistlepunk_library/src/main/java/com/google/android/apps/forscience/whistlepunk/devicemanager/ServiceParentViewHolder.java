@@ -60,7 +60,8 @@ public class ServiceParentViewHolder extends OffsetParentViewHolder {
         mItem = item;
         String name = item.getServiceName();
         Context context = mIcon.getContext();
-        mNameView.setText(name);
+
+        mNameView.setText(context.getString(R.string.BT_Devices_list_title));
 
         Drawable icon = item.getDeviceIcon(context);
         if (item.getProviderId().equals(BleSensorSpec.TYPE)) {
