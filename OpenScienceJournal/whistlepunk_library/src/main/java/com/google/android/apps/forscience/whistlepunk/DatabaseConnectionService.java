@@ -59,7 +59,7 @@ public class DatabaseConnectionService {
        //data to send
        data = "{" + dataField + ":" + sensorValue + "}";
        // for thingsBoard: token/website/the full URL link.
-       myWriteToken = "q8UrVII9R5jGysHoyL1O";
+       myWriteToken = "testtoken";
        myWebsite = "https://thingsboard.tec-gateway.com";
        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
@@ -73,23 +73,23 @@ public class DatabaseConnectionService {
            Request request = new Request.Builder()
                    .url(myUrl)
                    .post(body)
-
                    .build();
 
            try (Response response = client.newCall(request).execute()) {
-               System.out.println( response.body().string());
+
 
                System.out.println("======================================");
-               System.out.println("                  ");
+               System.out.println(" ");
                System.out.println("======================================");
-               System.out.println("1");
-               System.out.println("2");
+               System.out.println( response.body().string());
+               System.out.println(" ");
+               System.out.println(" ");
                System.out.println("    sent: ");
                System.out.println("    data : " + data);
-               System.out.println("4");
-               System.out.println("5");
+               System.out.println(" ");
+               System.out.println(" ");
                System.out.println("======================================");
-               System.out.println("                  ");
+               System.out.println(" ");
                System.out.println("======================================");
            }
 
@@ -99,16 +99,16 @@ public class DatabaseConnectionService {
            System.out.println("\n====================================");
            System.out.println("                  ");
            System.out.println("======================================");
-           System.out.println("1");
-           System.out.println("2");
-           System.out.println("3     Error: " + sensorType);
-           System.out.println("4");
-           System.out.println("5");
-           System.out.println("1");
-           System.out.println("2");
-           System.out.println("3       " + e);
-           System.out.println("4");
-           System.out.println("5");
+           System.out.println(" ");
+           System.out.println(" ");
+           System.out.println("      Error: " + sensorType);
+           System.out.println(" ");
+           System.out.println(" ");
+           System.out.println(" ");
+           System.out.println(" ");
+           System.out.println("        " + e);
+           System.out.println(" ");
+           System.out.println(" ");
            System.out.println("======================================");
            System.out.println("======================================");
 

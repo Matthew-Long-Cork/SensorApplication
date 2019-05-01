@@ -135,9 +135,8 @@ public class RecorderControllerImpl implements RecorderController {
     private List <String> sensorIdList = new ArrayList();
     private List <String> observerIdList =  new ArrayList();
     private boolean sensorsUnregistered =  false;
-    private boolean freshRun = true;
     private int index;
-    // -----
+    // ----
 
     /**
      * The latest recorded value for each sensor
@@ -198,6 +197,11 @@ public class RecorderControllerImpl implements RecorderController {
         StatefulRecorder sr = mRecorders.get(sensorId);
        //freshRun = PanesActivity.getExperimentStatus();
         sensorsUnregistered = false;
+        System.out.println("======================================");
+        System.out.println("======================================\n\n");
+        System.out.println("       sensorsUnregistered = " + sensorsUnregistered);
+        System.out.println("\n\n======================================");
+        System.out.println("======================================");
         mRegistry.countListeners("1");
         mRecorders.size();
 
@@ -418,29 +422,37 @@ public class RecorderControllerImpl implements RecorderController {
         return mSensorEnvironment.getDefaultClock().getNow();
     }
 
-
     @Override
     public void stopObserving(String sensorId, String observerId) {
 
         //=========================================================================================
-        // we modified this code to send data from multiple sensors, and stop all of them at the end
+        // we modified this code to send data from multiple sensors to Thingsboard.com, and to stop
+        // all of them at the end when the experiment is closed
         //=========================================================================================
 
+        System.out.println("======================================");
+        System.out.println("======================================");
+        System.out.println("       stopObserving() started");
+        System.out.println("======================================");
+        System.out.println("======================================");
         // add this current sensor data to the lists to track all active sensors for later
         if(!sensorIdList.contains(sensorId)) {
             sensorIdList.add(sensorId);
             observerIdList.add(observerId);
-
         }
 
         // if the PanesActivity (the current experiment) is not active
         // AND the sensors have not yet been unregistered
         // [stopObserving is called by PaneActivity onStop() & onBackPressed()]
         if(!PanesActivity.getIsActiveStatus() && !sensorsUnregistered) {
-            int lastSensorIndex = sensorIdList.size() -1;
+
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("        Stopping sensors!!!");
+            System.out.println("======================================");
+            System.out.println("======================================");
 
             // loop through the sensors in the list and remove them from the registry
-
             for (index = 0; index < sensorIdList.size();) {
                 mRegistry.countListeners("1");
                 String sId = sensorIdList.get(index);
@@ -456,7 +468,11 @@ public class RecorderControllerImpl implements RecorderController {
             // when the last sensor is removed, the index++'s one last time (not size-1)
             if (index == sensorIdList.size()) {
                 sensorsUnregistered = true;
-                freshRun= true;
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("        All active sensors unregistered");
+                System.out.println("======================================");
+                System.out.println("======================================");
             }
 
             // If there are no listeners left except for our serviceObserver, remove it.
@@ -469,6 +485,17 @@ public class RecorderControllerImpl implements RecorderController {
             if (mRecorders.isEmpty()) {
                 SensorHistoryStorage storage = mSensorEnvironment.getSensorHistoryStorage();
                 storage.setMostRecentSensorIds(Lists.newArrayList(sensorId));
+            }
+
+        }
+        else{
+            if(sensorsUnregistered) {
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("sensorsUnregistered " + sensorsUnregistered);
+                System.out.println("        Sensors are already unregistered");
+                System.out.println("======================================");
+                System.out.println("======================================");
             }
         }
 }

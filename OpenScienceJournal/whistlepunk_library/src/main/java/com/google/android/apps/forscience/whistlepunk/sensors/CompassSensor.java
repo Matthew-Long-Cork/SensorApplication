@@ -70,12 +70,12 @@ public class CompassSensor extends ScalarSensor {
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("    starting compass sensor ");
-                System.out.println("    frequencyTime: " + frequencyTime);
-                System.out.println("4");
-                System.out.println("5");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        Starting compass sensor");
+                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                System.out.println(" ");
+                System.out.println(" ");
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
@@ -128,7 +128,6 @@ public class CompassSensor extends ScalarSensor {
 
                             // convert doubleValue to float
                             dataValue = (float)doubleValue;
-
                         }
                     }
 
@@ -149,11 +148,11 @@ public class CompassSensor extends ScalarSensor {
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("3  stopping compass sensor ");
-                System.out.println("4");
-                System.out.println("5");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        Stopping compass sensor");
+                System.out.println(" ");
+                System.out.println(" ");
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");

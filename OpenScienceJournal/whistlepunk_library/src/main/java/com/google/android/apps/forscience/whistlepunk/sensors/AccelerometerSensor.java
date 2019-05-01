@@ -54,7 +54,6 @@ public class AccelerometerSensor extends ScalarSensor {
             mDatabaseTag = databaseTag;
         }
 
-
         public float getValue(SensorEvent event) {
             return event.values[mValueIndex];
         }
@@ -85,7 +84,7 @@ public class AccelerometerSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                // retrieve the stored frequency value. as these are sensors 3in1 check the ID
+                // retrieve the stored frequency value, as these are 3 sensors in 1, check the ID
                 frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
 
                 System.out.println("======================================");
@@ -93,8 +92,8 @@ public class AccelerometerSensor extends ScalarSensor {
                 System.out.println("======================================");
                 System.out.println(" ");
                 System.out.println(" ");
-                System.out.println("  starting Accelerometer sensor " + mAxis.getSensorId());
-                System.out.println("  frequencyTime: " + frequencyTime);
+                System.out.println("        Starting Accelerometer sensor " + mAxis.getSensorId());
+                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
                 System.out.println(" ");
                 System.out.println(" ");
                 System.out.println("======================================");
@@ -111,7 +110,7 @@ public class AccelerometerSensor extends ScalarSensor {
 
                 // added: method to schedule data to be sent to database every 'frequency' seconds
                 timer = new Timer();
-                timer.schedule(new sendData(), 0, 2000);
+                timer.schedule(new sendData(), 0, frequencyTime);
 
                 mSensorEventListener = new SensorEventListener() {
                     @Override
@@ -121,7 +120,6 @@ public class AccelerometerSensor extends ScalarSensor {
                         // added: collect a copy of the value
                         ID = mAxis.getSensorId();
                         dataValue = mAxis.getValue(event);
-
                     }
 
                     @Override
@@ -131,7 +129,6 @@ public class AccelerometerSensor extends ScalarSensor {
                 };
                 sensorManager.registerListener(mSensorEventListener, sensor,
                         SensorManager.SENSOR_DELAY_UI);
-
             }
 
             @Override
@@ -140,11 +137,11 @@ public class AccelerometerSensor extends ScalarSensor {
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("3  stopping Accelerometer sensor " + mAxis.getSensorId() );
-                System.out.println("4");
-                System.out.println("5");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        Stopping Accelerometer sensor " + mAxis.getSensorId() );
+                System.out.println(" ");
+                System.out.println(" ");
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");

@@ -79,17 +79,10 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
     //==============================================================================================
     // added: to control sensors, all sensors set to stay on until isActive resets to false
-    private static boolean isActive = false;
+    private static boolean isActive = false; // default
     public static boolean  getIsActiveStatus(){
         return isActive;
     }
-
-    public static String getCurrentTitle(){return title;}
-   // public static void setCurrentTitle(String currentTitle) {
-   //     title = currentTitle;
-   // }
-
-    static String title = "";
     //==============================================================================================
 
     public PanesActivity() {
@@ -106,7 +99,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             mActivityHeight = activityHeight;
             mDrawerState = drawerState;
             mExperiment = experiment;
-
         }
 
         public int getAvailableHeight() {
@@ -294,6 +286,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 if (status.state == RecordingState.ACTIVE) {
                     showRecordingBar();
                     Log.d(TAG, "start recording");
+
                     mExperimentFragment.onStartRecording(
                             status.currentRecording.getRunId());
                 } else {
@@ -533,25 +526,8 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             public void onTabSelected(TabLayout.Tab tab) {
                 ToolTab toolTab = (ToolTab) tab.getTag();
                 mSelectedTabIndex = toolTab.ordinal();
-                // set we around about to move to ExperimentDetailsFragment.java, we pass it the 'title'
-                //ExperimentDetailsFragment.setCurrentTitle(title);
-
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("3     panes activity title is: " + title);
-                System.out.println("4");
-                System.out.println("5");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
 
                 pager.setCurrentItem(mSelectedTabIndex, true);
-
-                //==========================================================================================
-
                 openPaneIfNeeded();
             }
 
@@ -652,30 +628,28 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                            .replace(R.id.experiment_pane, mExperimentFragment)
                            .commit();
 
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-            System.out.println("1");
-            System.out.println("2");
-            System.out.println("3      the experiment id is: " + experiment.getExperimentId());
-            System.out.println("4");
-            System.out.println("5");
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-
         } else {
             mExperimentFragment.setExperimentId(experiment.getExperimentId());
         }
-
     }
 
     @Override
     protected void onDestroy() {
 
+        System.out.println("======================================");
+        System.out.println("      ONDESTORY ISaCTIVE IS: " + isActive);
+        System.out.println("======================================");
+
         if( isActive = true) {
 
             isActive = false;
+
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("      onDestroy() NOT ACTIVE");
+            System.out.println("======================================");
+            System.out.println("======================================");
+
             mDestroyed.onHappened();
             super.onDestroy();
         }
@@ -687,6 +661,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         super.onResume();
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
+
         }
         setupGrabber();
     }
@@ -703,7 +678,14 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     protected void onStart() {
 
+        // experiment is active
         isActive = true;
+        System.out.println("======================================");
+        System.out.println("======================================");
+        System.out.println("       EXPERIMENT NOW ACTIVE");
+        System.out.println("======================================");
+        System.out.println("======================================");
+
         super.onStart();
         if (isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
@@ -713,24 +695,39 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     protected void onStop() {
 
+        System.out.println("======================================");
+        System.out.println("      onStop ISaCTIVE IS: " + isActive);
+        System.out.println("======================================");
+
         if( isActive = true) {
 
             isActive = false;
-            //=====================================================================================
+
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("      onStop() NOT ACTIVE");
+            System.out.println("======================================");
+            System.out.println("======================================");
+
+        }
+        //=====================================================================================
             // incomplete Google code
             //
             // need to access the sensors here and access the: StopObserving() in each sensor
-            //AmbientLightSensor..
+
+
+
+
             // AmbientLightSensor.getSensorManager(context).unregisterListener(mSensorEventListener);
             //if (isMultiWindowEnabled()) {
-            // List<GoosciExperiment.ExperimentSensor> active = mActiveExperiment.getValue().getExperimentSensors();
+             List<GoosciExperiment.ExperimentSensor> active = mActiveExperiment.getValue().getExperimentSensors();
             //=====================================================================================
 
             updateRecorderControllerForPause();
             logPanesState(TrackerConstants.ACTION_PAUSED);
 
             super.onStop();
-        }
+
     }
 
     private void logPanesState(String action) {
@@ -761,6 +758,10 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
     @Override
     public void onBackPressed() {
+
+        System.out.println("======================================");
+        System.out.println("      onBackPressed ISaCTIVE IS: " + isActive);
+        System.out.println("======================================");
 
         if( isActive = true) {
 

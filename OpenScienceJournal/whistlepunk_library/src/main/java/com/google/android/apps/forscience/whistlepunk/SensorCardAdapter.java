@@ -167,10 +167,8 @@ public class SensorCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    // Create new views (invoked by the layout manager).
-
     //======================================================================================
-    //System.out.println(" This is called when you start a sensor ");
+    //                  This is called when you start a sensor
     //======================================================================================
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

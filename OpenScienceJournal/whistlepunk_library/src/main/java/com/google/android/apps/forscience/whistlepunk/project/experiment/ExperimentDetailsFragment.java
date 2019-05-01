@@ -225,14 +225,14 @@ public class ExperimentDetailsFragment extends Fragment
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2        experiment details frag      ");
-        System.out.println("         the title is: " + title);
-        System.out.println("         the sensor is: " + sensor);
-        System.out.println("         the sensorFrequency is: " + sensorFrequency);
-        System.out.println("4");
-        System.out.println("4");
-        System.out.println("5");
+        System.out.println(" ");
+        System.out.println("         experimentDetailsFragment()      ");
+        System.out.println("         The title is: " + title);
+        System.out.println("         The sensor is: " + sensor);
+        System.out.println("         The sensorFrequency is: " + sensorFrequency);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println(" ");
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -311,21 +311,6 @@ public class ExperimentDetailsFragment extends Fragment
                                    //===============================================================
                                    if(mExperiment.getTitle() != "" && mExperiment.getTitle() != null){
                                        title = mExperiment.getTitle();
-                                       //Toast.makeText(getActivity(),"the title is: " + title ,Toast.LENGTH_SHORT).show();
-
-                                       //Integer x = getTheStoredFrequency("AmbientLightSensor");
-
-                                       /*
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-                                       System.out.println("1");
-                                       System.out.println("2              ");
-                                       System.out.println("         the light sensor frequencyTime is: " + x);
-                                       System.out.println("4");
-                                       System.out.println("5");
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-                                       */
                                    }
                                    //===============================================================
                                    // this was added so as to ask user for title at the very start
@@ -540,7 +525,7 @@ public class ExperimentDetailsFragment extends Fragment
             System.out.println("======================================");
             System.out.println("1");
             System.out.println("2");
-            System.out.println("3  ExperimentDetailsFragment.java - line 475  ");
+            System.out.println("3  ExperimentDetailsFragment.java - line 500 -ish  ");
             System.out.println("3  the title is: " + title);
             System.out.println("4");
             System.out.println("5");
@@ -615,62 +600,6 @@ public class ExperimentDetailsFragment extends Fragment
                         TrackerConstants.LABEL_EXPERIMENT_DETAIL, 0);
 
     }
-
-    /*
-    private void setSensorVariablesNames() {
-
-        // we want the create and store the 10 sensors we use:
-        List newListOfSensorNames = new ArrayList();
-        newListOfSensorNames.add("AmbientLight");
-        newListOfSensorNames.add("DecibelSource");
-        newListOfSensorNames.add("LinearAccelerometer");
-        newListOfSensorNames.add("AccX");
-        newListOfSensorNames.add("AccY");
-        newListOfSensorNames.add("AccZ");
-        newListOfSensorNames.add("Compass");
-        newListOfSensorNames.add("MagneticRotation");
-        newListOfSensorNames.add("RemoteTemperature");
-        newListOfSensorNames.add("RemoteHumidity");
-
-        // get the stored data
-        storedData = getActivity().getSharedPreferences("info", MODE_PRIVATE);
-        //interface used for modifying values in a sharedPreference object
-        SharedPreferences.Editor editor = storedData.edit();
-
-        // get the name of this new stored variable
-        for(int i =0; i< newListOfSensorNames.size(); i++) {
-        //for(int i =0; i< 1; i++) {
-
-            // this is the new stored data variable:
-            // name  of the experiment + the current sensor + '_frequency'
-            newDataVariableName = title + "_" + newListOfSensorNames.get(i) + "_frequency";
-            editor.putInt(newDataVariableName,frequency);
-
-            System.out.println("======================================");
-            System.out.println("1");
-            System.out.println("2");
-            System.out.println("3     name: " + newDataVariableName);
-            System.out.println("3     value: " + frequency);
-            System.out.println("4");
-            System.out.println("5");
-            System.out.println("======================================");
-        }
-        //finally, when you are done adding the values, call the commit() method to commit all
-        editor.commit();
-
-        int number = storedData.getInt("hhhh_LinearAccelerometer_frequency", 0);
-
-        System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2");
-        System.out.println("3     number: " + number);
-        System.out.println("4");
-        System.out.println("5");
-        System.out.println("======================================");
-    }
-    */
-
-
 
     public boolean handleOnBackPressed() {
         if (isRecording()) {

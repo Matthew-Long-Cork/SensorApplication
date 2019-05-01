@@ -75,12 +75,12 @@ public class AmbientLightSensor extends ScalarSensor {
 
                 System.out.println("======================================");
                 System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("         starting the light sensor");
-                System.out.println("         frequencyTime: " + frequencyTime);
-                System.out.println("4");
-                System.out.println("5");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        Starting the light sensor");
+                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                System.out.println(" ");
+                System.out.println(" ");
                 System.out.println("======================================");
                 System.out.println("======================================");
 
@@ -92,7 +92,7 @@ public class AmbientLightSensor extends ScalarSensor {
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                 }
 
-                // added: method to schedule data to be sent to database every 'frequency' seconds
+                // added: method to schedule data to be sent to database every 'frequency' milliseconds
                 timer = new Timer();
                 timer.schedule(new sendData(),0,frequencyTime);
 
@@ -122,11 +122,11 @@ public class AmbientLightSensor extends ScalarSensor {
                     System.out.println("======================================");
                     System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println("1");
-                    System.out.println("2");
-                    System.out.println("3  stopping ambient light sensor ");
-                    System.out.println("4");
-                    System.out.println("5");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Stopping ambient light sensor");
+                    System.out.println(" ");
+                    System.out.println(" ");
                     System.out.println("======================================");
                     System.out.println("                  ");
                     System.out.println("======================================");

@@ -366,6 +366,8 @@ public class SensorCardPresenter {
         // those views underneath the error state view.
         mCardViewHolder.graphViewGroup.setVisibility(View.GONE);
 
+
+
         if (mCardStatus.shouldShowConnecting()) {
             // Show a progress bar inside the card while connecting.
             mCardViewHolder.statusMessage.setText(
@@ -459,7 +461,7 @@ public class SensorCardPresenter {
         mCardViewHolder = cardViewHolder;
         mCloseListener = closeListener;
         mCardTriggerPresenter.setViews(mCardViewHolder);
-                Toast.makeText(mCardViewHolder.getContext(), "sensors tab!!", Toast.LENGTH_SHORT).show();
+               //Toast.makeText(mCardViewHolder.getContext(), "sensors tab!!", Toast.LENGTH_SHORT).show();
 
         String formatString =
                 cardViewHolder.getContext().getResources().getString(R.string.data_with_units);
@@ -518,7 +520,7 @@ public class SensorCardPresenter {
 
         RxView.clicks(mCardViewHolder.sensorSettingsGear).subscribe(click -> {
 
-            Toast.makeText(mCardViewHolder.getContext(), "setting gear clicked in presenter!!!", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mCardViewHolder.getContext(), "setting gear clicked in presenter!!!", Toast.LENGTH_SHORT).show();
 
             ManageDevicesActivity.launch(mCardViewHolder.getContext(), mExperimentId);
         });

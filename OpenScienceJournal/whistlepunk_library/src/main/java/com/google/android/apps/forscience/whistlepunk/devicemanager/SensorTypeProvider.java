@@ -54,7 +54,7 @@ public class SensorTypeProvider {
             // b/27226547
             return new ExternalSensorAppearance(
                     R.string.sensor_raw,
-                    R.drawable.ic_sensor_raw_white_24dp,
+                    R.drawable.ic_bluetooth_white_24dp,
                     R.string.raw_units, R.string.sensor_desc_short_raw,
                     R.string.sensor_desc_first_paragraph_raw,
                     R.string.sensor_desc_second_paragraph_raw,

@@ -188,6 +188,11 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
             ScanListener scanListener) {
         WhistlepunkBleDevice device = record.device;
 
+        //
+        //                      ????
+        //
+        //
+
         // sensorScanCallbacks will handle duplicates
         final BleSensorSpec spec = new BleSensorSpec( device.getAddress(), device.getName());
 

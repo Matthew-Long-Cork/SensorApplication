@@ -62,19 +62,15 @@ public class MainActivity extends AppCompatActivity
     public static final String ARG_USE_PANES = "use_panes";
     protected static final int NO_SELECTED_ITEM = -1;
 
-
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitleToRestore;
-
     private FeedbackProvider mFeedbackProvider;
     private NavigationView mNavigationView;
     private MultiTouchDrawerLayout mDrawerLayout;
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
-    private BleClientImpl  bleClientImpl;
-    //public static DeviceScanner DEVICE_SCANNER;
     public static BluetoothAdapter BLUETOOTH_ADAPTER;
     Boolean isSetup;
     String myWebsite ="";
@@ -84,19 +80,9 @@ public class MainActivity extends AppCompatActivity
     RxEvent mPause = new RxEvent();
 
     private SharedPreferences storedData;
-
     private BluetoothAdapter bluetoothAdapter;
 
-    //private DeviceScanner deviceScanner;
-
     final int REQUEST_ENABLE_BT = 210;
-    private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
-        @Override
-        public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-            int kl = 2;
-        }
-    };
-
 
 
     @Override
@@ -185,25 +171,6 @@ public class MainActivity extends AppCompatActivity
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-
-
-        //startService(new Intent(this, MyBleService.class));
-
-        //bleClientImpl = new BleClientImpl(this);
-        //bleClientImpl.create();
-        //
-        //
-       // thing =  new robolectricTest.java.ScalarSensorServiceFinderTest(this);
-        //ScalarSensorServiceFinderTest.makeTheConnection();
-        //
-        // need to run onServiceConnected() in BleClientImpl first!!
-
-        // test work:
-       /// thing = new ScalarSensorServiceFinderTest(this);
-       // thing.testUseFlattenedComponentName();
-
-        // called to soon BleService in BleClientImpl.java is still 'NULL'
-        //bleClientImpl.scanForDevices(null, 10);
     }
 
     private int getSavedItemId(Bundle savedInstanceState) {
@@ -329,7 +296,6 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         return false;
-
     }
 
     private boolean showConnectionSetupScreenIfNeeded() {
@@ -501,30 +467,13 @@ public class MainActivity extends AppCompatActivity
         return intent;
     }
 
-    private void initDeviceScanner(){
-        //DEVICE_SCANNER = new DeviceScanner(bluetoothAdapter);
-        /*
-        BluetoothAdapter.LeScanCallback leScanCallback =
-                new BluetoothAdapter.LeScanCallback() {
-                    @Override
-                    public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-                        int kl = 1121;
-                    }
-                };
-
-        deviceScanner.setLeScanCallback(leScanCallback);
-        deviceScanner.scanLeDevice(true);
-        */
-    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO: Do this for all possible IDs in case others have activity results.
         Fragment fragment = getFragmentManager().findFragmentByTag(
                 String.valueOf(R.id.navigation_item_experiments));
 
-        if(requestCode == 210 && resultCode != 0){
-            initDeviceScanner();
-        }
+
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }

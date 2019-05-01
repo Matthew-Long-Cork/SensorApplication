@@ -46,7 +46,7 @@ public class ConnectionSetup extends Activity {
 
         //=====================================================================================
         // check if there is stored data for these values
-        // Note: The user may want to connection the current connection configuration
+        // Note: The user may want to stay connected the current connection configuration
         //=====================================================================================
         storedData = getSharedPreferences("info", MODE_PRIVATE);
 
@@ -97,8 +97,7 @@ public class ConnectionSetup extends Activity {
         confirmBtn.setOnClickListener((View v) -> {
 
             CONNECT_SETUP = true;
-            // get the stored data
-           // storedData = getSharedPreferences("info", MODE_PRIVATE); <-- above
+
             // interface used for modifying values in a sharedPreference object
             SharedPreferences.Editor editor = storedData.edit();
             editor.putString("websiteAddress", websiteAddress);
