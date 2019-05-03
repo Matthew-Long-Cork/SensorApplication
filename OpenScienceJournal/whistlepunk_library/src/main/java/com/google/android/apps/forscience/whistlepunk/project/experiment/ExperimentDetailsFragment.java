@@ -47,6 +47,7 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
@@ -129,9 +130,9 @@ public class ExperimentDetailsFragment extends Fragment
     private String mActiveTrialId;
     private TextView mEmptyView;
 
-    //==============================================================================================
-
     private static Context context;
+
+    //==============================================================================================
 
     static String title = "";
     private static SharedPreferences storedData;
@@ -143,7 +144,14 @@ public class ExperimentDetailsFragment extends Fragment
         title = currentTitle;
     }
 
-    //===========================================
+    // to control sensors, active sensors set to stay on until isActive resets to false
+    private static boolean isActive = false; // default
+    public static boolean  getIsActiveStatus(){
+        return isActive;
+    }
+    public static void setIsActiveStatus(boolean status){ isActive = status; }
+
+    //==============================================================================================
 
     /**
      * Creates a new instance of this fragment.
@@ -232,7 +240,6 @@ public class ExperimentDetailsFragment extends Fragment
         System.out.println("         The sensorFrequency is: " + sensorFrequency);
         System.out.println(" ");
         System.out.println(" ");
-        System.out.println(" ");
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -251,6 +258,20 @@ public class ExperimentDetailsFragment extends Fragment
 
     @Override
     public void onStart() {
+
+        // experiment is active
+        isActive = true;
+
+        System.out.println("======================================");
+        System.out.println("======================================");
+        System.out.println("1");
+        System.out.println("2");
+        System.out.println("         isActive is: " + isActive );
+        System.out.println("4");
+        System.out.println("5");
+        System.out.println("======================================");
+        System.out.println("======================================");
+
         super.onStart();
 
         WhistlePunkApplication.getUsageTracker(getActivity()).trackScreenView(
@@ -258,7 +279,7 @@ public class ExperimentDetailsFragment extends Fragment
     }
 
     @Override
-    public void onResume() {
+    public void onResume() {                                                                        // isActive set here ???
         super.onResume();
         reloadWithoutScroll();
 
@@ -327,7 +348,7 @@ public class ExperimentDetailsFragment extends Fragment
     }
 
     @Override
-    public void onPause() {
+    public void onPause() {                                                                         // isActive set here ???
         if (mBroadcastReceiver != null) {
             CropHelper.unregisterBroadcastReceiver(getActivity().getApplicationContext(),
                     mBroadcastReceiver);
@@ -511,6 +532,22 @@ public class ExperimentDetailsFragment extends Fragment
             if (isRecording()) {
                 return true;
             }
+
+            // check isActive state
+            System.out.println("======================================");
+            System.out.println("        handleOnBackPressed() isActive is: " + isActive);
+            System.out.println("======================================");
+
+            if(isActive) {
+                isActive = false;
+
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("        handleOnBackPressed() changed to " + isActive);
+                System.out.println("======================================");
+                System.out.println("======================================");
+            }
+
             displayNamePromptOrGoUp();
             return true;
         }
@@ -519,6 +556,7 @@ public class ExperimentDetailsFragment extends Fragment
         else if (itemId == R.id.action_set_sendData_to_db_frequency) {
 
             //getUserInputForFrequency();
+            Toast.makeText(getActivity(), "ExperimentDetailsFragment.java", Toast.LENGTH_SHORT).show();
 
             System.out.println("======================================");
             System.out.println("                  ");
@@ -558,18 +596,6 @@ public class ExperimentDetailsFragment extends Fragment
         return super.onOptionsItemSelected(item);
     }
 
-/*
-    //==========================================================================================
-    // added: function
-    private void getUserInputForFrequency() {
-
-        // start the FrequencyPopup class and get the user input
-        Intent SetupIntent = new Intent(mEmptyView.getContext(), FrequencyPopup.class);
-        startActivity(SetupIntent);
-    }
-    //==========================================================================================
-*/
-
     // Prompt the user to name the experiment if they haven't yet.
     private void displayNamePromptOrGoUp() {
 
@@ -603,12 +629,31 @@ public class ExperimentDetailsFragment extends Fragment
 
     public boolean handleOnBackPressed() {
         if (isRecording()) {
+
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             return true;
         }
+        // check isActive state
+        System.out.println("======================================");
+        System.out.println("        handleOnBackPressed() isActive is: " + isActive);
+        System.out.println("======================================");
+
+        if(isActive) {
+            isActive = false;
+
+            //
+            // need to call the stopObserving() in the active functions...
+            //
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("        handleOnBackPressed() changed to " + isActive);
+            System.out.println("======================================");
+            System.out.println("======================================");
+        }
+
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
             // We are handling this.

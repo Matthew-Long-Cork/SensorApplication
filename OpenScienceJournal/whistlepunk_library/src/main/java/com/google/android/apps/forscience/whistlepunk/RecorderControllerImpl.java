@@ -76,9 +76,7 @@ import io.reactivex.Single;
 import io.reactivex.subjects.BehaviorSubject;
 
 // added:
-import com.google.android.apps.forscience.whistlepunk.PanesActivity;
-
-import org.eclipse.paho.android.service.MqttAndroidClient;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
 /**
  * Keeps track of:
@@ -135,7 +133,7 @@ public class RecorderControllerImpl implements RecorderController {
     private List <String> sensorIdList = new ArrayList();
     private List <String> observerIdList =  new ArrayList();
     private boolean sensorsUnregistered =  false;
-    private int index;
+    private int i;
     // ----
 
     /**
@@ -199,11 +197,17 @@ public class RecorderControllerImpl implements RecorderController {
         sensorsUnregistered = false;
         System.out.println("======================================");
         System.out.println("======================================\n\n");
-        System.out.println("       sensorsUnregistered = " + sensorsUnregistered);
+        System.out.println("    startObserving()   sensorsUnregistered is " + sensorsUnregistered);
         System.out.println("\n\n======================================");
         System.out.println("======================================");
         mRegistry.countListeners("1");
         mRecorders.size();
+
+        // add this current sensor to the lists to track all active sensors for later
+        if(!sensorIdList.contains(sensorId)) {
+            sensorIdList.add(sensorId);
+            observerIdList.add(observerId);
+        }
 
         if (sr != null) {
             RecorderControllerImpl.this.startObserving(sr);
@@ -432,42 +436,65 @@ public class RecorderControllerImpl implements RecorderController {
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println("       stopObserving() started");
+        System.out.println("       controller- stopObserving() started");
+        System.out.println("       experiment isActive = "+ ExperimentDetailsFragment.getIsActiveStatus());
+        System.out.println("       sensors unregistered = "+ sensorsUnregistered);
         System.out.println("======================================");
         System.out.println("======================================");
+
+
         // add this current sensor data to the lists to track all active sensors for later
-        if(!sensorIdList.contains(sensorId)) {
-            sensorIdList.add(sensorId);
-            observerIdList.add(observerId);
-        }
+       // if(!sensorIdList.contains(sensorId)) {
+       //     sensorIdList.add(sensorId);
+       //     observerIdList.add(observerId);
+       // }
 
-        // if the PanesActivity (the current experiment) is not active
+        // if the ExperimentDetailsFragment (the current experiment) is not active
         // AND the sensors have not yet been unregistered
-        // [stopObserving is called by PaneActivity onStop() & onBackPressed()]
-        if(!PanesActivity.getIsActiveStatus() && !sensorsUnregistered) {
+        // [stopObserving is called]
+        // /////////////////////////////////////////////////////////////////////////////////////////
+        if(!ExperimentDetailsFragment.getIsActiveStatus() && !sensorsUnregistered) {
 
             System.out.println("======================================");
             System.out.println("======================================");
-            System.out.println("        Stopping sensors!!!");
+            System.out.println("        Unregistering sensors...");
             System.out.println("======================================");
             System.out.println("======================================");
 
-            // loop through the sensors in the list and remove them from the registry
-            for (index = 0; index < sensorIdList.size();) {
+            // loop through the active sensors display cards in the list and remove them from the registry
+            for (i = 0; i < sensorIdList.size();) {
                 mRegistry.countListeners("1");
-                String sId = sensorIdList.get(index);
-                String oId = observerIdList.get(index);
+                String sId = sensorIdList.get(i);
+                String oId = observerIdList.get(i);
                 //mRegistry.remove(sensorId, observerId);
-                mRegistry.remove(sensorIdList.get(index), observerIdList.get(index));
+                mRegistry.remove(sensorIdList.get(i), observerIdList.get(i));
                 mRegistry.countListeners("1");
-
-                // else ++ to the next listeners
-                index++;
+                i++;
             }
 
+            // this time we loop though the mRecorders list to stop sending data to Thingsboard
+            // there always has to the the one display-card ['serviceObserver']
+            for (int j = 1; j < mRecorders.size(); j++) {
+
+                mRecorders.get(sensorIdList.get(j)).stopObserving();
+                //recorder.stopObserving();
+
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("        sensor index is: " + j);
+                System.out.println("======================================");
+                System.out.println("======================================");
+            }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
             // when the last sensor is removed, the index++'s one last time (not size-1)
-            if (index == sensorIdList.size()) {
+            if (i == sensorIdList.size()) {
                 sensorsUnregistered = true;
+                //RecordFragment.stopObservingCurrentSensors();
+
+                // this above line is to stop the display cards. not the sensors themselves
+
                 System.out.println("======================================");
                 System.out.println("======================================");
                 System.out.println("        All active sensors unregistered");
@@ -492,7 +519,7 @@ public class RecorderControllerImpl implements RecorderController {
             if(sensorsUnregistered) {
                 System.out.println("======================================");
                 System.out.println("======================================");
-                System.out.println("sensorsUnregistered " + sensorsUnregistered);
+                System.out.println("        sensorsUnregistered " + sensorsUnregistered);
                 System.out.println("        Sensors are already unregistered");
                 System.out.println("======================================");
                 System.out.println("======================================");
@@ -511,6 +538,7 @@ public class RecorderControllerImpl implements RecorderController {
                     mRegistry.remove(sensorId, serviceObserverId);
                     mServiceObservers.remove(sensorId);
                     mLatestValues.remove(sensorId);
+                   // mRecorders.get(sensorIdList.get(0)).stopObserving();
                 }
             }
         }

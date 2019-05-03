@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity
 
     private SharedPreferences storedData;
     private BluetoothAdapter bluetoothAdapter;
-
     final int REQUEST_ENABLE_BT = 210;
 
 
@@ -108,6 +107,18 @@ public class MainActivity extends AppCompatActivity
             myWebsite = storedData.getString("websiteAddress", myWebsite);
             myWriteToken = storedData.getString("websiteToken", myWriteToken);
             // send this to the DatabaseConnectionService.java to be used later
+
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("        Address: "+ myWebsite);
+            System.out.println("        Token: " + myWriteToken);
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("======================================");
+
             DatabaseConnectionService.setData(myWebsite,myWriteToken);
             //
             // as soon are we enter an experiment we will collect stored values in that experiment
@@ -155,7 +166,6 @@ public class MainActivity extends AppCompatActivity
         onNavigationItemSelected(item);
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
 
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);

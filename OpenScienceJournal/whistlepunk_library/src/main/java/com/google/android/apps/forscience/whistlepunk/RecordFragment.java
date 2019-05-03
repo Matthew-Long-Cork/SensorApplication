@@ -156,7 +156,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
 
     private LinearLayoutManager mSensorCardLayoutManager;
     private RecyclerView mSensorCardRecyclerView;
-    private SensorCardAdapter mSensorCardAdapter;
+    private static SensorCardAdapter mSensorCardAdapter;
     private ExternalAxisController mExternalAxis;
     // Stores the rect of the panel.
     private Rect mPanelRect = new Rect();
@@ -451,7 +451,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
                 AppSingleton.getInstance(getActivity()).destroyBleClient();
             }
         });
-        stopObservingCurrentSensors();
+        stopObservingCurrentSensors(); //<-- stops the display cards in sensor tab
         mSnackbarManager.onDestroy();
         mHandler = null;
         mSensorSettingsController = null;
@@ -463,9 +463,23 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
     }
 
     public void stopObservingCurrentSensors() {
+
+        if (mSensorCardAdapter == null) {
+
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("        null");
+            System.out.println("======================================");
+            System.out.println("======================================");
+        }
         if (mSensorCardAdapter != null) {
             for (SensorCardPresenter presenter : mSensorCardAdapter.getSensorCardPresenters()) {
                 presenter.stopObserving();
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("        stopping observing" + presenter);
+                System.out.println("======================================");
+                System.out.println("======================================");
             }
         }
     }

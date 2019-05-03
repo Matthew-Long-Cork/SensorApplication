@@ -30,7 +30,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website input hint-->
-    <string name="website_input_hint">"http://thingsboard.nameHere.com"</string>
+    <string name="website_input_hint">"https://thingsboard.nameHere.com"</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->

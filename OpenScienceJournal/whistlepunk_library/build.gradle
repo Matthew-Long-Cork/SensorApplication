@@ -104,7 +104,7 @@ dependencies {
     implementation project(':scalarinputapi')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-3.1'
-    implementation 'com.android.support:support-annotations:26.0.2'
+    implementation 'com.android.support:support-annotations:26.0.1'
     implementation 'com.android.support:support-v4:26.0.1'
     implementation 'com.android.support:support-v13:26.0.1'
     implementation 'com.android.support:appcompat-v7:26.0.1'
@@ -124,7 +124,6 @@ dependencies {
     implementation 'org.joda:joda-convert:1.8'
     implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
 
-
     // ========================================================================
     // added: these are for communication to the external database 'ThingsSpeak'
     //implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
@@ -137,7 +136,6 @@ dependencies {
     // added: this is for the number picker in the frequency Popup window
     implementation 'com.michaelmuenzer.android:ScrollableNumberPicker:0.2.2'
     // ========================================================================
-
 
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'

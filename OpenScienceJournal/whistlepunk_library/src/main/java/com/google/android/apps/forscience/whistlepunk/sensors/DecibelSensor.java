@@ -108,9 +108,10 @@ public class DecibelSensor extends ScalarSensor {
 
                 if (mRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                     listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
-                            "Could not connect to microphone zzz");
+                            "Could not connect to microphone");
                     return;
                 }
+
                 mRecord.startRecording();
                 // Check to see if we actually started recording before continuing.
                 // AudioRecord#startRecording() logs an error but it has no return value and
@@ -178,7 +179,10 @@ public class DecibelSensor extends ScalarSensor {
                 System.out.println("======================================");
 
                 // added: stop the timer task as the observing of the sensors is no longer needed
-                timer.cancel();
+                if(timer != null){
+                    timer.cancel();
+                }
+
 
                 mRunning.set(false);
                 if (mRecord != null) {

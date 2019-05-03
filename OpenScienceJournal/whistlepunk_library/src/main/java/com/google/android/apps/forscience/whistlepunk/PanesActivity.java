@@ -77,14 +77,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     private RxPermissions mPermissions;
     private int mInitialDrawerState = -1;
 
-    //==============================================================================================
-    // added: to control sensors, all sensors set to stay on until isActive resets to false
-    private static boolean isActive = false; // default
-    public static boolean  getIsActiveStatus(){
-        return isActive;
-    }
-    //==============================================================================================
-
     public PanesActivity() {
 
         mSnackbarManager = new SnackbarManager();
@@ -177,6 +169,11 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 cf.attachButtons(controlBar);
                 return null;
             }
+
+            //======================================================================================
+            //          The Gallery Tab is removed in this version
+            //======================================================================================
+        /*
         }, GALLERY(R.string.tab_description_gallery, R.drawable.ic_photo_white_24dp, "GALLERY") {
             @Override
             public Fragment createFragment(String experimentId, Activity activity) {
@@ -193,7 +190,8 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                               .inflate(R.layout.gallery_action_bar, controlBar, true);
                 gf.attachAddButton(controlBar);
                 return null;
-            }
+            }*/
+            //======================================================================================
         };
         private final int mContentDescriptionId;
         private final int mIconId;
@@ -475,6 +473,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                                 });
                         fragment.onGainedFocus(PanesActivity.this);
                         mOnLosingFocus = () -> fragment.onLosingFocus();
+
                         mPreviousPrimary = position;
                     }
                 }
@@ -519,7 +518,8 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         }
 
         //==========================================================================================
-        // This is for each of the four tabs in the slider on bottom half of experiment (comments/sensors/camera/gallery)
+        // This is for each of the four tabs in the slider on bottom half of experiment
+        // (comments/sensors/camera/gallery)
         //==========================================================================================
         toolPicker.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -637,22 +637,12 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     protected void onDestroy() {
 
         System.out.println("======================================");
-        System.out.println("      ONDESTORY ISaCTIVE IS: " + isActive);
         System.out.println("======================================");
-
-        if( isActive = true) {
-
-            isActive = false;
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("      onDestroy() NOT ACTIVE");
-            System.out.println("======================================");
-            System.out.println("======================================");
-
-            mDestroyed.onHappened();
-            super.onDestroy();
-        }
+        System.out.println("        Panes onDestroy()...");
+        System.out.println("======================================");
+        System.out.println("======================================");
+        mDestroyed.onHappened();
+        super.onDestroy();
     }
 
     @Override
@@ -661,7 +651,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         super.onResume();
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
-
         }
         setupGrabber();
     }
@@ -678,14 +667,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     protected void onStart() {
 
-        // experiment is active
-        isActive = true;
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("       EXPERIMENT NOW ACTIVE");
-        System.out.println("======================================");
-        System.out.println("======================================");
-
         super.onStart();
         if (isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
@@ -695,32 +676,15 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     protected void onStop() {
 
-        System.out.println("======================================");
-        System.out.println("      onStop ISaCTIVE IS: " + isActive);
-        System.out.println("======================================");
 
-        if( isActive = true) {
-
-            isActive = false;
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("      onStop() NOT ACTIVE");
-            System.out.println("======================================");
-            System.out.println("======================================");
-
-        }
         //=====================================================================================
             // incomplete Google code
             //
             // need to access the sensors here and access the: StopObserving() in each sensor
 
-
-
-
             // AmbientLightSensor.getSensorManager(context).unregisterListener(mSensorEventListener);
             //if (isMultiWindowEnabled()) {
-             List<GoosciExperiment.ExperimentSensor> active = mActiveExperiment.getValue().getExperimentSensors();
+             //List<GoosciExperiment.ExperimentSensor> active = mActiveExperiment.getValue().getExperimentSensors();
             //=====================================================================================
 
             updateRecorderControllerForPause();
@@ -759,19 +723,12 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     public void onBackPressed() {
 
-        System.out.println("======================================");
-        System.out.println("      onBackPressed ISaCTIVE IS: " + isActive);
-        System.out.println("======================================");
-
-        if( isActive = true) {
-
-            isActive = false;
-            if (mExperimentFragment.handleOnBackPressed()) {
-                return;
-            }
-
-            super.onBackPressed();
+        if (mExperimentFragment.handleOnBackPressed()) {
+            return;
         }
+
+        super.onBackPressed();
+
     }
 
     @Override

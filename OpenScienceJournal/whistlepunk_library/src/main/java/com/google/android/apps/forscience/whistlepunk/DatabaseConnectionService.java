@@ -58,9 +58,11 @@ public class DatabaseConnectionService {
        // ==========================================================================
        //data to send
        data = "{" + dataField + ":" + sensorValue + "}";
-       // for thingsBoard: token/website/the full URL link.
-       myWriteToken = "testtoken";
-       myWebsite = "https://thingsboard.tec-gateway.com";
+
+       // for thingsBoard: token/website/the full URL link.//
+       //
+       // myWriteToken = "testtoken";
+       // myWebsite = "https://thingsboard.tec-gateway.com";
        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
        try{
@@ -76,7 +78,6 @@ public class DatabaseConnectionService {
                    .build();
 
            try (Response response = client.newCall(request).execute()) {
-
 
                System.out.println("======================================");
                System.out.println(" ");

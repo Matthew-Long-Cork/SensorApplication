@@ -38,6 +38,9 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorEnvironmen
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusListener;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
+// added to check if the experiment is active or not
+import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
+
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,8 +52,8 @@ public class AmbientLightSensor extends ScalarSensor {
     private SensorEventListener mSensorEventListener;
     private DataRefresher mDataRefresher;
 
-    // added: declare new variables.
-    private boolean isActiveExperiment;
+    // declare new variables.
+    private boolean isActiveSensor = false;
     private boolean isSendingData = false;
     private DataObject data;
     private float dataValue;
@@ -70,54 +73,79 @@ public class AmbientLightSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                // retrieve the stored frequency value
-                frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                // if the sensor is not yet active
+                if (!isActiveSensor) {
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                    // now active
+                    isActiveSensor = true;
 
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        Starting the light sensor");
-                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Starting the light sensor");
+                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
 
-                mDataRefresher = new DataRefresher(mScheduler, environment.getDefaultClock());
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                SensorManager sensorManager = getSensorManager(context);
-                Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-                if (mSensorEventListener != null) {
-                    getSensorManager(context).unregisterListener(mSensorEventListener);
+                    mDataRefresher = new DataRefresher(mScheduler, environment.getDefaultClock());
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                    SensorManager sensorManager = getSensorManager(context);
+                    Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+                    if (mSensorEventListener != null) {
+                        getSensorManager(context).unregisterListener(mSensorEventListener);
+                    }
+
+                    // method to schedule data to be sent to database every 'frequency' milliseconds
+                    timer = new Timer();
+                    timer.schedule(new sendData(), 0, 3000);
+
+                    mSensorEventListener = new SensorEventListener() {
+                        @Override
+                        public void onSensorChanged(SensorEvent event) {
+
+                            // values[0] is the ambient light level in SI lux units.
+                            mDataRefresher.setValue(event.values[0]);
+                            mDataRefresher.startStreaming();
+                            dataValue = event.values[0];
+                        }
+
+                        @Override
+                        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                        }
+                    };
+                    sensorManager.registerListener(mSensorEventListener, sensor,
+                            SensorManager.SENSOR_DELAY_UI);
+                    mDataRefresher.setStreamConsumer(c);
                 }
+                // else if it is active. Ignore
 
-                // added: method to schedule data to be sent to database every 'frequency' milliseconds
-                timer = new Timer();
-                timer.schedule(new sendData(),0,frequencyTime);
 
-                mSensorEventListener = new SensorEventListener() {
-                    @Override
-                    public void onSensorChanged(SensorEvent event) {
 
-                        // values[0] is the ambient light level in SI lux units.
-                        mDataRefresher.setValue(event.values[0]);
-                        mDataRefresher.startStreaming();
-                        dataValue = event.values[0];
-                    }
 
-                    @Override
-                    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-                    }
-                };
-                sensorManager.registerListener(mSensorEventListener, sensor,
-                        SensorManager.SENSOR_DELAY_UI);
-                mDataRefresher.setStreamConsumer(c);
+                else{
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        +++ambient light sensor is already active+++");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                }
             }
 
             @Override
             public void stopObserving() {
+
+                if(!ExperimentDetailsFragment.getIsActiveStatus()) {
 
                     System.out.println("======================================");
                     System.out.println("                  ");
@@ -125,14 +153,17 @@ public class AmbientLightSensor extends ScalarSensor {
                     System.out.println(" ");
                     System.out.println(" ");
                     System.out.println("        Stopping ambient light sensor");
+                    System.out.println("        isActive is: "+ ExperimentDetailsFragment.getIsActiveStatus());
                     System.out.println(" ");
                     System.out.println(" ");
                     System.out.println("======================================");
                     System.out.println("                  ");
                     System.out.println("======================================");
 
-                    // added: stop the timer task as the observing of the sensors is no longer needed
+                    // stop the timer task as the observing of the sensors is no longer needed
                     timer.cancel();
+                    // no longer active
+                    isActiveSensor = false;
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
@@ -140,6 +171,19 @@ public class AmbientLightSensor extends ScalarSensor {
                         mDataRefresher.stopStreaming();
                         mDataRefresher = null;
                     }
+                }
+                else{
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("         sensor: "+ ID);
+                    System.out.println("         Experiment is still active. not stopping");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
             }
 
             @Override
@@ -153,11 +197,12 @@ public class AmbientLightSensor extends ScalarSensor {
         return availableSensors.isSensorAvailable(Sensor.TYPE_LIGHT);
     }
 
-    // added: this class was added to sends the data to collection class that will then sent to database
+    // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
 
             if (firstTime) {
+                // if first time, create the data object
                 data = new DataObject(ID, dataValue);
 
                 try {
@@ -165,13 +210,11 @@ public class AmbientLightSensor extends ScalarSensor {
                     firstTime = false;
                 } catch (InterruptedException ex) {}
             }
+            // get current data value
             data.setDataValue(dataValue);
 
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
-            //======================================
-            // connection to database
-            //======================================
         }
     }
 }

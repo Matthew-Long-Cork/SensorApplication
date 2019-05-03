@@ -242,6 +242,7 @@ public class GalleryFragment extends PanesToolFragment implements
         }
     }
 
+
     @Override
     public Loader<List<PhotoAsyncLoader.Image>> onCreateLoader(int i, Bundle bundle) {
         return new PhotoAsyncLoader(getActivity().getApplicationContext());
