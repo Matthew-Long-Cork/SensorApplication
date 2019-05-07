@@ -61,8 +61,8 @@ public class DatabaseConnectionService {
 
        // for thingsBoard: token/website/the full URL link.//
        //
-       // myWriteToken = "testtoken";
-       // myWebsite = "https://thingsboard.tec-gateway.com";
+       myWriteToken = "temp";
+       myWebsite = "http://thingsboard.tec-gateway.com";
        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
        try{
