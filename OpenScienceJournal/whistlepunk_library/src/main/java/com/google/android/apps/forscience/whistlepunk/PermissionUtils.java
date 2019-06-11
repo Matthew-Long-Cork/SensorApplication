@@ -58,6 +58,7 @@ public class PermissionUtils {
 
     private static final String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE, // 0
+            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA,                 // 1
             Manifest.permission.RECORD_AUDIO,           // 2
             Manifest.permission.ACCESS_COARSE_LOCATION  // 3

@@ -56,6 +56,7 @@ import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.Appearances;
 import com.google.android.apps.forscience.whistlepunk.ColorUtils;
 import com.google.android.apps.forscience.whistlepunk.DataController;
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.DeletedLabel;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
@@ -130,7 +131,7 @@ public class ExperimentDetailsFragment extends Fragment
     private String mActiveTrialId;
     private TextView mEmptyView;
 
-    private static Context context;
+    public static Context context;
 
     //==============================================================================================
 
@@ -182,7 +183,7 @@ public class ExperimentDetailsFragment extends Fragment
 
         // this is a ref for getting the context  for storedData
         ExperimentDetailsFragment.context = getActivity();
-
+        DatabaseConnectionService.mqttInit();
         //storedData = this.getActivity().getSharedPreferences("info", MODE_PRIVATE);
         // collect the stored values ... here???
         // check if the database connections page was filled in. If so, collect that stored data
@@ -641,7 +642,10 @@ public class ExperimentDetailsFragment extends Fragment
         System.out.println("        handleOnBackPressed() isActive is: " + isActive);
         System.out.println("======================================");
 
+        DatabaseConnectionService.mqttDisconnect();
+
         if(isActive) {
+
             isActive = false;
 
             //
