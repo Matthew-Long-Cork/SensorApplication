@@ -45,7 +45,7 @@ public class DatabaseConnectionService {
         contexts = context;
     }
 
-    public static void sendData(DataObject dataObject){
+    public static void sendDataHttp(DataObject dataObject){
 
        String sensorType;
        Float sensorValue;
@@ -139,6 +139,10 @@ public class DatabaseConnectionService {
        }
    }
 
+   public static  void sendData(DataObject dataObject){
+        sendDataMqtt(dataObject);
+        sendDataHttp(dataObject);
+   }
 
    public static void sendDataMqtt(DataObject dataObject){
       if(mqttAndroidClient.isConnected()) {

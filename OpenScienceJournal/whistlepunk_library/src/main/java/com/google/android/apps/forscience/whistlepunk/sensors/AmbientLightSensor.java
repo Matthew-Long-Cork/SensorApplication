@@ -215,7 +215,6 @@ public class AmbientLightSensor extends ScalarSensor {
 
 
                 // send the data to the DatabaseConnectionService
-                DatabaseConnectionService.sendDataMqtt(data);
                 DatabaseConnectionService.sendData(data);
 
             }
