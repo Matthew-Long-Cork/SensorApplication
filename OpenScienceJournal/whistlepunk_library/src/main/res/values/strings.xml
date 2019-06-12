@@ -30,7 +30,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website input hint-->
-    <string name="website_input_hint">"http://thingsboard.nameHere.com"</string>
+    <string name="website_input_hint"><font size="14">"https://thingsboard.nameHere.com"</font></string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
@@ -54,11 +54,15 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
-    <string name="cancel_btn">"Cancel"</string>
+    <string name="cancel_btn">"Clear Text"</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
     <string name="confirm_btn">"Comfirm"</string>
+
+    <!--added:-->
+    <!-- main_activty_top_right_menu -->
+    <string name="change_connnection_setup">"Change Connection Setup"</string>
 
     <!-- Menu option to set data transfer frequency [CHAR_LIMIT=30] -->
     <string name="set_frequency">Set transmission frequency</string>
@@ -91,6 +95,13 @@
     <!-- frequency_popup - display unit milliseconds -->
     <string name="selected_milliseconds">"Milliseconds"</string>
 
+
+    <!--added:-->
+    <!-- devicemanager - ServiceParentViewHolder - display BT internal devices available -->
+    <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
+
+    <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
+    <string name="action_change_access_token">Change Access Token</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
@@ -881,6 +892,7 @@
 
     <!-- Menu option to include archived recordings when viewing a list of recordings in an experiment [CHAR_LIMIT=30] -->
     <string name="include_archived_trials">Show archived recordings</string>
+
 
     <!-- Snackbar message shown to user if the export fails [CHAR_LIMIT=50]-->
     <string name="export_error">Export failed.</string>

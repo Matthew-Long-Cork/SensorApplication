@@ -48,6 +48,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
@@ -56,6 +57,7 @@ import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.SensorTrigger;
 import com.google.android.apps.forscience.whistlepunk.metadata.TriggerListActivity;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.scalarchart.ScalarDisplayOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.BlankReadableSensorOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.DataViewOptions;
@@ -85,6 +87,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.PrimitiveIterator;
+
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 
 /**
  * Holds the data and objects necessary for a sensor view.
@@ -93,6 +99,7 @@ public class SensorCardPresenter {
     private static final String TAG = "SensorCardPres";
     private String sensorListAsString = "";
     private String mySensorDisplayName;
+    private int REQUENCY_CHANGED = 7;
 
     @VisibleForTesting
     public static class CardStatus {
@@ -240,10 +247,10 @@ public class SensorCardPresenter {
     private boolean mFirstObserving = true;
 
     public SensorCardPresenter(DataViewOptions dataViewOptions,
-            SensorSettingsController sensorSettingsController,
-            RecorderController recorderController, GoosciSensorLayout.SensorLayout layout,
-            String experimentId, ExternalAxisController.InteractionListener interactionListener,
-            RecordFragment fragment) {
+                               SensorSettingsController sensorSettingsController,
+                               RecorderController recorderController, GoosciSensorLayout.SensorLayout layout,
+                               String experimentId, ExternalAxisController.InteractionListener interactionListener,
+                               RecordFragment fragment) {
         mDataViewOptions = dataViewOptions;
         mSensorSettingsController = sensorSettingsController;
         mRecorderController = recorderController;
@@ -365,6 +372,8 @@ public class SensorCardPresenter {
         // those views underneath the error state view.
         mCardViewHolder.graphViewGroup.setVisibility(View.GONE);
 
+
+
         if (mCardStatus.shouldShowConnecting()) {
             // Show a progress bar inside the card while connecting.
             mCardViewHolder.statusMessage.setText(
@@ -384,8 +393,8 @@ public class SensorCardPresenter {
     }
 
     public void startObserving(SensorChoice sensorChoice, SensorPresenter sensorPresenter,
-            ReadableSensorOptions readOptions, Experiment experiment,
-            SensorRegistry sensorRegistry) {
+                               ReadableSensorOptions readOptions, Experiment experiment,
+                               SensorRegistry sensorRegistry) {
         final ReadableSensorOptions nonNullOptions = BlankReadableSensorOptions.blankIfNull(
                 readOptions);
         mCurrentSource = sensorChoice;
@@ -435,7 +444,7 @@ public class SensorCardPresenter {
 
     @VisibleForTesting
     public void setUiForConnectingNewSensor(String sensorId, String sensorDisplayName,
-            String sensorUnits, boolean hasError) {
+                                            String sensorUnits, boolean hasError) {
         mUnits = sensorUnits;
         mSensorDisplayName = sensorDisplayName;
         // Set sensorId now; if we have to load SensorChoice from database, it may not be available
@@ -447,6 +456,7 @@ public class SensorCardPresenter {
         mCardStatus.setHasError(hasError);
         mCardStatus.setStatus(SensorStatusListener.STATUS_CONNECTING);
         if (mCardViewHolder != null) {
+            //mCardViewHolder.headerText.setText(mSensorDisplayName);
             mCardViewHolder.headerText.setText(mSensorDisplayName);
             setMeterIcon();
             updateStatusUi();
@@ -457,6 +467,8 @@ public class SensorCardPresenter {
         mCardViewHolder = cardViewHolder;
         mCloseListener = closeListener;
         mCardTriggerPresenter.setViews(mCardViewHolder);
+        //Toast.makeText(mCardViewHolder.getContext(), "sensors tab!!", Toast.LENGTH_SHORT).show();
+
         String formatString =
                 cardViewHolder.getContext().getResources().getString(R.string.data_with_units);
         mDataFormat = getDataFormatter(formatString);
@@ -464,6 +476,7 @@ public class SensorCardPresenter {
         updateRecordingUi();
 
         mCardViewHolder.headerText.setText(mSensorDisplayName);
+        //mCardViewHolder.headerText.setText("SensorCardPresenter");
 
         if (mSensorAnimationBehavior != null) {
             setMeterIcon();
@@ -481,6 +494,7 @@ public class SensorCardPresenter {
         }
 
         if (mSensorPresenter != null) {
+
             mSensorPresenter.startShowing(mCardViewHolder.chartView, mInteractionListener);
         }
 
@@ -511,7 +525,21 @@ public class SensorCardPresenter {
         refreshTabLayout();
 
         RxView.clicks(mCardViewHolder.sensorSettingsGear).subscribe(click -> {
+
+            RecorderControllerImpl.setSensorsOnDisplay(false);
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+            System.out.println(" ");
+            System.out.println(" click in setting gear");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+
             ManageDevicesActivity.launch(mCardViewHolder.getContext(), mExperimentId);
+
         });
 
         // Force setActive whenever the views are reset, as previously used views might be already
@@ -729,17 +757,56 @@ public class SensorCardPresenter {
         if (mParentFragment == null) {
             return false;
         }
+
+        Toast.makeText(mCardViewHolder.getContext(), "This is in SensorCardPresenter.java intent!!", Toast.LENGTH_SHORT).show();
+
         // create the intent to go to FrequencyPopup class and get the user input
         Intent frequencyIntent = new Intent(mParentFragment.getActivity(), FrequencyPopup.class);
         // add the 'sensorListAsString'
         frequencyIntent.putExtra("sensors", sensorListAsString);
         frequencyIntent.putExtra("currentSensor", mSensorId);
         // start the intent
-        mParentFragment.getActivity().startActivity(frequencyIntent);
+        mParentFragment.getActivity().startActivityForResult(frequencyIntent, REQUENCY_CHANGED);
         return true;
     }
     //==========================================================================================
 
+    // added: onResult
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == REQUENCY_CHANGED) {
+
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                //PanesActivity.toolPicker.getTabAt(1).select();
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        test ok");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+            if (resultCode == RESULT_CANCELED) {
+                //PanesActivity.toolPicker.getTabAt(1).select();
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        test canceled");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+        }
+    }
     private boolean startSetTriggersActivity() {
         if (mParentFragment == null) {
             return false;
@@ -795,25 +862,6 @@ public class SensorCardPresenter {
 
         for (int i = 0; i < sensorsAvailable; i++) {
             sensorId = mAvailableSensorIds.get(i);
-
-/*
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-            System.out.println("1");
-            System.out.println("2");
-            System.out.println("  the sensorIdToSelect is: " + sensorIdToSelect );
-            System.out.println("  the mSensorId is: " + mSensorId ); // both are the currentSensor
-            System.out.println("4");
-            System.out.println("5");
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-
-            both 'sensorIdToSelect' and 'mSensorId' are the currentSensor
-
-*/
-
             addSensorTab(sensorId, i, context);
 
             //keep concatenating the sensors and add a ',' if there is another one
@@ -969,7 +1017,7 @@ public class SensorCardPresenter {
 
     @VisibleForTesting
     public static List<String> customSortSensorIds(List<String> sensorIds,
-            List<String> allSensorIds) {
+                                                   List<String> allSensorIds) {
         List<String> result = new ArrayList(Arrays.asList(SENSOR_ID_ORDER));
         // Keep only the elements in result that are in the available SensorIds list.
         for (String id : SENSOR_ID_ORDER) {
@@ -1182,6 +1230,7 @@ public class SensorCardPresenter {
             mSensorPresenter.onResume(resetTime);
         }
     }
+
 
     public void stopObserving() {
 

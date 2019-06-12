@@ -39,7 +39,7 @@ public abstract class PanesToolFragment extends Fragment {
     private BehaviorSubject<Optional<View>> mView = BehaviorSubject.create();
     private RxEvent mViewDestroyed = new RxEvent();
 
-    public static interface Env {
+    public interface Env {
         Observable<Integer> watchDrawerState();
     }
 
@@ -95,6 +95,7 @@ public abstract class PanesToolFragment extends Fragment {
      * Fragment-specific view destruction logic, if any.  Should _not_ call super.onDestroyView();
      */
     protected void onDestroyPanesView() {
+
         // do nothing, but subclasses can override.
     }
 
@@ -158,6 +159,7 @@ public abstract class PanesToolFragment extends Fragment {
 
     @Override
     public void onPause() {
+
         // TODO: can we safely use onStop to shut down observing on pre-Nougat?
         //       See discussion at b/34368790
         if (!isMultiWindowEnabled()) {
@@ -168,6 +170,7 @@ public abstract class PanesToolFragment extends Fragment {
 
     @Override
     public void onStop() {
+
         if (isMultiWindowEnabled()) {
             mUiStarted.onNext(false);
         }

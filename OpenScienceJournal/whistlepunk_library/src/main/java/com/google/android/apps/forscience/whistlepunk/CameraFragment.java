@@ -190,8 +190,10 @@ public class CameraFragment extends PanesToolFragment {
 
     @Override
     public void onDestroyPanesView() {
+
         mPreviewContainer.onNext(Optional.absent());
     }
+
 
     public void attachButtons(FrameLayout controlBar) {
         ImageButton addButton = (ImageButton) controlBar.findViewById(R.id.btn_add);

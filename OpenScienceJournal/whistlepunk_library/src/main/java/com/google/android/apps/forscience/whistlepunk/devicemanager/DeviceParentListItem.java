@@ -67,6 +67,7 @@ public class DeviceParentListItem implements ParentListItem {
         return mDevice.getName();
     }
 
+
     public boolean isDevice(InputDeviceSpec device) {
         return mDevice.getSpec().isSameSensor(device);
     }

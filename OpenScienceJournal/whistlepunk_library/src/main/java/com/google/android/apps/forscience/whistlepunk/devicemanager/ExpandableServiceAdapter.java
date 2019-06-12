@@ -280,24 +280,33 @@ public class ExpandableServiceAdapter extends
     }
 
     public class DeviceChildViewHolder extends ChildViewHolder {
-        private final TextView mNameView;
+        private final TextView mNameView, mAddressView;
         private final ImageView mIcon;
 
         public DeviceChildViewHolder(View itemView) {
             super(itemView);
+            // this is the device details displayed in the found devices list
             mNameView = (TextView) itemView.findViewById(R.id.device_name);
+            mAddressView = (TextView) itemView.findViewById(R.id.device_address);
             mIcon = (ImageView) itemView.findViewById(R.id.device_icon);
         }
 
         public void bind(final DeviceWithSensors dws, SensorAppearanceProvider appearanceProvider,
                 Map<String, ConnectableSensor> sensorMap) {
             mNameView.setText(dws.getName());
+            mAddressView.setText(dws.getSpec().getDeviceAddress());
+
+            /*
+            // replaced with lamda, same function but tidier code
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     dws.addToRegistry(mConnectableSensorRegistry, mSensorRegistry);
                 }
             });
+            */
+            itemView.setOnClickListener((View v) -> dws.addToRegistry(mConnectableSensorRegistry, mSensorRegistry));
+
             mIcon.setImageDrawable(dws.getIconDrawable(mIcon.getContext(), appearanceProvider,
                     sensorMap));
         }

@@ -19,9 +19,15 @@ package com.google.android.apps.forscience.whistlepunk;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.bluetooth.BluetoothAdapter;
+
+import android.bluetooth.BluetoothManager;
+
 import android.content.Context;
 import android.content.Intent;
+
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -37,11 +43,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.feedback.FeedbackProvider;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.intro.AgeVerifier;
+
+import com.google.android.apps.forscience.whistlepunk.intro.DatabaseLinkSetup;
 import com.google.android.apps.forscience.whistlepunk.project.ExperimentListFragment;
 import com.google.android.apps.forscience.whistlepunk.review.RunReviewActivity;
 
@@ -56,21 +65,21 @@ public class MainActivity extends AppCompatActivity
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitleToRestore;
-
     private FeedbackProvider mFeedbackProvider;
     private NavigationView mNavigationView;
     private MultiTouchDrawerLayout mDrawerLayout;
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
-
-    Boolean isSetup;
-    String myWebsite ="";
-    String myWriteToken = "";
+    public static BluetoothAdapter BLUETOOTH_ADAPTER;
+    Boolean isDatabaseLinkSetup;
 
     /** Receives an event every time the activity pauses */
     RxEvent mPause = new RxEvent();
 
     private SharedPreferences storedData;
+    private BluetoothAdapter bluetoothAdapter;
+    final int REQUEST_ENABLE_BT = 210;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,25 +87,22 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         super.onCreate(savedInstanceState);
+
+
         WhistlePunkApplication.getPerfTrackerProvider(this).onActivityInit();
 
-        if (showScreensIfNeeded()) {
+        if (showAgeVerifierScreenIfNeeded()) {
             return;
         }
 
         if(showConnectionSetupScreenIfNeeded()){
             return;
         }
-        if(isSetup) {
-            // check if the database connections page was filled in. If so, collect that stored data
-            storedData = getSharedPreferences("info", MODE_PRIVATE);
-            myWebsite = storedData.getString("websiteAddress", myWebsite);
-            myWriteToken = storedData.getString("websiteToken", myWriteToken);
-            // send this to the DatabaseConnectionService.java to be used later
-            DatabaseConnectionService.setData(myWebsite,myWriteToken);
-            //
-            // as soon are we enter an experiment we will collect stored values in that experiment
-        }
+
+        // get the URL for website
+        String myWebsiteAddress = storedData.getString("websiteAddress", "");
+        // send this to the DatabaseConnectionService.java to be used later
+        DatabaseConnectionService.setMyWebsiteAddress(myWebsiteAddress);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -140,6 +146,21 @@ public class MainActivity extends AppCompatActivity
         onNavigationItemSelected(item);
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+        BLUETOOTH_ADAPTER = bluetoothAdapter;
+
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE NOT SUPPORTED", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
     }
 
     private int getSavedItemId(Bundle savedInstanceState) {
@@ -159,14 +180,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResume() {
         super.onResume();
-        if (showScreensIfNeeded()) {
+        if (showAgeVerifierScreenIfNeeded()) {
             return;
         }
-
         if (showConnectionSetupScreenIfNeeded()){
             return;
         }
-
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForResume();
         }
@@ -256,7 +275,7 @@ public class MainActivity extends AppCompatActivity
      *
      * @return true if the activity has been finished
      */
-    private boolean showScreensIfNeeded() {
+    private boolean showAgeVerifierScreenIfNeeded() {
 
         // if the user has not verified age
         if (AgeVerifier.shouldShowUserAge(this)) {
@@ -272,12 +291,12 @@ public class MainActivity extends AppCompatActivity
     private boolean showConnectionSetupScreenIfNeeded() {
 
         storedData = getSharedPreferences("info",MODE_PRIVATE);
-        isSetup = storedData.getBoolean("CONNECT_SETUP", false);
+        isDatabaseLinkSetup = storedData.getBoolean("CONNECTION_SETUP", false);
 
         // if the connection page was not filled in, that must happen now
-        if(!isSetup){
+        if(!isDatabaseLinkSetup){
 
-            Intent SetupIntent = new Intent(this, ConnectionSetup.class);
+            Intent SetupIntent = new Intent(this, DatabaseLinkSetup.class);
             startActivity(SetupIntent);
             finish();
             return true;
@@ -442,6 +461,8 @@ public class MainActivity extends AppCompatActivity
         // TODO: Do this for all possible IDs in case others have activity results.
         Fragment fragment = getFragmentManager().findFragmentByTag(
                 String.valueOf(R.id.navigation_item_experiments));
+
+
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }

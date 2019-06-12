@@ -55,9 +55,8 @@ import com.google.android.apps.forscience.whistlepunk.AddNoteDialog;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.Appearances;
 import com.google.android.apps.forscience.whistlepunk.ColorUtils;
-import com.google.android.apps.forscience.whistlepunk.ConnectionSetup;
-import com.google.android.apps.forscience.whistlepunk.project.experiment.UpdateExperimentActivity;
 import com.google.android.apps.forscience.whistlepunk.DataController;
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.DeletedLabel;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
@@ -81,7 +80,6 @@ import com.google.android.apps.forscience.whistlepunk.metadata.CropHelper;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciLabel;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciPictureLabelValue;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciTrial;
-import com.google.android.apps.forscience.whistlepunk.metadata.Project;
 import com.google.android.apps.forscience.whistlepunk.review.DeleteMetadataItemDialog;
 import com.google.android.apps.forscience.whistlepunk.review.PinnedNoteAdapter;
 import com.google.android.apps.forscience.whistlepunk.review.RunReviewActivity;
@@ -100,6 +98,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.PrimitiveIterator;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Consumer;
@@ -124,7 +123,6 @@ public class ExperimentDetailsFragment extends Fragment
 
     private RecyclerView mDetails;
     private DetailsAdapter mAdapter;
-
     private String mExperimentId;
     private Experiment mExperiment;
     private ScalarDisplayOptions mScalarDisplayOptions;
@@ -132,22 +130,27 @@ public class ExperimentDetailsFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver;
     private String mActiveTrialId;
     private TextView mEmptyView;
+    private static Context context;
 
     //==============================================================================================
 
-    private static Context context;
-
     static String title = "";
     private static SharedPreferences storedData;
+    private static SharedPreferences.Editor editor;
     private static int sensorFrequency;
+    private static Boolean sensorState;
 
     public static String getCurrentTitle(){return title;}
 
-    public static void setCurrentTitle(String currentTitle) {
-        title = currentTitle;
+    public static void setCurrentTitle(String currentTitle) { title = currentTitle; }
+
+    // to control sensors, active sensors set to stay on until isActive resets to false
+    private static boolean isActive = false; // default
+    public static boolean getIsActiveStatus(){
+        return isActive;
     }
 
-    //===========================================
+    //==============================================================================================
 
     /**
      * Creates a new instance of this fragment.
@@ -179,35 +182,6 @@ public class ExperimentDetailsFragment extends Fragment
         // this is a ref for getting the context  for storedData
         ExperimentDetailsFragment.context = getActivity();
 
-        //storedData = this.getActivity().getSharedPreferences("info", MODE_PRIVATE);
-        // collect the stored values ... here???
-        // check if the database connections page was filled in. If so, collect that stored data
-
-        //==========================================================================================
-        // some times 'getSharedPreferences' works
-        // some times 'this.getActivity().getSharedPreferences'
-        // some times 'this.getContext().getSharedPreferences'
-        // depends and where you are in the project
-        //==========================================================================================
-       // cat = "cat";
-        // //////////////////////////////////////////////////////////
-       // String sensorFrequency = storedData.getString(title + "_" +   + "_frequencyUnits", "");
-
-        /*
-        Integer x = getTheStoredFrequency("AmbientLightSensor");
-
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2");
-        System.out.println("         starting light sensor. frequencyTime = " + x);
-        System.out.println("4");
-        System.out.println("5");
-        System.out.println("======================================");
-        System.out.println("======================================");
-*/
-
         mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
         setHasOptionsMenu(true);
     }
@@ -217,30 +191,69 @@ public class ExperimentDetailsFragment extends Fragment
     //==============================================================================================
     public static Integer getTheStoredFrequency(String sensor){
 
-        storedData = context.getSharedPreferences("info", MODE_PRIVATE);
+        // create the name of the variable we now need
+        String word1 = title + "_" + sensor + "_frequency";
+        // retrieve its value
+        sensorFrequency = storedData.getInt(word1, 0);
 
-        // sensorFrequency = storedData.getInt(title + "_" + sensor  + "_frequency", 0);
-       // sensorFrequencyUnits = storedData.getInt(title + "_" + sensor  + "_frequencyUnits", 0);
-        //frequencyTime = sensorFrequency*sensorFrequencyUnits;
-
-        String word = title + "_" + sensor + "_frequency";
-
-        sensorFrequency = storedData.getInt(word, 0);
+        String word2 = title + "_experimentAccessToken";
+        String accessToken = storedData.getString(word2, "");
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2        experiment details frag      ");
-        System.out.println("         the title is: " + title);
-        System.out.println("         the sensor is: " + sensor);
-        System.out.println("         the sensorFrequency is: " + sensorFrequency);
-        System.out.println("4");
-        System.out.println("4");
-        System.out.println("5");
+        System.out.println(" ");
+        System.out.println("         experimentDetailsFragment()   ");
+        System.out.println("         The title is: " + title);
+        System.out.println("         The token is: " + accessToken);
+        System.out.println("         The sensor is: " + sensor);
+        System.out.println("         The sensorFrequency is: " + sensorFrequency);
+        System.out.println(" ");
+        System.out.println(" ");
         System.out.println("======================================");
         System.out.println("======================================");
 
         return sensorFrequency;
+    }
+
+    //==============================================================================================
+    // This function is called by each sensor's stopObserving() function
+    //==============================================================================================
+    // it checks if the sensor's data is currently being displayed on a sensor card
+    public static boolean getTheSensorState(String sensor){
+
+        // create the name of the variable we now need
+        String word = title + "_" + sensor + "_state";
+        // retrieve its value
+        sensorState = storedData.getBoolean(word, false);
+
+        return sensorState;
+    }
+
+    //==============================================================================================
+    // This function is called by each sensor's startObserving() function
+    //==============================================================================================
+    // it changes the state of the sensor (true/false)
+    public static void changeTheSensorState(String sensor, boolean state){
+
+       boolean currentState = state;
+
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println(" changeTheSensorState()");
+        System.out.println("        the "+sensor + " sensor state is now " + state);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+
+        // create the name of the variable we now need
+        String word = title + "_" + sensor + "_state";
+        editor.putBoolean(word, currentState);
+        // commit this change
+        editor.commit();
     }
 
     public void setExperimentId(String experimentId) {
@@ -255,6 +268,10 @@ public class ExperimentDetailsFragment extends Fragment
 
     @Override
     public void onStart() {
+
+        // experiment is active
+        isActive = true;
+
         super.onStart();
 
         WhistlePunkApplication.getUsageTracker(getActivity()).trackScreenView(
@@ -308,45 +325,39 @@ public class ExperimentDetailsFragment extends Fragment
                                    }
                                    attachExperimentDetails(experiment);
                                    loadExperimentData(experiment);
-
                                    //===============================================================
                                    // if the title exists:
                                    // retrieve it and retrieve the stored data for sensors
                                    //===============================================================
                                    if(mExperiment.getTitle() != "" && mExperiment.getTitle() != null){
                                        title = mExperiment.getTitle();
-                                       //Toast.makeText(getActivity(),"the title is: " + title ,Toast.LENGTH_SHORT).show();
-
-                                       //Integer x = getTheStoredFrequency("AmbientLightSensor");
-
-                                       /*
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-                                       System.out.println("1");
-                                       System.out.println("2              ");
-                                       System.out.println("         the light sensor frequencyTime is: " + x);
-                                       System.out.println("4");
-                                       System.out.println("5");
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-                                       */
                                    }
                                    //===============================================================
                                    // this was added so as to ask user for title at the very start
                                    //===============================================================
                                    if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
-
                                       // show the update experiment details window
                                        UpdateExperimentActivity.launch(getActivity(), mExperimentId);
                                    }
+                                   // get preferences
+                                   storedData = context.getSharedPreferences("info", MODE_PRIVATE);
+                                   // THIS IS FOR LATER
+                                   // interface used for modifying values in a sharedPreference object
+                                   editor = storedData.edit();
+                                   //get the stored access token for this experiment
+                                   String word = title + "_experimentAccessToken";
+                                   String accessToken = storedData.getString(word, "");
+
+                                   if(!accessToken.equals("")){
+                                       DatabaseConnectionService.setMyAccessToken(accessToken);
+                                   }
                                    //===============================================================
                                })
-
                                .toCompletable();
     }
 
     @Override
-    public void onPause() {
+    public void onPause() {                                                                         
         if (mBroadcastReceiver != null) {
             CropHelper.unregisterBroadcastReceiver(getActivity().getApplicationContext(),
                     mBroadcastReceiver);
@@ -530,30 +541,13 @@ public class ExperimentDetailsFragment extends Fragment
             if (isRecording()) {
                 return true;
             }
+            if(isActive) {
+                isActive = false;
+            }
+
             displayNamePromptOrGoUp();
             return true;
         }
-        //==========================================================================================
-        //added:
-        else if (itemId == R.id.action_set_sendData_to_db_frequency) {
-
-            //getUserInputForFrequency();
-
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-            System.out.println("1");
-            System.out.println("2");
-            System.out.println("3  ExperimentDetailsFragment.java - line 475  ");
-            System.out.println("3  the title is: " + title);
-            System.out.println("4");
-            System.out.println("5");
-            System.out.println("======================================");
-            System.out.println("                  ");
-            System.out.println("======================================");
-
-        }
-        //==========================================================================================
         else if (itemId == R.id.action_edit_experiment) {
             UpdateExperimentActivity.launch(getActivity(), mExperimentId);
             return true;
@@ -574,20 +568,11 @@ public class ExperimentDetailsFragment extends Fragment
         } else if (itemId == R.id.action_delete_experiment) {
             confirmDeleteExperiment();
         }
+        else if (itemId == R.id.action_change_access_token) {
+            changeAccessToken();
+    }
         return super.onOptionsItemSelected(item);
     }
-
-/*
-    //==========================================================================================
-    // added: function
-    private void getUserInputForFrequency() {
-
-        // start the FrequencyPopup class and get the user input
-        Intent SetupIntent = new Intent(mEmptyView.getContext(), FrequencyPopup.class);
-        startActivity(SetupIntent);
-    }
-    //==========================================================================================
-*/
 
     // Prompt the user to name the experiment if they haven't yet.
     private void displayNamePromptOrGoUp() {
@@ -608,81 +593,25 @@ public class ExperimentDetailsFragment extends Fragment
     @Override
     public void onTitleChangedFromDialog() {
 
-        //==========================================================================================
-        // this was the original Google code:
-        // but we want to stay on this activity
-        //
         // If it was saved successfully, we can just go up to the parent.
          WhistlePunkApplication.getUsageTracker(getActivity())
                 .trackEvent(TrackerConstants.CATEGORY_EXPERIMENTS,
                         TrackerConstants.ACTION_EDITED,
                         TrackerConstants.LABEL_EXPERIMENT_DETAIL, 0);
-
     }
-
-    /*
-    private void setSensorVariablesNames() {
-
-        // we want the create and store the 10 sensors we use:
-        List newListOfSensorNames = new ArrayList();
-        newListOfSensorNames.add("AmbientLight");
-        newListOfSensorNames.add("DecibelSource");
-        newListOfSensorNames.add("LinearAccelerometer");
-        newListOfSensorNames.add("AccX");
-        newListOfSensorNames.add("AccY");
-        newListOfSensorNames.add("AccZ");
-        newListOfSensorNames.add("Compass");
-        newListOfSensorNames.add("MagneticRotation");
-        newListOfSensorNames.add("RemoteTemperature");
-        newListOfSensorNames.add("RemoteHumidity");
-
-        // get the stored data
-        storedData = getActivity().getSharedPreferences("info", MODE_PRIVATE);
-        //interface used for modifying values in a sharedPreference object
-        SharedPreferences.Editor editor = storedData.edit();
-
-        // get the name of this new stored variable
-        for(int i =0; i< newListOfSensorNames.size(); i++) {
-        //for(int i =0; i< 1; i++) {
-
-            // this is the new stored data variable:
-            // name  of the experiment + the current sensor + '_frequency'
-            newDataVariableName = title + "_" + newListOfSensorNames.get(i) + "_frequency";
-            editor.putInt(newDataVariableName,frequency);
-
-            System.out.println("======================================");
-            System.out.println("1");
-            System.out.println("2");
-            System.out.println("3     name: " + newDataVariableName);
-            System.out.println("3     value: " + frequency);
-            System.out.println("4");
-            System.out.println("5");
-            System.out.println("======================================");
-        }
-        //finally, when you are done adding the values, call the commit() method to commit all
-        editor.commit();
-
-        int number = storedData.getInt("hhhh_LinearAccelerometer_frequency", 0);
-
-        System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2");
-        System.out.println("3     number: " + number);
-        System.out.println("4");
-        System.out.println("5");
-        System.out.println("======================================");
-    }
-    */
-
-
 
     public boolean handleOnBackPressed() {
         if (isRecording()) {
+
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             return true;
+        }
+        // check isActive state
+        if(isActive) {
+            isActive = false;
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
@@ -825,6 +754,14 @@ public class ExperimentDetailsFragment extends Fragment
         DeleteMetadataItemDialog dialog = DeleteMetadataItemDialog.newInstance(
                 R.string.delete_experiment_dialog_title, R.string.delete_experiment_dialog_message);
         dialog.show(getChildFragmentManager(), DeleteMetadataItemDialog.TAG);
+    }
+
+    private void changeAccessToken(){
+
+        Intent SetupIntent = new Intent(getActivity(), AccessTokenSetup.class);
+        SetupIntent.putExtra( "CURRENT_TITLE", mExperiment.getTitle());
+        SetupIntent.putExtra( "OLD_TITLE", ""); // BLANK VALUE
+        startActivity(SetupIntent);
     }
 
     @Override

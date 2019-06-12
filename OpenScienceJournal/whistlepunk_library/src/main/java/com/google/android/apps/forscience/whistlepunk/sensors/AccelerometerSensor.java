@@ -54,7 +54,6 @@ public class AccelerometerSensor extends ScalarSensor {
             mDatabaseTag = databaseTag;
         }
 
-
         public float getValue(SensorEvent event) {
             return event.values[mValueIndex];
         }
@@ -64,11 +63,12 @@ public class AccelerometerSensor extends ScalarSensor {
         }
     }
 
-    // added: declare new variables.
-    private Timer timer;
+    // declare new variables.
+    private DataObject data;
     private float dataValue;
-    boolean firstTime = true;
+    private Timer timer;
     private int frequencyTime;
+    private boolean firstTime = true;
 
     private SensorEventListener mSensorEventListener;
 
@@ -85,75 +85,115 @@ public class AccelerometerSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                // retrieve the stored frequency value. as these are sensors 3in1 check the ID
-                frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId())){
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), true);
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
 
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("  starting Accelerometer sensor " + mAxis.getSensorId());
-                System.out.println("  frequencyTime: " + frequencyTime);
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Starting Accelerometer sensor " + mAxis.getSensorId());
+                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
 
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                SensorManager sensorManager = getSensorManager(context);
-                Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-                if (mSensorEventListener != null) {
-                    getSensorManager(context).unregisterListener(mSensorEventListener);
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                    SensorManager sensorManager = getSensorManager(context);
+                    Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                    if (mSensorEventListener != null) {
+                        getSensorManager(context).unregisterListener(mSensorEventListener);
+                    }
+                    final Clock clock = environment.getDefaultClock();
+
+                    // added: method to schedule data to be sent to database every 'frequency' seconds
+                    timer = new Timer();
+                    timer.schedule(new sendData(), 0, frequencyTime);
+
+                    mSensorEventListener = new SensorEventListener() {
+                        @Override
+                        public void onSensorChanged(SensorEvent event) {
+                            c.addData(clock.getNow(), mAxis.getValue(event));
+                            // added: collect a copy of the value
+                            ID = mAxis.getSensorId();
+                            dataValue = mAxis.getValue(event);
+                        }
+
+                        @Override
+                        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                        }
+                    };
+                    sensorManager.registerListener(mSensorEventListener, sensor,
+                            SensorManager.SENSOR_DELAY_UI);
+                } else {
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        +++Acc sensor " + mAxis.getSensorId() + " is already active+++");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
                 }
-                final Clock clock = environment.getDefaultClock();
-
-                // added: method to schedule data to be sent to database every 'frequency' seconds
-                timer = new Timer();
-                timer.schedule(new sendData(), 0, 2000);
-
-                mSensorEventListener = new SensorEventListener() {
-                    @Override
-                    public void onSensorChanged(SensorEvent event) {
-                        c.addData(clock.getNow(), mAxis.getValue(event));
-
-                        // added: collect a copy of the value
-                        ID = mAxis.getSensorId();
-                        dataValue = mAxis.getValue(event);
-
-                    }
-
-                    @Override
-                    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-                    }
-                };
-                sensorManager.registerListener(mSensorEventListener, sensor,
-                        SensorManager.SENSOR_DELAY_UI);
-
             }
 
             @Override
             public void stopObserving() {
 
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("3  stopping Accelerometer sensor " + mAxis.getSensorId() );
-                System.out.println("4");
-                System.out.println("5");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
+                boolean active =  ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId());
+                // if experiment is no longer active
 
-                // added: stop the timer task as the observing of the sensors is no longer needed
-                timer.cancel();
+                if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(active)) {
 
-                getSensorManager(context).unregisterListener(mSensorEventListener);
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+                    if(active) {
+                        // change sensor state to NOT ACTIVE
+                        ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), false);
+                    }
+
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println( ExperimentDetailsFragment.getIsActiveStatus());
+                    System.out.println("        Stopping Accelerometer sensor " + mAxis.getSensorId());
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+
+                    // stop the timer task as the observing of the sensors is no longer needed
+                    timer.cancel();
+
+                    getSensorManager(context).unregisterListener(mSensorEventListener);
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+                }
+
+                else{
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("         sensor: "+ mAxis.getSensorId());
+                    System.out.println("         Experiment is still active. not stopping");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
+
+
             }
         };
     }
@@ -162,28 +202,23 @@ public class AccelerometerSensor extends ScalarSensor {
         return availableSensors.isSensorAvailable(Sensor.TYPE_ACCELEROMETER);
     }
 
-    // added: this class was added to sends the data to collection class that will then sent to database
+    // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
 
-            // added: data object that will be sent to connection class to then go to the Database
-            DataObject data = new DataObject(ID, dataValue);
-
             if (firstTime) {
+                // if first time, create the data object
+                data = new DataObject(mAxis.getSensorId(), dataValue);
+
                 try {
-                    Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data
-                    // set the ID (as it can change) and set the value
-                    data.setDataId(mAxis.getSensorId());
-                    data.setDataValue(dataValue);
+                    Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
                     firstTime = false;
                 } catch (InterruptedException ex) {}
             }
-
+            // get current data value
+            data.setDataValue(dataValue);
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
-            //======================================
-            // connection to database
-            //======================================
         }
     }
 }

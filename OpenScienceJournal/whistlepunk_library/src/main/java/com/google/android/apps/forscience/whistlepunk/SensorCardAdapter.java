@@ -42,7 +42,6 @@ public class SensorCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public interface CardRemovedListener {
         void onCardRemoved(SensorCardPresenter sensorCardPresenter);
     }
-
     private static final int TYPE_SENSOR_CARD = 0;
     private static final int TYPE_SENSOR_ADD = 1;
 
@@ -167,10 +166,8 @@ public class SensorCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         }
     }
 
-    // Create new views (invoked by the layout manager).
-
     //======================================================================================
-    //System.out.println(" This is called when you start a sensor ");
+    //                  This is called when you start a sensor
     //======================================================================================
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

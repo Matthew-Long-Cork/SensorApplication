@@ -49,11 +49,13 @@ public class CompassSensor extends ScalarSensor {
     }
 
     // added: declare new variables.
-    private Timer timer;
-    private float dataValue;
     private double doubleValue;
-    private boolean firstTime = true;
+    // declare new variables.
+    private DataObject data;
+    private float dataValue;
+    private Timer timer;
     private int frequencyTime;
+    private boolean firstTime = true;
 
     @Override
     protected SensorRecorder makeScalarControl(StreamConsumer c, SensorEnvironment environment,
@@ -62,107 +64,146 @@ public class CompassSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                // retrieve the stored frequency value
-                frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(ID)){
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(ID, true);
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                //C_CompassSensor_frequency
-
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("    starting compass sensor ");
-                System.out.println("    frequencyTime: " + frequencyTime);
-                System.out.println("4");
-                System.out.println("5");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Starting compass sensor");
+                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
 
 
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                SensorManager sensorManager = getSensorManager(context);
-                Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-                Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-                if (mSensorEventListener != null) {
-                    getSensorManager(context).unregisterListener(mSensorEventListener);
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                    SensorManager sensorManager = getSensorManager(context);
+                    Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+                    Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                    if (mSensorEventListener != null) {
+                        getSensorManager(context).unregisterListener(mSensorEventListener);
+                    }
+                    final Clock clock = environment.getDefaultClock();
+
+                    // added: method to schedule data to be sent to database every 'frequency' seconds
+                    timer = new Timer();
+                    timer.schedule(new sendData(), 0, frequencyTime);
+
+                    mSensorEventListener = new SensorEventListener() {
+                        private float[] orientation = new float[3];
+                        private float[] magneticRotation;
+                        private float[] acceleration;
+                        private float[] rotation = new float[9];
+                        private float[] inclination = new float[9];
+
+                        @Override
+                        public void onSensorChanged(SensorEvent event) {
+                            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                                acceleration = event.values;
+                            } else {
+                                magneticRotation = event.values;
+                            }
+                            // Update data as long as we have a value for both. This is the highest
+                            // rate of update.
+                            // If we want a slower rate, we can update when *both* values have changed,
+                            // or only when magneticRotation changes, for example.
+                            if (acceleration == null || magneticRotation == null) {
+                                return;
+                            }
+                            boolean hasRotation = SensorManager.getRotationMatrix(rotation, inclination,
+                                    acceleration, magneticRotation);
+                            if (hasRotation) {
+                                SensorManager.getOrientation(rotation, orientation);
+                                // Use a positive angle in degrees between 0 and 360.
+                                c.addData(clock.getNow(), 360 - (360 - (Math.toDegrees(orientation[0])))
+                                        % 360);
+
+                                // added: this is for the data collection for database
+                                doubleValue = 360 - (360 - (Math.toDegrees(orientation[0]))) % 360;
+                                // convert doubleValue to float
+                                dataValue = (float) doubleValue;
+                            }
+                        }
+
+                        @Override
+                        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                        }
+                    };
+                    sensorManager.registerListener(mSensorEventListener, magnetometer,
+                            SensorManager.SENSOR_DELAY_UI);
+                    sensorManager.registerListener(mSensorEventListener, accelerometer,
+                            SensorManager.SENSOR_DELAY_UI);
+                    // else if it is active. Ignore
                 }
-                final Clock clock = environment.getDefaultClock();
-
-                // added: method to schedule data to be sent to database every 'frequency' seconds
-                timer = new Timer();
-                timer.schedule(new sendData(), 0, frequencyTime);
-
-                mSensorEventListener = new SensorEventListener() {
-                    private float[] orientation = new float[3];
-                    private float[] magneticRotation;
-                    private float[] acceleration;
-                    private float[] rotation = new float[9];
-                    private float[] inclination = new float[9];
-
-                    @Override
-                    public void onSensorChanged(SensorEvent event) {
-                        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                            acceleration = event.values;
-                        } else {
-                            magneticRotation = event.values;
-                        }
-                        // Update data as long as we have a value for both. This is the highest
-                        // rate of update.
-                        // If we want a slower rate, we can update when *both* values have changed,
-                        // or only when magneticRotation changes, for example.
-                        if (acceleration == null || magneticRotation == null) {
-                            return;
-                        }
-                        boolean hasRotation = SensorManager.getRotationMatrix(rotation, inclination,
-                                acceleration, magneticRotation);
-                        if (hasRotation) {
-                            SensorManager.getOrientation(rotation, orientation);
-                            // Use a positive angle in degrees between 0 and 360.
-                            c.addData(clock.getNow(), 360 - (360 - (Math.toDegrees(orientation[0])))
-                                    % 360);
-
-                            // added: this is for the data collection for database
-                            doubleValue = 360 - (360 - (Math.toDegrees(orientation[0]))) % 360;
-
-                            // convert doubleValue to float
-                            dataValue = (float)doubleValue;
-
-                        }
+                else{
+                        System.out.println("======================================");
+                        System.out.println("                  ");
+                        System.out.println("======================================");
+                        System.out.println(" ");
+                        System.out.println(" ");
+                        System.out.println("        +++compass sensor is already active+++");
+                        System.out.println(" ");
+                        System.out.println(" ");
+                        System.out.println("======================================");
+                        System.out.println("                  ");
+                        System.out.println("======================================");
                     }
-
-                    @Override
-                    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-                    }
-                };
-                sensorManager.registerListener(mSensorEventListener, magnetometer,
-                        SensorManager.SENSOR_DELAY_UI);
-                sensorManager.registerListener(mSensorEventListener, accelerometer,
-                        SensorManager.SENSOR_DELAY_UI);
-            }
+                }
 
             @Override
             public void stopObserving() {
 
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println("1");
-                System.out.println("2");
-                System.out.println("3  stopping compass sensor ");
-                System.out.println("4");
-                System.out.println("5");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
+                boolean active =  ExperimentDetailsFragment.getTheSensorState(ID);
+                // if experiment is no longer active
 
-                // added: stop the timer task as the observing of the sensors is no longer needed
-                timer.cancel();
+                if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(active)) {
 
-                getSensorManager(context).unregisterListener(mSensorEventListener);
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+                    if(active) {
+                        // change sensor state to NOT ACTIVE
+                        ExperimentDetailsFragment.changeTheSensorState(ID, false);
+                    }
+
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Stopping compass sensor");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+
+                    // added: stop the timer task as the observing of the sensors is no longer needed
+                    timer.cancel();
+
+                    getSensorManager(context).unregisterListener(mSensorEventListener);
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+               }
+               else {
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("         sensor: " + ID);
+                    System.out.println("         Experiment is still active. not stopping");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
+
             }
         };
     }
@@ -177,7 +218,7 @@ public class CompassSensor extends ScalarSensor {
         public void run() {
 
             // added: data object that will be sent to connection class to then go to the Database
-            DataObject data = new DataObject(ID, dataValue);
+            data = new DataObject(ID, dataValue);
 
             if (firstTime) {
                 try {
@@ -190,9 +231,6 @@ public class CompassSensor extends ScalarSensor {
 
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
-            //======================================
-            // connection to database
-            //======================================
         }
     }
 }

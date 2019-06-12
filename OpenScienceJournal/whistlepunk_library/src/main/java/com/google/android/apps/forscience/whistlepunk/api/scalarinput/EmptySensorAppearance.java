@@ -38,7 +38,7 @@ import io.reactivex.Single;
  * @see {ScalarInputSpec}
  */
 public class EmptySensorAppearance implements SensorAppearance {
-    private static final int DEFAULT_DRAWABLE = R.drawable.ic_sensor_raw_white_24dp;
+    private static final int DEFAULT_DRAWABLE = R.drawable.ic_camera_white_24dp;
 
     @Override
     public String getName(Context context) {

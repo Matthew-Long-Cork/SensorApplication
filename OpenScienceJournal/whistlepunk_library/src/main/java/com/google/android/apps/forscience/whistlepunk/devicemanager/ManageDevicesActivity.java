@@ -35,6 +35,8 @@ import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.DataController;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderController;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
@@ -94,7 +96,7 @@ public class ManageDevicesActivity extends AppCompatActivity implements
         System.out.println("======================================");
         System.out.println("1");
         System.out.println("2");
-        System.out.println("     ManageDevicesActivity - onStart() ");
+        System.out.println("     ManageDevicesActivity.java - onStart() ");
         System.out.println("4");
         System.out.println("5");
         System.out.println("======================================");
@@ -132,6 +134,7 @@ public class ManageDevicesActivity extends AppCompatActivity implements
     private void setupFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragmentById = fragmentManager.findFragmentById(R.id.fragment);
+
         if (fragmentById != null) {
             mManageFragment = (ManageDevicesRecyclerFragment) fragmentById;
         } else {
@@ -168,7 +171,6 @@ public class ManageDevicesActivity extends AppCompatActivity implements
 
     @Override
     public void onExperimentSensorReplaced(String oldSensorId, String newSensorId) {
-
         refreshAfterLoad();
     }
 
@@ -176,6 +178,10 @@ public class ManageDevicesActivity extends AppCompatActivity implements
     public void onRemoveSensorFromExperiment(String experimentId, final String sensorId) {
         if (mCurrentExperiment != null && mCurrentExperiment.getExperimentId().equals(
                 experimentId)) {
+
+            String observerId = RecorderControllerImpl.mServiceObservers.get(sensorId);
+
+            RecorderControllerImpl.stopObservingSelectedSensor(sensorId, observerId);
 
             removeSensorFromExperiment(sensorId);
         }
@@ -195,4 +201,6 @@ public class ManageDevicesActivity extends AppCompatActivity implements
             mManageFragment.refreshAfterLoad();
         }
     }
+
+
 }

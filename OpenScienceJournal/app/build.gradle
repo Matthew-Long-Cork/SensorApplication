@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.google.android.apps.forscience.whistlepunk.opensource"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode buildVersionCode()
         versionName buildVersionName()

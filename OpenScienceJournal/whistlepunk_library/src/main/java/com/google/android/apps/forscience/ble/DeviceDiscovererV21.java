@@ -17,6 +17,7 @@
 package com.google.android.apps.forscience.ble;
 
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
@@ -67,18 +68,17 @@ import java.util.List;
         super(context);
     }
 
+
     @Override
     public void onStartScanning() {
+
         mScanner = getBluetoothAdapter().getBluetoothLeScanner();
         List<ScanFilter> filters = new ArrayList<>();
-        for (BleServiceSpec spec : BluetoothSensor.SUPPORTED_SERVICES) {
-            filters.add(new ScanFilter.Builder()
-                    .setServiceUuid(ParcelUuid.fromString(spec.getServiceId().toString()))
-                    .build());
-        }
+
         ScanSettings settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
                 .build();
+
         mScanner.startScan(filters, settings, mCallback);
     }
 

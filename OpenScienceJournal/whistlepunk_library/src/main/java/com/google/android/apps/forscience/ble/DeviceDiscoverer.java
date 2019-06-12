@@ -18,6 +18,7 @@ package com.google.android.apps.forscience.ble;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.ScanCallback;
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemClock;
@@ -79,9 +80,16 @@ public abstract class DeviceDiscoverer {
     public static DeviceDiscoverer getNewInstance(Context context) {
         DeviceDiscoverer discoverer;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            discoverer = new DeviceDiscovererV21(context);
+
+            //================================================
+            // v21 extends abstract DeviceDiscoverer
+            discoverer = new DeviceDiscovererV21(context);              // if API 21+
+            //================================================
         } else {
-            discoverer = new DeviceDiscovererLegacy(context);
+            //================================================
+            // Legacy extends abstract DeviceDiscoverer
+            discoverer = new DeviceDiscovererLegacy(context);           // if under API 21
+            //================================================
         }
         return discoverer;
     }
@@ -99,17 +107,19 @@ public abstract class DeviceDiscoverer {
     }
 
     public void startScanning(Callback callback) {
+
         if (callback == null) {
-            throw new IllegalArgumentException("Callback must not be null");
+            throw new IllegalArgumentException(" DeviceDiscoverer - Callback must not be null");
         }
 
+        //mDevices.clear();
+        //boolean isEmpty = mDevices.isEmpty();
+
         mCallback = callback;
-        // Clear out the older devices so we don't think they're still there.
-        mDevices.clear();
         onStartScanning();
     }
 
-    public abstract void onStartScanning();
+    public void onStartScanning(){}
 
     public void stopScanning() {
         onStopScanning();
@@ -123,18 +133,67 @@ public abstract class DeviceDiscoverer {
     }
 
     protected void addOrUpdateDevice(WhistlepunkBleDevice device, int rssi) {
+
+        int number = mDevices.size();//  for debug
+
+        // temporary device record object
+        // check if 'found device' address matches a device in mDevices
+        // if not a match, 'deviceRecord' value will be null
         DeviceRecord deviceRecord = mDevices.get(device.getAddress());
+
+        String address = device.getAddress();//  for debug
+        String name = device.getName();//  for debug
+
+        // if not a match, boolean will be false
         boolean previouslyFound = deviceRecord != null;
+
+        // if not previously found
         if (!previouslyFound) {
+            //create new device record of device
             deviceRecord = new DeviceRecord();
             deviceRecord.device = device;
-            mDevices.put(device.getAddress(), deviceRecord);
+
+            // if the name is not null we will add this device to the available BT device list
+            //if(name != null) {  //<-- this is the scann list ..
+                // add MAC and the object itself to the found devices list
+                mDevices.put(device.getAddress(), deviceRecord);
+
+                System.out.println("\n======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println(" new device address: " + address);
+                System.out.println(" new device name: " + name);
+                System.out.println(" new device number: " + number);
+                System.out.println(" mDevices.size(): " + mDevices.size());
+                System.out.println("\n");
+
+                int i=0;
+                for (ArrayMap.Entry<String,DeviceRecord> entry : mDevices.entrySet()) {
+                    //String address = entry.getKey();
+                    DeviceRecord value = entry.getValue();
+                    String currentName = value.device.getName();
+
+                    System.out.println(" device no." + i + ": " + currentName );
+                    i++;
+                }
+
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+                number ++;
+            //}
         }
         // Update the last RSSI and last seen
         deviceRecord.lastRssi = rssi;
         deviceRecord.lastSeenTimestampMs = SystemClock.uptimeMillis();
 
-        if (!previouslyFound && mCallback != null) {
+        // if the device is a new device & there currently is a callback active &
+        // the device has a name not just mac
+        if (!previouslyFound && mCallback != null && name != null){
             mCallback.onDeviceFound(deviceRecord);
         }
     }

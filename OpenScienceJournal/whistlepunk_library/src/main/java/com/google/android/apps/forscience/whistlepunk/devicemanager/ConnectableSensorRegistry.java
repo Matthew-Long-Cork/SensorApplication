@@ -27,6 +27,8 @@ import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
+import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.SensorProvider;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearanceProvider;
@@ -231,7 +233,6 @@ public class ConnectableSensorRegistry {
         }
         final long timeout = clearDeviceCache ? 0 : ASSUME_GONE_TIMEOUT_MILLIS;
         final Set<String> keysSeen = new HashSet<>();
-
 
         final TaskPool pool = new TaskPool(() -> {
             long nowMillis = mClock.getNow();
@@ -495,6 +496,10 @@ public class ConnectableSensorRegistry {
 
     private void addSensorToCurrentExperiment(final ConnectableSensor sensor,
             final MaybeConsumer<ConnectableSensor> onAdded) {
+
+        // added: athis is to keep track of wither a sensor is active or not
+        RecorderControllerImpl.addSelectedSensorToList( sensor.getConnectedSensorId());
+        //
         mDataController.addSensorToExperiment(mExperimentId, sensor.getConnectedSensorId(),
                 new LoggingConsumer<Success>(TAG, "add sensor to experiment") {
                     @Override

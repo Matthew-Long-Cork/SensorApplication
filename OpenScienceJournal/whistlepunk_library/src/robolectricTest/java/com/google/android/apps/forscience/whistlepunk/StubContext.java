@@ -49,9 +49,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-class StubContext extends Context {
+public abstract class StubContext extends Context {
 
-    @Override
+
     public AssetManager getAssets() {
         return null;
     }
