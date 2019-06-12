@@ -100,7 +100,7 @@ public class AmbientLightSensor extends ScalarSensor {
 
                     // method to schedule data to be sent to database every 'frequency' milliseconds
                     timer = new Timer();
-                    timer.schedule(new sendData(), 0, frequencyTime);
+                    timer.schedule(new sendData(), 0, 10000);
 
                     mSensorEventListener = new SensorEventListener() {
                         @Override
@@ -225,23 +225,26 @@ public class AmbientLightSensor extends ScalarSensor {
     }
 
     // this class was added to sends the data to collection class that will then sent to database
-    class sendData extends TimerTask {
-        public void run() {
+        class sendData extends TimerTask {
+            public void run() {
 
-            if (firstTime) {
-                // if first time, create the data object
-                data = new DataObject(ID, dataValue);
+                if (firstTime) {
+                    // if first time, create the data object
+                    data = new DataObject(ID, dataValue);
 
-                try {
-                    Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
-                    firstTime = false;
-                } catch (InterruptedException ex) {}
+                    try {
+                        Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
+                        firstTime = false;
+                    } catch (InterruptedException ex) {}
+                }
+                // get current data value
+                data.setDataValue(dataValue);
+
+
+                // send the data to the DatabaseConnectionService
+                DatabaseConnectionService.sendData(data);
+
             }
-            // get current data value
-            data.setDataValue(dataValue);
-            // send the data to the DatabaseConnectionService
-            DatabaseConnectionService.sendData(data);
-        }
     }
 }
 

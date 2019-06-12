@@ -130,7 +130,8 @@ public class ExperimentDetailsFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver;
     private String mActiveTrialId;
     private TextView mEmptyView;
-    private static Context context;
+
+    public static Context context;
 
     //==============================================================================================
 
@@ -181,10 +182,10 @@ public class ExperimentDetailsFragment extends Fragment
 
         // this is a ref for getting the context  for storedData
         ExperimentDetailsFragment.context = getActivity();
-
-        mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
-        setHasOptionsMenu(true);
-    }
+        DatabaseConnectionService.mqttInit();
+        //storedData = this.getActivity().getSharedPreferences("info", MODE_PRIVATE);
+        // collect the stored values ... here???
+        // check if the database connections page was filled in. If so, collect that stored data
 
     //==============================================================================================
     // This function is called by each sensor when the sensor starts up
@@ -610,7 +611,14 @@ public class ExperimentDetailsFragment extends Fragment
             return true;
         }
         // check isActive state
+        System.out.println("======================================");
+        System.out.println("        handleOnBackPressed() isActive is: " + isActive);
+        System.out.println("======================================");
+
+        DatabaseConnectionService.mqttDisconnect();
+
         if(isActive) {
+
             isActive = false;
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {

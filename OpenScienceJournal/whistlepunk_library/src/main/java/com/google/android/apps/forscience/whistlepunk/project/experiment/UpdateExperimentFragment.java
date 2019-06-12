@@ -16,15 +16,19 @@
 
 package com.google.android.apps.forscience.whistlepunk.project.experiment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -177,13 +181,28 @@ public class UpdateExperimentFragment extends Fragment {
         Button chooseButton = (Button) view.findViewById(R.id.btn_choose_photo);
         ImageButton takeButton = (ImageButton) view.findViewById(R.id.btn_take_photo);
 
+
+
+
         // Set the color of the placeholder drawable. This isn't used anywhere else
         // so we don't need to mutate() the drawable.
         mPhotoPreview.getDrawable().setColorFilter(
                 mPhotoPreview.getResources().getColor(R.color.text_color_light_grey),
                 PorterDuff.Mode.SRC_IN);
 
+
+
         mExperiment.subscribe(experiment -> {
+
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WAKE_LOCK, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
+            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
+
+
+
             title.setText(experiment.getTitle());
             previousTitle = experiment.getTitle();
 
