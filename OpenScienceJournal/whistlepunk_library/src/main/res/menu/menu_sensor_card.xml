@@ -26,12 +26,6 @@
         android:icon="@drawable/transmit_image"
         app:showAsAction="never"/>
 
-    <!--                                                      -->
-    <!--                                                      -->
-    <!-- need to get the icons showing on the menu if possible-->
-    <!--                                                      -->
-    <!--                                                      -->
-
     <item
         android:title="@string/graph_options_audio_feedback_enable"
         android:id="@+id/btn_sensor_card_audio_toggle"

@@ -21,7 +21,6 @@ import android.support.annotation.IntDef;
 
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
-import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.SensorTrigger;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciSnapshotValue;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorObserver;
@@ -46,7 +45,6 @@ public interface RecorderController {
     // Errors when a recording state fails to change.
     int ERROR_START_FAILED = 0;
     int ERROR_START_FAILED_DISCONNECTED = 1;
-
     @IntDef({ERROR_START_FAILED, ERROR_START_FAILED_DISCONNECTED})
     @Retention(RetentionPolicy.SOURCE)
     @interface RecordingStartErrorType {}

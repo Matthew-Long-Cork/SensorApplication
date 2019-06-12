@@ -77,6 +77,9 @@ import java.util.Objects;
 
 import io.reactivex.subjects.BehaviorSubject;
 
+
+
+
 public class RecordFragment extends PanesToolFragment implements Handler.Callback,
         StopRecordingNoDataDialog.StopRecordingDialogListener, AudioSettingsDialog
                 .AudioSettingsDialogListener {
@@ -174,6 +177,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
     // the decibel sensor before the permission to use microphone is granted
     // in Android M.
     private SensorCardPresenter mDecibelSensorCardPresenter;
+    private static List<SensorCardPresenter> presenters;
 
     private Handler mHandler;
     private FeatureDiscoveryProvider mFeatureDiscoveryProvider;
@@ -260,7 +264,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         if (mSensorCardAdapter == null) {
             return;
         }
-        List<SensorCardPresenter> presenters = mSensorCardAdapter.getSensorCardPresenters();
+        presenters = mSensorCardAdapter.getSensorCardPresenters();
 
         int size = presenters.size();
         for (int i = 0; i < size; i++) {
@@ -462,23 +466,46 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         super.onDestroy();
     }
 
-    public void stopObservingCurrentSensors() {
+    public static void stopObservingThisSensor(String sensor) {
+
+// search the
+
+
+        //int index = mSensorCardAdapter.getSensorCardPresenters().indexOf();
+       // SensorCardPresenter presenter = presenters.get(index);
+        //presenter.stopObserving();
+
+        presenters = mSensorCardAdapter.getSensorCardPresenters();
+
+        int size = presenters.size();
+        for (int i = 0; i < size; i++) {
+            SensorCardPresenter presenter = presenters.get(i);
+            if (presenter.equals(sensor)) {
+                presenter.stopObserving();
+            }
+        }
+
+
+
+    }
+
+    public static void stopObservingCurrentSensors() {
 
         if (mSensorCardAdapter == null) {
 
             System.out.println("======================================");
             System.out.println("======================================");
-            System.out.println("        null");
+            System.out.println("      mSensorCardAdapter is null");
             System.out.println("======================================");
             System.out.println("======================================");
         }
         if (mSensorCardAdapter != null) {
             for (SensorCardPresenter presenter : mSensorCardAdapter.getSensorCardPresenters()) {
-                presenter.stopObserving();
+                    presenter.stopObserving();
                 System.out.println("======================================");
-                System.out.println("======================================");
+                System.out.println("======================================\n\n");
                 System.out.println("        stopping observing" + presenter);
-                System.out.println("======================================");
+                System.out.println("\n\n======================================");
                 System.out.println("======================================");
             }
         }
@@ -486,7 +513,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
 
     @Override
     public View onCreatePanesView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                                  Bundle savedInstanceState) {
         final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_record, container,
                 false);
 
@@ -888,7 +915,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         return sensorCardPresenter;
     }
 
-    private void tryStartObserving(SensorCardPresenter sensorCardPresenter, String sensorId,
+    public void tryStartObserving(SensorCardPresenter sensorCardPresenter, String sensorId,
             RecordingStatus status) {
         if (TextUtils.equals(sensorId, DecibelSensor.ID) && mDecibelSensorCardPresenter == null &&
                 !PermissionUtils.hasPermission(getActivity(),

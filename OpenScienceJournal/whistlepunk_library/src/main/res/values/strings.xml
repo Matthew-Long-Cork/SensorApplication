@@ -30,7 +30,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website input hint-->
-    <string name="website_input_hint">"https://thingsboard.nameHere.com"</string>
+    <string name="website_input_hint"><font size="14">"https://thingsboard.nameHere.com"</font></string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
@@ -97,8 +97,11 @@
 
 
     <!--added:-->
-    <!-- devicemanager - ServiceParentViewHolder - display BT internal devices availeble -->
+    <!-- devicemanager - ServiceParentViewHolder - display BT internal devices available -->
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
+
+    <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
+    <string name="action_change_access_token">Change Access Token</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
@@ -889,6 +892,7 @@
 
     <!-- Menu option to include archived recordings when viewing a list of recordings in an experiment [CHAR_LIMIT=30] -->
     <string name="include_archived_trials">Show archived recordings</string>
+
 
     <!-- Snackbar message shown to user if the export fails [CHAR_LIMIT=50]-->
     <string name="export_error">Export failed.</string>

@@ -27,6 +27,8 @@ import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
+import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.SensorProvider;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearanceProvider;
@@ -494,6 +496,10 @@ public class ConnectableSensorRegistry {
 
     private void addSensorToCurrentExperiment(final ConnectableSensor sensor,
             final MaybeConsumer<ConnectableSensor> onAdded) {
+
+        // added: athis is to keep track of wither a sensor is active or not
+        RecorderControllerImpl.addSelectedSensorToList( sensor.getConnectedSensorId());
+        //
         mDataController.addSensorToExperiment(mExperimentId, sensor.getConnectedSensorId(),
                 new LoggingConsumer<Success>(TAG, "add sensor to experiment") {
                     @Override

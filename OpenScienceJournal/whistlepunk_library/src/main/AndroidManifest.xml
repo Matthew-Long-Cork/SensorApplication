@@ -99,8 +99,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".intro.ConnectionSetup">
+        <activity android:name=".intro.DatabaseLinkSetup">
         </activity>
+
+
+        <activity android:name=".project.experiment.AccessTokenSetup">
+        </activity>
+
 
         <activity android:name=".FrequencyPopup">
         </activity>

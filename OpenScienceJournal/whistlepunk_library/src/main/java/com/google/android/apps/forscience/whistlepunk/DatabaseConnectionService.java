@@ -35,9 +35,11 @@ public class DatabaseConnectionService {
     private static final String mqttTag = "v1/devices/me/telemetry";
     private static MqttAndroidClient mqttAndroidClient;
 
-    public static void setData(String website, String token){
-
+    public static void setMyWebsiteAddress(String website){
         myWebsite = website;
+    }
+
+    public static void setMyAccessToken(String token){
         myWriteToken = token;
     }
 

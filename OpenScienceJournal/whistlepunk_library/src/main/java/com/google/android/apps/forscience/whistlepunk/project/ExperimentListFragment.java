@@ -57,7 +57,7 @@ import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
-import com.google.android.apps.forscience.whistlepunk.intro.ConnectionSetup;
+import com.google.android.apps.forscience.whistlepunk.intro.DatabaseLinkSetup;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciCaption;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciLabel;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciPictureLabelValue;
@@ -91,15 +91,6 @@ public class ExperimentListFragment extends Fragment implements
 
     private ExperimentListAdapter mExperimentListAdapter;
     private boolean mIncludeArchived;
-
-
-    /*
-    // added:
-    private static boolean isActive = false;
-
-    public boolean getIsActiveStatus(){
-        return isActive;
-    }*/
 
     public static ExperimentListFragment newInstance(boolean usePanes) {
         ExperimentListFragment fragment = new ExperimentListFragment();
@@ -303,7 +294,7 @@ public class ExperimentListFragment extends Fragment implements
             getActivity().invalidateOptionsMenu();
             return true;
         } else if (id == R.id.action_change_connection_setup) {
-            Intent SetupIntent = new Intent(getActivity(), ConnectionSetup.class);
+            Intent SetupIntent = new Intent(getActivity(), DatabaseLinkSetup.class);
             startActivity(SetupIntent);
             return true;
         }
