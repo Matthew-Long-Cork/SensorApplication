@@ -42,7 +42,6 @@ public class SensorCardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public interface CardRemovedListener {
         void onCardRemoved(SensorCardPresenter sensorCardPresenter);
     }
-
     private static final int TYPE_SENSOR_CARD = 0;
     private static final int TYPE_SENSOR_ADD = 1;
 

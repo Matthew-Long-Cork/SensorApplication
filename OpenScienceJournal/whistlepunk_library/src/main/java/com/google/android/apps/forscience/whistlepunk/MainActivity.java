@@ -20,7 +20,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
+
 import android.bluetooth.BluetoothManager;
 
 import android.content.Context;
@@ -45,13 +45,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.google.android.apps.forscience.ble.BleClientImpl;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.feedback.FeedbackProvider;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.intro.AgeVerifier;
-import com.google.android.apps.forscience.whistlepunk.intro.ConnectionSetup;
 
+import com.google.android.apps.forscience.whistlepunk.intro.DatabaseLinkSetup;
 import com.google.android.apps.forscience.whistlepunk.project.ExperimentListFragment;
 import com.google.android.apps.forscience.whistlepunk.review.RunReviewActivity;
 
@@ -72,9 +71,7 @@ public class MainActivity extends AppCompatActivity
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
     public static BluetoothAdapter BLUETOOTH_ADAPTER;
-    Boolean isSetup;
-    String myWebsite ="";
-    String myWriteToken = "";
+    Boolean isDatabaseLinkSetup;
 
     /** Receives an event every time the activity pauses */
     RxEvent mPause = new RxEvent();
@@ -101,28 +98,11 @@ public class MainActivity extends AppCompatActivity
         if(showConnectionSetupScreenIfNeeded()){
             return;
         }
-        if(isSetup) {
-            // check if the database connections page was filled in. If so, collect that stored data
-            storedData = getSharedPreferences("info", MODE_PRIVATE);
-            myWebsite = storedData.getString("websiteAddress", myWebsite);
-            myWriteToken = storedData.getString("websiteToken", myWriteToken);
-            // send this to the DatabaseConnectionService.java to be used later
 
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println(" ");
-            System.out.println(" ");
-            System.out.println("        Address: "+ myWebsite);
-            System.out.println("        Token: " + myWriteToken);
-            System.out.println(" ");
-            System.out.println(" ");
-            System.out.println("======================================");
-            System.out.println("======================================");
-
-            DatabaseConnectionService.setData(myWebsite,myWriteToken);
-            //
-            // as soon are we enter an experiment we will collect stored values in that experiment
-        }
+        // get the URL for website
+        String myWebsiteAddress = storedData.getString("websiteAddress", "");
+        // send this to the DatabaseConnectionService.java to be used later
+        DatabaseConnectionService.setMyWebsiteAddress(myWebsiteAddress);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -311,18 +291,17 @@ public class MainActivity extends AppCompatActivity
     private boolean showConnectionSetupScreenIfNeeded() {
 
         storedData = getSharedPreferences("info",MODE_PRIVATE);
-        isSetup = storedData.getBoolean("CONNECT_SETUP", false);
+        isDatabaseLinkSetup = storedData.getBoolean("CONNECTION_SETUP", false);
 
         // if the connection page was not filled in, that must happen now
-        if(!isSetup){
+        if(!isDatabaseLinkSetup){
 
-            Intent SetupIntent = new Intent(this, ConnectionSetup.class);
+            Intent SetupIntent = new Intent(this, DatabaseLinkSetup.class);
             startActivity(SetupIntent);
             finish();
             return true;
         }
         return false;
-
     }
 
     // TODO: need a more principled way of keeping the action bar current

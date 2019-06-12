@@ -34,7 +34,7 @@ import java.util.Map;
  * Routes information flowing back from the recorders to the listeners (if any) in the foreground
  * activity that are interested in those events.
  *
- * Is itself a SensorStatusListener, and makes routing SensorObservers that can be handed to
+ * Is itself is a SensorStatusListener, and makes routing SensorObservers that can be handed to
  * recorders so that recorders don't have to care about UI elements coming and going.
  *
  * These methods should all only be called on the service's main thread.
@@ -48,7 +48,7 @@ public class RecorderListenerRegistry implements SensorStatusListener {
         public final SensorObserver observer;
 
         private ListenerSet(String observerId, SensorStatusListener statusListener,
-                SensorObserver observer) {
+                            SensorObserver observer) {
             this.observerId = observerId;
             this.statusListener = statusListener;
             this.observer = observer;
@@ -104,7 +104,7 @@ public class RecorderListenerRegistry implements SensorStatusListener {
     }
 
     public String putListeners(String sensorId, SensorObserver observer,
-            SensorStatusListener listener) {
+                               SensorStatusListener listener) {
         String observerId = sensorId + (++mObserverCount);
 
         mListeners.put(sensorId, new ListenerSet(observerId, listener, observer));
@@ -155,4 +155,7 @@ public class RecorderListenerRegistry implements SensorStatusListener {
             }
         };
     }
+
 }
+
+

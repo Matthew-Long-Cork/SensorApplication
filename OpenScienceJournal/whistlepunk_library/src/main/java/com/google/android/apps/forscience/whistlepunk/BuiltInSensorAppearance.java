@@ -29,7 +29,7 @@ import java.text.ParsePosition;
 
 import io.reactivex.Single;
 
-public class BuiltInSensorAppearance implements SensorAppearance {
+public class  BuiltInSensorAppearance implements SensorAppearance {
     public static final int DEFAULT_POINTS_AFTER_DECIMAL = -1;
 
     // Don't allow more than 10 places after the decimal to be displayed. The UX can't

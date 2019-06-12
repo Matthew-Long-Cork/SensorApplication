@@ -77,6 +77,9 @@ import java.util.Objects;
 
 import io.reactivex.subjects.BehaviorSubject;
 
+
+
+
 public class RecordFragment extends PanesToolFragment implements Handler.Callback,
         StopRecordingNoDataDialog.StopRecordingDialogListener, AudioSettingsDialog
                 .AudioSettingsDialogListener {
@@ -462,13 +465,13 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         super.onDestroy();
     }
 
-    public void stopObservingCurrentSensors() {
+    public static void stopObservingCurrentSensors() {
 
         if (mSensorCardAdapter == null) {
 
             System.out.println("======================================");
             System.out.println("======================================");
-            System.out.println("        null");
+            System.out.println("      mSensorCardAdapter is null");
             System.out.println("======================================");
             System.out.println("======================================");
         }
@@ -888,7 +891,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         return sensorCardPresenter;
     }
 
-    private void tryStartObserving(SensorCardPresenter sensorCardPresenter, String sensorId,
+    public void tryStartObserving(SensorCardPresenter sensorCardPresenter, String sensorId,
             RecordingStatus status) {
         if (TextUtils.equals(sensorId, DecibelSensor.ID) && mDecibelSensorCardPresenter == null &&
                 !PermissionUtils.hasPermission(getActivity(),

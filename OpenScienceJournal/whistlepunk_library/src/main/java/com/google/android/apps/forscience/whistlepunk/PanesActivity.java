@@ -45,13 +45,11 @@ import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.metadata.GoosciExperiment;
 import com.google.android.apps.forscience.whistlepunk.performance.PerfTrackerProvider;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.AccessTokenSetup;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.tbruyelle.rxpermissions2.RxPermissions;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.BehaviorSubject;
@@ -76,6 +74,19 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     private ToolTab[] mToolTabs = ToolTab.values();
     private RxPermissions mPermissions;
     private int mInitialDrawerState = -1;
+
+    // get the stored data
+    private SharedPreferences storedData;
+    private String theTitle;
+    private String experimentAccessToken;
+    private boolean isTokenValid = true;
+    //moved from setView()
+    private ViewPager pager;
+    public static TabLayout toolPicker;
+
+
+    private int TOKEN_REQUEST = 1;
+    private int FREQUENCY_CHANGED = 2;
 
     public PanesActivity() {
 
@@ -138,6 +149,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         }, OBSERVE(R.string.tab_description_observe, R.drawable.sensortab_white_24dp, "OBSERVE") {
             @Override
             public Fragment createFragment(String experimentId, Activity activity) {
+                // CHECK IF WE
                 return RecordFragment.newInstance(experimentId, false);
             }
 
@@ -279,6 +291,9 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         mActiveExperiment.subscribe(experiment -> {
             setupViews(experiment);
             setExperimentFragmentId(experiment);
+            //this checks if the user entered the token
+            //isTokenValid = checkExperimentAccessToken(experiment);
+
             AppSingleton.getInstance(this).getRecorderController().watchRecordingStatus()
                         .firstElement().subscribe(status -> {
                 if (status.state == RecordingState.ACTIVE) {
@@ -370,9 +385,9 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         ControlBarController controlBarController =
                 new ControlBarController(experiment.getExperimentId(), mSnackbarManager);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+        pager = (ViewPager) findViewById(R.id.pager);
         View bottomSheet = findViewById(R.id.bottom);
-        TabLayout toolPicker = (TabLayout) findViewById(R.id.tool_picker);
+        toolPicker = (TabLayout) findViewById(R.id.tool_picker);
         View experimentPane = findViewById(R.id.experiment_pane);
         View controlBarSpacer = findViewById(R.id.control_bar_spacer);
         FrameLayout controlBar = (FrameLayout) findViewById(R.id.bottom_control_bar);
@@ -473,7 +488,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                                 });
                         fragment.onGainedFocus(PanesActivity.this);
                         mOnLosingFocus = () -> fragment.onLosingFocus();
-
                         mPreviousPrimary = position;
                     }
                 }
@@ -492,6 +506,50 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             // Clear the tabs, which releases all cameras and removes all triggers etc.
             pager.setAdapter(null);
         }
+    }
+
+    private boolean checkExperimentAccessToken(Experiment experiment){
+
+        boolean  res = true, invalid;
+        // get the stored data
+        storedData = getSharedPreferences("info", MODE_PRIVATE);
+        // get the current title
+        theTitle = experiment.getTitle();
+
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("        the checkExperimentAccessToken() title is: " + theTitle);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+
+
+        // get the current token
+        experimentAccessToken = storedData.getString(theTitle + "_experimentAccessToken", experimentAccessToken);
+        // if null or blank invalid is TRUE
+        invalid = (experimentAccessToken == null || experimentAccessToken.length() == 0);
+        // if invalid res is false
+        if(invalid)
+            res = false;
+
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("        Token valid: " + res);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println("======================================");
+
+        return res;
     }
 
     private void initializeToolPicker(TabLayout toolPicker, ViewPager pager,
@@ -527,9 +585,67 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 ToolTab toolTab = (ToolTab) tab.getTag();
                 mSelectedTabIndex = toolTab.ordinal();
 
-                pager.setCurrentItem(mSelectedTabIndex, true);
-                openPaneIfNeeded();
+                // quick check in case the user was prompted, and entered the token
+                isTokenValid = checkExperimentAccessToken(experiment);
+
+                if (mSelectedTabIndex == 1 && !isTokenValid) {
+
+                    // redirect the user to enter the access token
+                    Intent tokenRequestIntent = new Intent(getApplicationContext(), AccessTokenSetup.class);
+                    // as there is no token yet, send 'theTitle' twice
+                    tokenRequestIntent.putExtra("CURRENT_TITLE", theTitle); // current title
+                    //tokenRequestIntent.putExtra("OLD_TITLE", theTitle); // current title
+                    startActivityForResult(tokenRequestIntent, TOKEN_REQUEST);
+
+                }
+                else{
+                    // we have the token already
+                    // check which tab is selected
+                    if(mSelectedTabIndex == 1){
+                        RecorderControllerImpl.setSensorsOnDisplay(true);
+                        System.out.println("\n======================================");
+                        System.out.println("                  2");
+                        System.out.println("======================================");
+                        System.out.println("1");
+                        System.out.println("2");
+                        System.out.println("     tab 1 selected, RecorderControllerImpl.setSensorsOnDisplay(true);");
+                        System.out.println("4");
+                        System.out.println("5");
+                        System.out.println("======================================");
+                        System.out.println("                  2");
+                        System.out.println("======================================");
+                    }
+
+                    //
+                    //
+                    //
+                    //
+                    if(mSelectedTabIndex != 1){
+                        RecorderControllerImpl.setSensorsOnDisplay(false);
+                        System.out.println("\n======================================");
+                        System.out.println("                  2");
+                        System.out.println("======================================");
+                        System.out.println("1");
+                        System.out.println("2");
+                        System.out.println("     tab 1 NOT selected, RecorderControllerImpl.setSensorsOnDisplay(false);");
+                        System.out.println("4");
+                        System.out.println("5");
+                        System.out.println("======================================");
+                        System.out.println("                  2");
+                        System.out.println("======================================");
+                    }
+                    //
+                    //
+                    //
+                    //
+
+                    // continue to the sensors tab
+                    pager.setCurrentItem(mSelectedTabIndex, true);
+                    openPaneIfNeeded();
+
+                }
             }
+
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
@@ -627,26 +743,102 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             fragmentManager.beginTransaction()
                            .replace(R.id.experiment_pane, mExperimentFragment)
                            .commit();
-
         } else {
             mExperimentFragment.setExperimentId(experiment.getExperimentId());
         }
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == TOKEN_REQUEST) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                // user entered token
+                // continue on to the sensors tab
+                pager.setCurrentItem(mSelectedTabIndex, true);
+                openPaneIfNeeded();
+                //we now have a token
+                isTokenValid = true;
+
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        result ok");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+            if (resultCode == RESULT_CANCELED) {
+                // user canceled this intent
+                // return to tab zero
+                toolPicker.getTabAt(0).select();
+
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        result canceled");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+        }
+        if (requestCode == FREQUENCY_CHANGED) {
+
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                //PanesActivity.toolPicker.getTabAt(1).select();
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        test ok");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+            if (resultCode == RESULT_CANCELED) {
+                //PanesActivity.toolPicker.getTabAt(1).select();
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        test canceled");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+            }
+        }
+    }
+
+    @Override
     protected void onDestroy() {
 
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("        Panes onDestroy()...");
-        System.out.println("======================================");
-        System.out.println("======================================");
         mDestroyed.onHappened();
         super.onDestroy();
     }
 
+
     @Override
     public void onResume() {
+
+       // RecorderControllerImpl.setSensorsOnDisplay(true);
+
+
         //Intent intent = getIntent();
         super.onResume();
         if (!isMultiWindowEnabled()) {
@@ -657,6 +849,11 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
     @Override
     protected void onPause() {
+
+        //RecorderControllerImpl.setSensorsOnDisplay(false);
+
+
+
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForPause();
             logPanesState(TrackerConstants.ACTION_PAUSED);
@@ -725,7 +922,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
         if (mExperimentFragment.handleOnBackPressed()) {
             return;
-        }
+           }
 
         super.onBackPressed();
 

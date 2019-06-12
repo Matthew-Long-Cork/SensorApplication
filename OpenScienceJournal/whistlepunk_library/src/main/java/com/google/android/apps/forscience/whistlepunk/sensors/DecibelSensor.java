@@ -56,12 +56,12 @@ public class DecibelSensor extends ScalarSensor {
     private final int mBytesInBuffer;
     AtomicBoolean mRunning = new AtomicBoolean(false);
 
-    // added: declare new variables.
+    // declare new variables.
     private DataObject data;
     private float dataValue;
-    Timer timer;
-    private boolean firstTime = true;
+    private Timer timer;
     private int frequencyTime;
+    private boolean firstTime = true;
 
     public DecibelSensor() {
         super(ID);
@@ -80,119 +80,171 @@ public class DecibelSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                // retrieve the stored frequency value
-                frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(ID)){
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        Starting sound sensor ");
-                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Starting sound sensor ");
+                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
 
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                if (mBytesInBuffer < 0) {
-                    // If this is the case, AudioRecord.getMinBufferSize returned an error.
-                    listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
-                            "Could not connect to microphone");
-                    return;
-                }
-                mRunning.set(true);
-                // Use VOICE_COMMUNICATION to filter out audio coming from the speakers
-                mRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,
-                        SAMPLE_RATE_IN_HZ, CHANNEL_CONFIG, AUDIO_FORMAT, mBytesInBuffer);
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                    if (mBytesInBuffer < 0) {
+                        // If this is the case, AudioRecord.getMinBufferSize returned an error.
+                        listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
+                                "Could not connect to microphone, no sound detected");
+                        return;
+                    }
+                    mRunning.set(true);
+                    // Use VOICE_COMMUNICATION to filter out audio coming from the speakers
+                    mRecord = new AudioRecord(MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                            SAMPLE_RATE_IN_HZ, CHANNEL_CONFIG, AUDIO_FORMAT, mBytesInBuffer);
 
-                if (mRecord.getState() != AudioRecord.STATE_INITIALIZED) {
-                    listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
-                            "Could not connect to microphone");
-                    return;
-                }
 
-                mRecord.startRecording();
-                // Check to see if we actually started recording before continuing.
-                // AudioRecord#startRecording() logs an error but it has no return value and
-                // doesn't throw an exception when someone else is using the mic.
-                if (mRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
-                    listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
-                            "Microphone in use by another application");
-                    return;
-                }
+                    //==============================================================================
+                    //              issue - this check fails on the very first time, works then
+                    //                    -  is it needed???
+                    //==============================================================================
 
-                // added: method to schedule data to be sent to database every 'frequency' seconds
-                timer = new Timer();
-                timer.schedule(new sendData(), 0, frequencyTime);
+                    //==========================================================================
 
-                mExecutor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        short[] tempBuffer = new short[mBytesInBuffer];
+                    if (mRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                      //  listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
+                       //         "Could not connect to microphon");
+                        return;
+                    }
 
-                        while (mRunning.get()) {
-                            int readShorts = mRecord.read(tempBuffer, 0, mBytesInBuffer);
-                            if (readShorts > 0) {
+                    //==========================================================================
 
-                                sendBuffer(tempBuffer, readShorts);
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(ID, true);
+
+                    mRecord.startRecording();
+                    // Check to see if we actually started recording before continuing.
+                    // AudioRecord#startRecording() logs an error but it has no return value and
+                    // doesn't throw an exception when someone else is using the mic.
+                    if (mRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+                        listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
+                                "Microphone in use by another application");
+                        return;
+                    }
+
+                    // added: method to schedule data to be sent to database every 'frequency' seconds
+                    timer = new Timer();
+                    timer.schedule(new sendData(), 0, frequencyTime);
+
+                    mExecutor.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            short[] tempBuffer = new short[mBytesInBuffer];
+
+                            while (mRunning.get()) {
+                                int readShorts = mRecord.read(tempBuffer, 0, mBytesInBuffer);
+                                if (readShorts > 0) {
+
+                                    sendBuffer(tempBuffer, readShorts);
+                                }
                             }
                         }
-                    }
 
-                    private void sendBuffer(short[] tempBuffer, int readShorts) {
-                        final long timestampMillis = clock.getNow();
-                        double totalSquared = 0;
+                        private void sendBuffer(short[] tempBuffer, int readShorts) {
+                            final long timestampMillis = clock.getNow();
+                            double totalSquared = 0;
 
-                        for (int i = 0; i < readShorts; i++) {
-                            short soundbits = tempBuffer[i];
-                            totalSquared += soundbits * soundbits;
+                            for (int i = 0; i < readShorts; i++) {
+                                short soundbits = tempBuffer[i];
+                                totalSquared += soundbits * soundbits;
+                            }
+
+                            // https://en.wikipedia.org/wiki/Sound_pressure
+                            final double quadraticMeanPressure =
+                                    Math.sqrt(totalSquared / readShorts);
+                            final double uncalibratedDecibels =
+                                    20 * Math.log10(quadraticMeanPressure);
+
+                            if (isValidReading(uncalibratedDecibels)) {
+                                c.addData(timestampMillis, uncalibratedDecibels);
+                                dataValue = (float) uncalibratedDecibels;
+                            }
                         }
-
-                        // https://en.wikipedia.org/wiki/Sound_pressure
-                        final double quadraticMeanPressure =
-                                Math.sqrt(totalSquared / readShorts);
-                        final double uncalibratedDecibels =
-                                20 * Math.log10(quadraticMeanPressure);
-
-                        if (isValidReading(uncalibratedDecibels)) {
-                            c.addData(timestampMillis, uncalibratedDecibels);
-                            dataValue = (float)uncalibratedDecibels;
-                        }
-                    }
-                });
+                    });
+                }
+                // else if it is active. Ignore
+                else{
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("        +++ambient light sensor is already active+++");
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println("                  ");
+                System.out.println("======================================");
             }
+        }
 
             @Override
             public void stopObserving() {
 
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        Stopping sound sensor");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
+                boolean active =  ExperimentDetailsFragment.getTheSensorState(ID);
+                // if experiment is no longer active
 
-                // added: stop the timer task as the observing of the sensors is no longer needed
-                if(timer != null){
-                    timer.cancel();
-                }
+                if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(active)) {
 
-
-                mRunning.set(false);
-                if (mRecord != null) {
-                    if (mRecord.getState() == AudioRecord.STATE_INITIALIZED) {
-                        mRecord.stop();
+                    if(active) {
+                        // change sensor state to NOT ACTIVE
+                        ExperimentDetailsFragment.changeTheSensorState(ID, false);
                     }
-                    mRecord.release();
+
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("        Stopping sound sensor");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("                  ");
+                    System.out.println("======================================");
+
+                    // added: stop the timer task as the observing of the sensors is no longer needed
+                    if(timer != null){
+                        timer.cancel();
+                    }
+
+                    mRunning.set(false);
+                    if (mRecord != null) {
+                        if (mRecord.getState() == AudioRecord.STATE_INITIALIZED) {
+                            mRecord.stop();
+                        }
+                        mRecord.release();
+                    }
+                    mRecord = null;
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
                 }
-                mRecord = null;
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+                else{
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("         sensor: "+ ID);
+                    System.out.println("         Experiment is still active. not stopping");
+                    System.out.println(" ");
+                    System.out.println(" ");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
             }
 
             @Override
@@ -210,7 +262,6 @@ public class DecibelSensor extends ScalarSensor {
         return reading > -Double.MAX_VALUE;
     }
 
-
     // added: this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
@@ -224,12 +275,8 @@ public class DecibelSensor extends ScalarSensor {
                 } catch (InterruptedException ex) {}
             }
             data.setDataValue(dataValue);
-
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
-            //======================================
-            // connection to database
-            //======================================
         }
     }
 }

@@ -3,7 +3,6 @@ package com.google.android.apps.forscience.whistlepunk;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
 import java.util.Arrays;
-
 import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -15,104 +14,123 @@ public class DatabaseConnectionService {
 
     private static String myWebsite ="";
     private static String myWriteToken ="";
+    private static String experimentName;
 
-    public static void setData(String website, String token){
-
+    public static void setMyWebsiteAddress(String website){
         myWebsite = website;
+    }
+
+    public static void setMyAccessToken(String token){
         myWriteToken = token;
     }
 
     public static void sendData(DataObject dataObject){
 
-       String sensorType;
-       Float sensorValue;
-       String dataField = null;
-       String data;
-       String experimentName;
-       String myUrl;
+        String sensorType;
+        Float sensorValue;
+        String dataField = null;
+        String data;
+        String myUrl;
+        sensorType = dataObject.Id;
+        sensorValue = dataObject.dataValue;
 
-       sensorType = dataObject.Id;
-       sensorValue = dataObject.dataValue;
+        // get the experiment name
+        experimentName = ExperimentDetailsFragment.getCurrentTitle();
 
-       experimentName = ExperimentDetailsFragment.getCurrentTitle();
+        if(sensorType == "AmbientLightSensor")       // light
+            dataField = experimentName + "_" + "AmbientLight";
+        if(sensorType == "DecibelSource")            // sound
+            dataField = experimentName + "_" + "DecibelSource";
+        if(sensorType == "LinearAccelerometerSensor")// accelerometer
+            dataField = experimentName + "_" + "GeneralAcceleration";
+        if(sensorType == "AccX")       // left/right tilt     (AccelerometerSensor.java)
+            dataField = experimentName + "_" + "X-axisAcceleration";
+        if(sensorType == "AccY")              // front/back tilt      (AccelerometerSensor.java)
+            dataField = experimentName + "_" + "Y-axisAcceleration";
+        if(sensorType == "AccZ")              // up/down tilt         (AccelerometerSensor.java)
+            dataField = experimentName + "_" + "Z-axisAcceleration";
+        if(sensorType == "CompassSensor")            // compass degrees
+            dataField = experimentName + "_" + "CompassDegrees";
+        if(sensorType == "MagneticRotationSensor")   // magnetic levels
+            dataField = experimentName + "_" + "MagneticLevel";
 
-       if(sensorType == "AmbientLightSensor")       // light
-           dataField = experimentName + "_" + "AmbientLight";
-       if(sensorType == "DecibelSource")            // sound
-           dataField = experimentName + "_" + "DecibelSource";
-       if(sensorType == "LinearAccelerometerSensor")// accelerometer
-           dataField = experimentName + "_" + "GeneralAcceleration";
-       if(sensorType == "AccX")       // left/right tilt     (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "X-axisAcceleration";
-       if(sensorType == "AccY")              // front/back tilt      (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "Y-axisAcceleration";
-       if(sensorType == "AccZ")              // up/down tilt         (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "Z-axisAcceleration";
-       if(sensorType == "CompassSensor")            // compass degrees
-           dataField = experimentName + "_" + "CompassDegrees";
-       if(sensorType == "MagneticRotationSensor")   // magnetic levels
-           dataField = experimentName + "_" + "MagneticLevel";
+        //==========================================================================
+        // this is for a ThingsBoard.com connection
+        // =========================================================================
 
-       //==========================================================================
-       // this is the thingsBoard connection
-       // ==========================================================================
-       //data to send
-       data = "{" + dataField + ":" + sensorValue + "}";
+        //data to send
+        data = "{" + dataField + ":" + sensorValue + "}";
 
-       // for thingsBoard: token/website/the full URL link.//
-       //
-       myWriteToken = "temp";
-       myWebsite = "http://thingsboard.tec-gateway.com";
-       myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
+        // for thingsBoard:
+        //==========================================================================================
+        //myWriteToken = "temp";
+        //myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
+        //==========================================================================================
+        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
-       try{
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("    trying to sent: ");
+        System.out.println("    website address: " + myWebsite);
+        System.out.println("    website token: " + myWriteToken);
+        System.out.println("    data : " + data);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println("======================================");
 
-           OkHttpClient client = new OkHttpClient.Builder()
-                   .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
-                   .build();
+        try{
 
-           RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
-           Request request = new Request.Builder()
-                   .url(myUrl)
-                   .post(body)
-                   .build();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+                    .build();
 
-           try (Response response = client.newCall(request).execute()) {
+            RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
+            Request request = new Request.Builder()
+                    .url(myUrl)
+                    .post(body)
+                    .build();
 
-               System.out.println("======================================");
-               System.out.println(" ");
-               System.out.println("======================================");
-               System.out.println( response.body().string());
-               System.out.println(" ");
-               System.out.println(" ");
-               System.out.println("    sent: ");
-               System.out.println("    data : " + data);
-               System.out.println(" ");
-               System.out.println(" ");
-               System.out.println("======================================");
-               System.out.println(" ");
-               System.out.println("======================================");
-           }
+            try (Response response = client.newCall(request).execute()) {
 
-       }
-       catch (Exception e) {
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println( response.body().string());
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("    sent: ");
+                System.out.println("    website address: " + myWebsite);
+                System.out.println("    website token: " + myWriteToken);
+                System.out.println("    data : " + data);
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+            }
+        }
+        catch (Exception e) {
 
-           System.out.println("\n====================================");
-           System.out.println("                  ");
-           System.out.println("======================================");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("      Error: " + sensorType);
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("        " + e);
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("======================================");
-           System.out.println("======================================");
-
-       }
-   }
+            System.out.println("\n====================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("      Error: " + sensorType);
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("        " + e);
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("======================================");
+        }
+    }
 }

@@ -33,6 +33,7 @@ import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorSpec;
+import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesActivity;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.SensorTrigger;
@@ -75,7 +76,7 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.BehaviorSubject;
 
-// added:
+// added
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
 /**
@@ -105,10 +106,10 @@ public class RecorderControllerImpl implements RecorderController {
     private final Clock mClock;
     private final Delay mStopDelay;
     private SensorAppearanceProvider mAppearanceProvider;
-    private Map<String, StatefulRecorder> mRecorders = new LinkedHashMap<>();
+    private static Map<String, StatefulRecorder> mRecorders = new LinkedHashMap<>();
     private final Context mContext;
-    private final RecorderListenerRegistry mRegistry;
-    private Map<String, String> mServiceObservers = new HashMap<>();
+    private static RecorderListenerRegistry mRegistry;   // was final
+    public static Map<String, String> mServiceObservers = new HashMap<>();
     private RecorderServiceConnection mServiceConnection = null;
     private int mPauseCount = 0;
     private final SensorEnvironment mSensorEnvironment;
@@ -131,18 +132,29 @@ public class RecorderControllerImpl implements RecorderController {
 
     //===================================================
     // added:
-    private List <String> sensorIdList = new ArrayList();
-    private List <String> observerIdList =  new ArrayList();
-    private boolean sensorsUnregistered =  false;
+    private static List <String> sensorIdList = new ArrayList();
+    private static List <String> observerIdList = new ArrayList();
+    private boolean sensorsUnregistered = false;
     private int i;
-    private String testsensorId = null;
+    private static boolean sensorsOnDisplay = false;
+    private static boolean currentSensorChecked = true;
     // ==================================================
 
+    public static void setSensorsOnDisplay(boolean state){
+
+        System.out.println("======================================");
+        System.out.println("======================================\n\n");
+        System.out.println("      sensor state: " + state + " \n\n");
+        System.out.println("======================================");
+        System.out.println("======================================");
+
+
+        sensorsOnDisplay = state;
+    }
     /**
      * The latest recorded value for each sensor
      */
     private Map<String, BehaviorSubject<ScalarReading>> mLatestValues = new HashMap<>();
-
 
     public RecorderControllerImpl(Context context) {
         this(context, AppSingleton.getInstance(context).getDataController());
@@ -163,9 +175,9 @@ public class RecorderControllerImpl implements RecorderController {
      */
     @VisibleForTesting
     public RecorderControllerImpl(final Context context, SensorEnvironment sensorEnvironment,
-            RecorderListenerRegistry listenerRegistry,
-            Supplier<RecorderServiceConnection> connectionSupplier, DataController dataController,
-            Scheduler scheduler, Delay stopDelay, SensorAppearanceProvider appearanceProvider) {
+                                  RecorderListenerRegistry listenerRegistry,
+                                  Supplier<RecorderServiceConnection> connectionSupplier, DataController dataController,
+                                  Scheduler scheduler, Delay stopDelay, SensorAppearanceProvider appearanceProvider) {
         mContext = context;
         mSensorEnvironment = sensorEnvironment;
         mRegistry = listenerRegistry;
@@ -188,36 +200,16 @@ public class RecorderControllerImpl implements RecorderController {
     //       need to be passed in here?
     @Override
     public String startObserving(final String sensorId, final List<SensorTrigger> activeTriggers,
-            SensorObserver observer, SensorStatusListener listener,
-            final TransportableSensorOptions initialOptions, SensorRegistry sensorRegistry) {
+                                 SensorObserver observer, SensorStatusListener listener,
+                                 final TransportableSensorOptions initialOptions, SensorRegistry sensorRegistry) {
         // Put the observer and listener in the registry by sensorId.
         String observerId = mRegistry.putListeners(sensorId, observer, listener);
-
         StatefulRecorder sr = mRecorders.get(sensorId);
-        sensorsUnregistered = false;
 
-        //mRegistry.countListeners("1");
-       // int x = mRegistry.countListeners("1");
-
-        System.out.println("======================================");
-        System.out.println("======================================\n\n");
-        System.out.println("    startObserving()   sensorsUnregistered is " + sensorsUnregistered);
-        System.out.println("    startObserving()   sensor ID is " + sensorId);
-        System.out.println("\n\n======================================");
-        System.out.println("======================================");
-
-        // test
-       // testsensorId = sensorId;
-        mRecorders.size();
-
-        // add this current sensor to the lists to track all active sensors for later
-        if(!sensorIdList.contains(sensorId)) {
+        // add this current sensor to the lists to track all active sensors to stop
+        // sending to the database later
+        if(!sensorIdList.contains(sensorId)) {  //remove in stop Observing at end of experiment
             sensorIdList.add(sensorId);
-            System.out.println("======================================");
-            System.out.println("======================================\n\n");
-            System.out.println("    startObserving()   ADDED SENSOR: " + sensorId);
-            System.out.println("\n\n======================================");
-            System.out.println("======================================");
             observerIdList.add(observerId);
         }
 
@@ -235,7 +227,6 @@ public class RecorderControllerImpl implements RecorderController {
                     StatefulRecorder newStatefulRecorder = new StatefulRecorder(recorder,
                             mScheduler, mStopDelay);
                     mRecorders.put(sensorId, newStatefulRecorder);
-
                     // TODO: can we avoid passing sensorRegistry so deep?
                     addServiceObserverIfNeeded(sensorId, activeTriggers, sensorRegistry);
                     RecorderControllerImpl.this.startObserving(newStatefulRecorder);
@@ -254,7 +245,7 @@ public class RecorderControllerImpl implements RecorderController {
     }
 
     private void addServiceObserverIfNeeded(final String sensorId,
-            final List<SensorTrigger> activeTriggers, SensorRegistry sensorRegistry) {
+                                            final List<SensorTrigger> activeTriggers, SensorRegistry sensorRegistry) {
         if (!mLatestValues.containsKey(sensorId)) {
             mLatestValues.put(sensorId, BehaviorSubject.<ScalarReading>create());
         }
@@ -290,13 +281,13 @@ public class RecorderControllerImpl implements RecorderController {
     }
 
     private void fireSensorTrigger(SensorTrigger trigger, long timestamp,
-            SensorRegistry sensorRegistry) {
+                                   SensorRegistry sensorRegistry) {
         // TODO: Think about behavior for triggers firing near the same time, especially
         // regarding start/stop recording and notes. Right now behavior may not seem repeatable
         // depending on timing of callbacks and order of triggers. b/
         boolean triggerWasFired = false;
         if (trigger.getActionType() == TriggerInformation.TRIGGER_ACTION_START_RECORDING &&
-            !isRecording() && getSelectedExperiment() != null) {
+                !isRecording() && getSelectedExperiment() != null) {
             if (!mRecordingStateChangeInProgress) {
                 triggerWasFired = true;
                 for (TriggerFiredListener listener : mTriggerListeners.values()) {
@@ -305,7 +296,7 @@ public class RecorderControllerImpl implements RecorderController {
                 // TODO: test this subscribe
                 startRecording(new Intent(mContext, MainActivity.class),
                         /* not user initiated */ false).subscribe(
-                                LoggingConsumer.observe(TAG, "start recording with trigger"));
+                        LoggingConsumer.observe(TAG, "start recording with trigger"));
                 WhistlePunkApplication.getUsageTracker(mContext).trackEvent(
                         TrackerConstants.CATEGORY_RUNS,
                         TrackerConstants.ACTION_TRY_RECORDING_FROM_TRIGGER, null, 0);
@@ -356,7 +347,7 @@ public class RecorderControllerImpl implements RecorderController {
     }
 
     private void addTriggerLabel(long timestamp, SensorTrigger trigger,
-            SensorRegistry sensorRegistry) {
+                                 SensorRegistry sensorRegistry) {
         if (getSelectedExperiment() == null) {
             return;
         }
@@ -390,7 +381,7 @@ public class RecorderControllerImpl implements RecorderController {
     }
 
     private GoosciSensorSpec.SensorSpec getSensorSpec(String sensorId,
-            SensorRegistry sensorRegistry) {
+                                                      SensorRegistry sensorRegistry) {
         return sensorRegistry.getSpecForId(sensorId, mAppearanceProvider, mContext);
     }
 
@@ -403,15 +394,14 @@ public class RecorderControllerImpl implements RecorderController {
         String trackerLabel = isRecording() ? TrackerConstants.LABEL_RECORD :
                 TrackerConstants.LABEL_OBSERVE;
         WhistlePunkApplication.getUsageTracker(mContext)
-                              .trackEvent(TrackerConstants.CATEGORY_NOTES,
-                                      TrackerConstants.ACTION_CREATE,
-                                      trackerLabel,
-                                      TrackerConstants.getLabelValueType(label));
+                .trackEvent(TrackerConstants.CATEGORY_NOTES,
+                        TrackerConstants.ACTION_CREATE,
+                        trackerLabel,
+                        TrackerConstants.getLabelValueType(label));
         AppSingleton.getInstance(mContext).onLabelsAdded().onNext(label);
     }
 
     private void startObserving(StatefulRecorder sr) {
-
         sr.startObserving();
         updateObservedIdListeners();
     }
@@ -438,6 +428,53 @@ public class RecorderControllerImpl implements RecorderController {
         return mSensorEnvironment.getDefaultClock().getNow();
     }
 
+    public static void addSelectedSensorToList(String sensorId) {
+        currentSensorChecked = true;
+        sensorsOnDisplay = true;
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println(" ");
+        System.out.println(" SENSORS ON DISPLAY IS TRUE");
+        System.out.println(" ");
+        System.out.println("======================================");
+    }
+
+    public static void stopObservingSelectedSensor(String sensorId, String observerId) {
+
+        // the sensor was removed from the display list so set to inactive(if active..)
+        ExperimentDetailsFragment.changeTheSensorState(sensorId, false);
+        currentSensorChecked = false;
+        sensorsOnDisplay = true;
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println(" ");
+        System.out.println(" stopObservingSelectedSensor()");
+        System.out.println("      " +sensorId+ " sensor state is now changed to false");
+        System.out.println(" ");
+        System.out.println("======================================");
+
+
+        if(mRecorders.containsKey(sensorId)){
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("    must remove data");
+            System.out.println(" ");
+            System.out.println("======================================");
+
+            mRecorders.get(sensorId).stopObserving();
+            mRecorders.remove(sensorId);
+        }
+        if(sensorIdList.contains(sensorId)){
+            sensorIdList.remove(sensorId);
+            observerIdList.remove(observerId);
+            mRegistry.remove(sensorId, observerId);
+        }
+    }
+
+
     @Override
     public void stopObserving(String sensorId, String observerId) {
 
@@ -447,18 +484,110 @@ public class RecorderControllerImpl implements RecorderController {
         //=========================================================================================
 
         System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("     record controlloerimpl.java  in stopObserving()");
+        System.out.println(" ");
         System.out.println("======================================");
-        System.out.println("       controller- stopObserving() started");
+
+        if(!sensorsOnDisplay){
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("       not swapping");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+        }
+
+        boolean swapSensor = false;
+        boolean sensorRemoved = false;
+        boolean sensorInList = true;
+
+        if(!mRecorders.containsKey(sensorId)){
+           sensorInList = false;
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("       not in the list");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+        }
+
+        // if the experiment is active && the sensor cards are on display
+        // && the current sensor is not null && the current sensor has not been removed from the list
+        if(ExperimentDetailsFragment.getIsActiveStatus() && sensorId != null && sensorsOnDisplay && sensorInList) {
+            swapSensor = true;
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println(" ");
+            System.out.println(" sensor ID: "+ sensorId);
+            System.out.println("    1. about to swap sensor");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+
+        }
+        if(!currentSensorChecked){
+            //sensorRemoved = true;
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("     2. sensor removed??? ");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+
+        }
+
+        if(swapSensor){
+
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("       swapping out "+ sensorId);
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+
+            // is is the on screen registry
+            ExperimentDetailsFragment.changeTheSensorState(sensorId, false);
+            mRecorders.get(sensorId).stopObserving();  //   <-- null
+            mRecorders.remove(sensorId);
+            sensorIdList.remove(sensorId);
+            observerIdList.remove(observerId);
+            mRegistry.remove(sensorId, observerId);
+
+            // reset boolean
+            currentSensorChecked = true;
+        }
+
+        // If there are no listeners left except for our serviceObserver, remove it.
+        //if (mRegistry.countListeners(sensorId) == 1) {
+        //    stopObservingServiceObserver(sensorId);
+        //}
+
+        System.out.println("======================================");
+        System.out.println("======================================");
         System.out.println("       experiment isActive = "+ ExperimentDetailsFragment.getIsActiveStatus());
         System.out.println("       sensors unregistered = "+ sensorsUnregistered);
         System.out.println("======================================");
         System.out.println("======================================");
-
-        // add this current sensor data to the lists to track all active sensors for later
-       // if(!sensorIdList.contains(sensorId)) {
-       //     sensorIdList.add(sensorId);
-       //     observerIdList.add(observerId);
-       // }
 
         // if the ExperimentDetailsFragment (the current experiment) is not active
         // AND the sensors have not yet been unregistered
@@ -475,22 +604,25 @@ public class RecorderControllerImpl implements RecorderController {
             System.out.println("======================================");
 
             // we loop though the mRecorders list to stop sending data to Thingsboard
-            // there always has to the the one display-card ['serviceObserver'] // N/A
+            // there always has to ber the one display-card ['serviceObserver'] // N/A
+
             for (int j = 0; j < mRecorders.size(); j++) {
 
-                mRecorders.get(sensorIdList.get(j)).stopObserving(); //<------ issue
-                //recorder.stopObserving();
 
                 System.out.println("======================================");
                 System.out.println("======================================");
                 System.out.println("        sensor index is: " + j);
                 System.out.println("======================================");
                 System.out.println("======================================");
+
+                mRecorders.get(sensorIdList.get(j)).stopObserving(); //<------ issue?
+                //recorder.stopObserving();
+
             }
 
-            // loop through the active sensors display cards in the list and remove them from the registry
+
+            // loop through the list and remove them from the registry
             for (i = 0; i < sensorIdList.size();) {
-                //mRegistry.countListeners("1");
                 //String sId = sensorIdList.get(i);
                 //String oId = observerIdList.get(i);
                 //mRegistry.remove(sensorId, observerId);
@@ -498,40 +630,25 @@ public class RecorderControllerImpl implements RecorderController {
 
                 System.out.println("======================================");
                 System.out.println("======================================");
-                System.out.println("        sensors: 'something'" );
+                System.out.println("        sensors: " + sensorIdList.get(i) );
                 System.out.println("======================================");
                 System.out.println("======================================");
 
-                //mRegistry.countListeners("1");
                 i++;
             }
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
             // when the last sensor is removed, the index++'s one last time (not size-1)
             if (i == sensorIdList.size()) {
                 sensorsUnregistered = true;
-                //RecordFragment.stopObservingCurrentSensors();
+                RecordFragment.stopObservingCurrentSensors();
 
-                // this above line is to stop the display cards. not the sensors themselves
-
+                // this above line is to stop the display cards. not the sensors themselves < is it????
                 System.out.println("======================================");
                 System.out.println("======================================");
                 System.out.println("        All active sensors unregistered");
                 System.out.println("======================================");
                 System.out.println("======================================");
             }
-
-
-
-            ///////////////////////////////
-            ///////////////////////
-            ///////////////
-            /////
-            ///
-
 
             // If there are no listeners left except for our serviceObserver, remove it.
             if (mRegistry.countListeners(sensorId) == 1) {
@@ -557,7 +674,8 @@ public class RecorderControllerImpl implements RecorderController {
                 System.out.println("======================================");
             }
         }
-}
+    }
+
 
     private void stopObservingServiceObserver(String sensorId) {
         final StatefulRecorder r = mRecorders.get(sensorId);
@@ -570,7 +688,6 @@ public class RecorderControllerImpl implements RecorderController {
                     mRegistry.remove(sensorId, serviceObserverId);
                     mServiceObservers.remove(sensorId);
                     mLatestValues.remove(sensorId);
-                   // mRecorders.get(sensorIdList.get(0)).stopObserving();
                 }
             }
         }
@@ -740,8 +857,8 @@ public class RecorderControllerImpl implements RecorderController {
     @Override
     public Completable stopRecording(final SensorRegistry sensorRegistry) {
         if (!isRecording()
-            || getSelectedExperiment() == null
-            || mRecordingStateChangeInProgress) {
+                || getSelectedExperiment() == null
+                || mRecordingStateChangeInProgress) {
             return Completable.complete();
         }
 
@@ -819,20 +936,20 @@ public class RecorderControllerImpl implements RecorderController {
      */
     @VisibleForTesting
     public Maybe<String> generateSnapshotText(List<String> sensorIds,
-            SensorRegistry sensorRegistry) {
+                                              SensorRegistry sensorRegistry) {
         // TODO: we probably want to do something more structured eventually;
         // this is a placeholder, so we're not doing internationalization, etc.
 
         return generateSnapshotLabelValue(sensorIds, sensorRegistry)
 
-                         // turn the snapshots into strings
-                         .flatMapObservable(this::textsForSnapshotLabelValue)
+                // turn the snapshots into strings
+                .flatMapObservable(this::textsForSnapshotLabelValue)
 
-                         // join them with commas
-                         .reduce((a, b) -> a + ", " + b)
+                // join them with commas
+                .reduce((a, b) -> a + ", " + b)
 
-                         // or return a default if there are none
-                         .defaultIfEmpty("No sensors observed");
+                // or return a default if there are none
+                .defaultIfEmpty("No sensors observed");
     }
 
     @Override
@@ -841,14 +958,14 @@ public class RecorderControllerImpl implements RecorderController {
         // for each sensorId
         return Observable.fromIterable(sensorIds)
 
-                         // get a snapshot from the latest value*
-                         .flatMapMaybe(sensorId -> makeSnapshot(sensorId, sensorRegistry))
+                // get a snapshot from the latest value*
+                .flatMapMaybe(sensorId -> makeSnapshot(sensorId, sensorRegistry))
 
-                         // gather those into a list
-                         .toList()
+                // gather those into a list
+                .toList()
 
-                         // And build them into the appropriate proto value
-                         .map(this::buildSnapshotLabelValue);
+                // And build them into the appropriate proto value
+                .map(this::buildSnapshotLabelValue);
 
         // * The "flat" in flatMapMaybe means that we're taking a stream of Maybes (one for each
         //   sensorId), and "flattening" them into a stream of Strings (that is, we're waiting for
@@ -917,7 +1034,7 @@ public class RecorderControllerImpl implements RecorderController {
 
     @VisibleForTesting
     void trackStopRecording(Context context, Trial completeTrial,
-            List<GoosciSensorLayout.SensorLayout> sensorLayouts, SensorRegistry sensorRegistry) {
+                            List<GoosciSensorLayout.SensorLayout> sensorLayouts, SensorRegistry sensorRegistry) {
         // Record how long this session was.
         WhistlePunkApplication.getUsageTracker(context)
                 .trackEvent(TrackerConstants.CATEGORY_RUNS, TrackerConstants.ACTION_CREATE, null,
@@ -1009,7 +1126,7 @@ public class RecorderControllerImpl implements RecorderController {
     }
 
     private MaybeConsumer<Success> endRecordingConsumer(IRecorderService recorderService,
-            boolean activityInForeground, String trialId) {
+                                                        boolean activityInForeground, String trialId) {
         return new LoggingConsumer<Success>(TAG, "update completed trial") {
             @Override
             public void success(Success value) {

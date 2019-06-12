@@ -30,13 +30,6 @@
         >
         <menu>
             <item
-                android:id="@+id/action_set_sendData_to_db_frequency"
-                android:orderInCategory="100"
-                android:title="@string/set_frequency"
-                android:icon="@drawable/transmit_image"
-                app:showAsAction="never"
-                />
-            <item
                 android:id="@+id/action_include_archived"
                 android:orderInCategory="101"
                 android:title="@string/include_archived_trials"
@@ -71,6 +64,14 @@
                 android:icon="@drawable/menu_delete"
                 app:showAsAction="never"
                 />
+            <item
+                android:id="@+id/action_change_access_token"
+                android:orderInCategory="104"
+                android:title="@string/action_change_access_token"
+                android:icon="@drawable/ic_edit_black_24dp"
+                app:showAsAction="never"
+                />
+
         </menu>
     </item>
 </menu>

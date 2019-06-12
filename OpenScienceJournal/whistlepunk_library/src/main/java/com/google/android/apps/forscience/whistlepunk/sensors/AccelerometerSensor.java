@@ -64,8 +64,6 @@ public class AccelerometerSensor extends ScalarSensor {
     }
 
     // declare new variables.
-    private boolean isActiveSensor = false;
-    private boolean isSendingData = false;
     private DataObject data;
     private float dataValue;
     private Timer timer;
@@ -87,11 +85,12 @@ public class AccelerometerSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                if (!isActiveSensor) {
-                    // retrieve the stored frequency value, as these are 3 sensors in 1, check the ID
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId())){
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), true);
+                    // retrieve the stored frequency value
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
-                    // now active
-                    isActiveSensor = true;
 
                     System.out.println("======================================");
                     System.out.println("                  ");
@@ -122,7 +121,6 @@ public class AccelerometerSensor extends ScalarSensor {
                         @Override
                         public void onSensorChanged(SensorEvent event) {
                             c.addData(clock.getNow(), mAxis.getValue(event));
-
                             // added: collect a copy of the value
                             ID = mAxis.getSensorId();
                             dataValue = mAxis.getValue(event);
@@ -141,7 +139,7 @@ public class AccelerometerSensor extends ScalarSensor {
                     System.out.println("======================================");
                     System.out.println(" ");
                     System.out.println(" ");
-                    System.out.println("        +++ambient light sensor is already active+++");
+                    System.out.println("        +++Acc sensor " + mAxis.getSensorId() + " is already active+++");
                     System.out.println(" ");
                     System.out.println(" ");
                     System.out.println("======================================");
@@ -153,12 +151,21 @@ public class AccelerometerSensor extends ScalarSensor {
             @Override
             public void stopObserving() {
 
-                if (!ExperimentDetailsFragment.getIsActiveStatus()) {
+                boolean active =  ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId());
+                // if experiment is no longer active
+
+                if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(active)) {
+
+                    if(active) {
+                        // change sensor state to NOT ACTIVE
+                        ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), false);
+                    }
+
                     System.out.println("======================================");
                     System.out.println("                  ");
                     System.out.println("======================================");
                     System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println( ExperimentDetailsFragment.getIsActiveStatus());
                     System.out.println("        Stopping Accelerometer sensor " + mAxis.getSensorId());
                     System.out.println(" ");
                     System.out.println(" ");
@@ -168,8 +175,7 @@ public class AccelerometerSensor extends ScalarSensor {
 
                     // stop the timer task as the observing of the sensors is no longer needed
                     timer.cancel();
-                    // no longer active
-                    isActiveSensor = false;
+
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
                 }
@@ -186,6 +192,7 @@ public class AccelerometerSensor extends ScalarSensor {
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }
+
 
             }
         };
@@ -210,7 +217,6 @@ public class AccelerometerSensor extends ScalarSensor {
             }
             // get current data value
             data.setDataValue(dataValue);
-
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
         }

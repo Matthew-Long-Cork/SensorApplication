@@ -46,7 +46,6 @@ import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.DataController;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
-import com.google.android.apps.forscience.whistlepunk.PanesActivity;
 import com.google.android.apps.forscience.whistlepunk.PermissionUtils;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
 import com.google.android.apps.forscience.whistlepunk.R;
@@ -90,9 +89,13 @@ public class UpdateExperimentFragment extends Fragment {
 
     //==============================================================================================
     private SharedPreferences storedData;
-    private int defaultFrequency = 15000;
+    private int defaultFrequency = 5000;
     private String newSensorVariableFrequency;
+    private String newSensorVariableState;
+    private String previousTitle = "";
+    private String newValue;
     //==============================================================================================
+    private static Context context;
 
     public UpdateExperimentFragment() {
 
@@ -120,6 +123,9 @@ public class UpdateExperimentFragment extends Fragment {
                         attachExperimentDetails(experiment);
                     }
                 });
+
+        context = getContext();
+
         getActivity().setTitle(getString(R.string.title_activity_update_experiment));
         setHasOptionsMenu(true);
     }
@@ -177,13 +183,14 @@ public class UpdateExperimentFragment extends Fragment {
                 mPhotoPreview.getResources().getColor(R.color.text_color_light_grey),
                 PorterDuff.Mode.SRC_IN);
 
-
         mExperiment.subscribe(experiment -> {
             title.setText(experiment.getTitle());
+            previousTitle = experiment.getTitle();
 
             mSaved.happens().subscribe(o -> {
-                String newValue = title.getText().toString().trim();
-                if (!newValue.equals(experiment.getTitle())) {
+                newValue = title.getText().toString().trim();
+                if (!newValue.equals(previousTitle)) {
+
                     //==============================================================================
                     // here we set the title so we pass that through to ExperimentDetailsFragment
                     // to keep track of the title future on
@@ -193,7 +200,7 @@ public class UpdateExperimentFragment extends Fragment {
                     //==============================================================================
                     // now we need to create stored data variables for each new set of sensors as
                     // the experiment is created
-                    //==============================================================================
+                    //===========================================================================
 
                     storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
                     // interface used for modifying values in a sharedPreference object
@@ -208,44 +215,32 @@ public class UpdateExperimentFragment extends Fragment {
                     newList.add("AccZ");
                     newList.add("CompassSensor");
                     newList.add("MagneticRotationSensor");
-                    newList.add("RemoteTemperature");
-                    newList.add("RemoteHumidity");
+                    newList.add("RemoteTemperature");               //<-- class not modified for this version
+                    newList.add("RemoteHumidity");                  //<-- class not modified for this version
 
-                   // sent this to the left
-
-                    // get the name of these new stored variables
+                    // create all the names of these new stored variables for this experiment
                     for(int i =0; i< newList.size(); i++) {
-                    //for (int i = 0; i < 1; i++) {
 
+                        // starting with the sensors
                         // name  of the experiment + the current sensor + '_frequency'
                         // this is the new stored data variable:
                         newSensorVariableFrequency = newValue + "_" + newList.get(i) + "_frequency";
                         editor.putInt(newSensorVariableFrequency, defaultFrequency);
 
-
-
-
-                        System.out.println("======================================");
-                        System.out.println("======================================");
-                        System.out.println("1");
-                        System.out.println("2              ");
-                        System.out.println("         newSensorVariableFrequency: " + newSensorVariableFrequency);
-                        System.out.println("         defaultFrequency: " + defaultFrequency);
-                        System.out.println("4");
-                        System.out.println("5");
-                        System.out.println("======================================");
-                        System.out.println("======================================");
-
-
-
-                        // this is the new stored data variable 'type':
-                        //newSensorVariableFrequencyUnits = newValue + "_" + newList.get(i) + "_frequencyUnits";
-                       // editor.putInt(newSensorVariableFrequencyUnits, 1000);
-
+                        // then the sensor state
+                        // name  of the experiment + the current sensor + '_state'
+                        // this is the new stored data variable:
+                        newSensorVariableState = newValue + "_" + newList.get(i) + "_state";
+                        editor.putBoolean(newSensorVariableState, false);
                     }
-                    //finally, when you are done adding the values, call the commit() method to commit all
-                    editor.commit();
 
+                    // put in a default websiteAccessToken
+                    editor.putString(newValue + "_experimentAccessToken", null);
+                    // keep the access token up to date
+                    updateAccessToken();
+
+                    // when you are done adding the values, call the commit() method to commit all
+                    editor.commit();
                     //==============================================================================
                     // finally save the experiment
                     saveExperiment();
@@ -291,6 +286,7 @@ public class UpdateExperimentFragment extends Fragment {
                 }
             });
         });
+
         title.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_DONE) {
                 title.clearFocus();
@@ -409,4 +405,14 @@ public class UpdateExperimentFragment extends Fragment {
                     }
                 });
     }
+
+    private void updateAccessToken(){
+
+            Intent SetupIntent = new Intent(getContext(), AccessTokenSetup.class);
+            SetupIntent.putExtra( "CURRENT_TITLE", newValue);
+            SetupIntent.putExtra( "OLD_TITLE", previousTitle);
+            startActivity(SetupIntent);
+
+    }
+
 }

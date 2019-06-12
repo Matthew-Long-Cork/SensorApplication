@@ -100,6 +100,12 @@ public class StatefulRecorder {
     // shut down.  Unless we decide to change that (and retrofit all current sensors to that
     // new design), we should only _actually_ call stopObserving once we're no longer
     // observing OR recording.
+    //==============================================================================================
+    // THIS IS NOW CHANGED. Once a sensor is active it was stay active until the experiment is
+    // exited. These functions are still called but each sensor has a check in them to see if
+    // experiment is active - if so, ignore the call to stop observing.
+    //==============================================================================================
+
     private void maybeStopObserving() {
         if (!isStillRunning()) {
             mRecorder.stopObserving();
