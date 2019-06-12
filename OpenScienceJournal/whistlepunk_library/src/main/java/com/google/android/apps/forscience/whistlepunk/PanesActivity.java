@@ -616,10 +616,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                         System.out.println("======================================");
                     }
 
-                    //
-                    //
-                    //
-                    //
                     if(mSelectedTabIndex != 1){
                         RecorderControllerImpl.setSensorsOnDisplay(false);
                         System.out.println("\n======================================");
@@ -634,18 +630,11 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                         System.out.println("                  2");
                         System.out.println("======================================");
                     }
-                    //
-                    //
-                    //
-                    //
-
                     // continue to the sensors tab
                     pager.setCurrentItem(mSelectedTabIndex, true);
                     openPaneIfNeeded();
-
                 }
             }
-
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {

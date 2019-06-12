@@ -57,7 +57,6 @@ import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.SensorTrigger;
 import com.google.android.apps.forscience.whistlepunk.metadata.TriggerListActivity;
-import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.scalarchart.ScalarDisplayOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.BlankReadableSensorOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.DataViewOptions;
@@ -719,6 +718,8 @@ public class SensorCardPresenter {
                     return disableTriggers();
                 }
                 else if (itemId == R.id.action_set_sendData_to_db_frequency) {
+                    // changing screens
+                    RecorderControllerImpl.setSensorsOnDisplay(false);
                     return getUserInputForFrequency();
                 }
                 return false;
@@ -1231,7 +1232,6 @@ public class SensorCardPresenter {
         }
     }
 
-
     public void stopObserving() {
 
         if (mSensorPresenter != null) {
@@ -1245,6 +1245,11 @@ public class SensorCardPresenter {
             // Only clear the data if the disconnect didn't come from an error.
             clearSensorStreamData();
         }
+    }
+
+    public static void onFrequencyChange(){
+       // mRecorderController.stopObserving(mSensorId, mObserverId);
+
     }
 
 

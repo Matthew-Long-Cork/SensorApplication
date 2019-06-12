@@ -56,7 +56,7 @@ public class AmbientLightSensor extends ScalarSensor {
     private DataObject data;
     private float dataValue;
     private Timer timer;
-    private int frequencyTime;
+    private int frequencyTime, currentFrequencyTime;
     private boolean firstTime = true;
 
     public AmbientLightSensor() {
@@ -121,24 +121,32 @@ public class AmbientLightSensor extends ScalarSensor {
                             SensorManager.SENSOR_DELAY_UI);
                     mDataRefresher.setStreamConsumer(c);
                 }
-                else{
-                    //this may have been called because the frequency of this timer has changed
-                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                    else{
 
-                    // if not just ignore
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        +++ambient light sensor is already active+++");
-                    System.out.println("     THE TIMER IS SET TO : "+ frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
-                }
+                        // this may have been called because the frequency of this timer has changed
+                        //check current frequency
+                        currentFrequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                        // compare and change if needed
+                       /* if(!(frequencyTime == currentFrequencyTime)){
+                            // stop the timer task as the observing of the sensor is no longer needed
+                            timer.cancel();
+
+
+                        }*/
+                        // if not just ignore
+                        System.out.println("======================================");
+                        System.out.println("                  ");
+                        System.out.println("======================================");
+                        System.out.println(" ");
+                        System.out.println(" ");
+                        System.out.println("        +++ambient light sensor is already active+++");
+                        System.out.println("     THE TIMER IS SET TO : "+ frequencyTime);
+                        System.out.println(" ");
+                        System.out.println(" ");
+                        System.out.println("======================================");
+                        System.out.println("                  ");
+                        System.out.println("======================================");
+                    }
             }
 
             @Override

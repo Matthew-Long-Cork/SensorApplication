@@ -138,6 +138,7 @@ public class RecorderControllerImpl implements RecorderController {
     private int i;
     private static boolean sensorsOnDisplay = false;
     private static boolean currentSensorChecked = true;
+    private static String foundObserverId;
     // ==================================================
 
     public static void setSensorsOnDisplay(boolean state){
@@ -441,6 +442,12 @@ public class RecorderControllerImpl implements RecorderController {
 
     public static void stopObservingSelectedSensor(String sensorId, String observerId) {
 
+        // if this function is called from FrequencyPopup.java, observerId is current unknown
+        if(observerId == "unknown") {
+            foundObserverId = mServiceObservers.get(sensorId);
+            observerId = foundObserverId;
+        }
+
         // the sensor was removed from the display list so set to inactive(if active..)
         ExperimentDetailsFragment.changeTheSensorState(sensorId, false);
         currentSensorChecked = false;
@@ -452,7 +459,6 @@ public class RecorderControllerImpl implements RecorderController {
         System.out.println("      " +sensorId+ " sensor state is now changed to false");
         System.out.println(" ");
         System.out.println("======================================");
-
 
         if(mRecorders.containsKey(sensorId)){
 
@@ -472,8 +478,15 @@ public class RecorderControllerImpl implements RecorderController {
             observerIdList.remove(observerId);
             mRegistry.remove(sensorId, observerId);
         }
-    }
 
+        System.out.println("======================================");
+        System.out.println("                  ");
+        System.out.println(" ");
+        System.out.println("      " +sensorId+ "  was removed!!!!!!!!!!");
+        System.out.println(" ");
+        System.out.println("======================================");
+
+    }
 
     @Override
     public void stopObserving(String sensorId, String observerId) {
@@ -482,12 +495,14 @@ public class RecorderControllerImpl implements RecorderController {
         // we modified this code to send data from multiple sensors to Thingsboard.com, and to stop
         // all of them at the end when the experiment is closed
         //=========================================================================================
+        boolean swapSensor = false;
+        boolean sensorInList = true;
 
         System.out.println("======================================");
         System.out.println("                  ");
         System.out.println(" ");
         System.out.println(" ");
-        System.out.println("     record controlloerimpl.java  in stopObserving()");
+        System.out.println("     recordControllerImpl.java  in stopObserving()");
         System.out.println(" ");
         System.out.println("======================================");
 
@@ -503,10 +518,6 @@ public class RecorderControllerImpl implements RecorderController {
             System.out.println("                  ");
             System.out.println("======================================");
         }
-
-        boolean swapSensor = false;
-        boolean sensorRemoved = false;
-        boolean sensorInList = true;
 
         if(!mRecorders.containsKey(sensorId)){
            sensorInList = false;
@@ -538,7 +549,6 @@ public class RecorderControllerImpl implements RecorderController {
 
         }
         if(!currentSensorChecked){
-            //sensorRemoved = true;
 
             System.out.println("======================================");
             System.out.println("                  ");
@@ -549,7 +559,6 @@ public class RecorderControllerImpl implements RecorderController {
             System.out.println("======================================");
             System.out.println("                  ");
             System.out.println("======================================");
-
         }
 
         if(swapSensor){
@@ -608,24 +617,19 @@ public class RecorderControllerImpl implements RecorderController {
 
             for (int j = 0; j < mRecorders.size(); j++) {
 
-
                 System.out.println("======================================");
                 System.out.println("======================================");
                 System.out.println("        sensor index is: " + j);
                 System.out.println("======================================");
                 System.out.println("======================================");
 
-                mRecorders.get(sensorIdList.get(j)).stopObserving(); //<------ issue?
-                //recorder.stopObserving();
+                mRecorders.get(sensorIdList.get(j)).stopObserving();
 
             }
 
-
             // loop through the list and remove them from the registry
-            for (i = 0; i < sensorIdList.size();) {
-                //String sId = sensorIdList.get(i);
-                //String oId = observerIdList.get(i);
-                //mRegistry.remove(sensorId, observerId);
+            for (i = 0; i < sensorIdList.size(); i ++) {
+
                 mRegistry.remove(sensorIdList.get(i), observerIdList.get(i));
 
                 System.out.println("======================================");
@@ -634,7 +638,6 @@ public class RecorderControllerImpl implements RecorderController {
                 System.out.println("======================================");
                 System.out.println("======================================");
 
-                i++;
             }
 
             // when the last sensor is removed, the index++'s one last time (not size-1)
