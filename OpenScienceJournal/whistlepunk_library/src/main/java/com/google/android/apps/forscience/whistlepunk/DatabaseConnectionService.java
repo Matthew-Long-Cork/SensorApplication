@@ -230,7 +230,7 @@ public class DatabaseConnectionService {
     }
 
     public static  void sendData(DataObject dataObject){
-        sendDataMqtt(dataObject);
+        //sendDataMqtt(dataObject);
         sendDataHttp(dataObject);
     }
 
@@ -249,7 +249,7 @@ public class DatabaseConnectionService {
 
     public static void mqttInit(){
         myWriteToken = "KNRP2S4471i6BEzUAHan";
-        mqttAndroidClient = new MqttAndroidClient( null, mqttURL, "AppClient");
+        mqttAndroidClient = new MqttAndroidClient( ExperimentDetailsFragment.context, mqttURL, "AppClient");
 
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);

@@ -130,7 +130,7 @@ public class ExperimentDetailsFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver;
     private String mActiveTrialId;
     private TextView mEmptyView;
-    private static Context context;
+    public static Context context;
 
     //==============================================================================================
 

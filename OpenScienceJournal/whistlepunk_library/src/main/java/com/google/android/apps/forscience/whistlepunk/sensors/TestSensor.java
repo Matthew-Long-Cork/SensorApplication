@@ -7,6 +7,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import com.google.android.apps.forscience.whistlepunk.Clock;
+import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
+import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorEnvironment;
@@ -15,7 +17,9 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class TestSensor extends ScalarSensor {
-    public static final String ID = "TestSensor";
+    private static final String ID = "TestSensor";
+    private BleObserver observer;
+
 
     public TestSensor(){super(ID); }
 
@@ -26,22 +30,22 @@ public class TestSensor extends ScalarSensor {
             @Override
             public void startObserving() {
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                /*SensorManager sensorManager = getSensorManager(context);
-                Sensor sensor = sensorManager.getDefaultSensor(
-                        Sensor.);*/
-                /*if (mSensorEventListener != null) {
-                    getSensorManager(context).unregisterListener(mSensorEventListener);
-                }*/
-
                 final Clock clock = environment.getDefaultClock();
 
-                c.addData(clock.getNow(), 1f);
+                observer = new BleObserver() {
+                    @Override
+                    public void onValueChange(float value) {
+                        c.addData(clock.getNow(), value);
+                    }
+                };
 
+                BleObservable.registerObserver(observer);
             }
 
             @Override
             public void stopObserving() {
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
+                BleObservable.unregisterObserver(observer);
             }
         };
     }

@@ -120,6 +120,7 @@ public class BleSensorManager {
                 if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
                     String result = sensor.parse(characteristic.getValue());
                     DatabaseConnectionService.sendData(result);
+                    //BleObservable.broadcast(result);
                     dummy_timer = System.currentTimeMillis();
                 }
             }

@@ -157,7 +157,14 @@ public enum Sensor{
         return (upperByte << 16) + (mediumByte << 8) + lowerByte;
     }
 
+    public String parseJson(byte[] value) {
+        throw new UnsupportedOperationException("Error: Override this method.");
+    }
+
     public String parse(byte[] value) {
+        throw new UnsupportedOperationException("Error: Override this method.");
+    }
+    public String parseFloat(byte[] value){
         throw new UnsupportedOperationException("Error: Override this method.");
     }
 
