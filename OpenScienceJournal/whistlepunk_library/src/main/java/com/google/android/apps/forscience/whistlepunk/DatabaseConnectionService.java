@@ -1,6 +1,13 @@
 package com.google.android.apps.forscience.whistlepunk;
 
+import android.util.Log;
+
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import java.util.Arrays;
 import okhttp3.ConnectionSpec;
@@ -16,6 +23,10 @@ public class DatabaseConnectionService {
     private static String myWriteToken ="";
     private static String experimentName;
 
+    private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
+    private static final String mqttTag = "v1/devices/me/telemetry";
+    private static MqttAndroidClient mqttAndroidClient;
+
     public static void setMyWebsiteAddress(String website){
         myWebsite = website;
     }
@@ -24,7 +35,7 @@ public class DatabaseConnectionService {
         myWriteToken = token;
     }
 
-    public static void sendData(DataObject dataObject){
+    public static void sendDataHttp(DataObject dataObject){
 
         String sensorType;
         Float sensorValue;
@@ -216,5 +227,53 @@ public class DatabaseConnectionService {
             System.out.println("======================================");
             System.out.println("======================================");
         }
+    }
+
+    public static  void sendData(DataObject dataObject){
+        sendDataMqtt(dataObject);
+        sendDataHttp(dataObject);
+    }
+
+    public static void sendDataMqtt(DataObject dataObject){
+        if(mqttAndroidClient.isConnected()) {
+
+            Log.e("MQTT Connection: ", "SUcksAss");
+            String jsonData = "{" + dataObject.Id + ":" + dataObject.dataValue + "}";
+            try {
+                mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } ;
+        }
+    }
+
+    public static void mqttInit(){
+        myWriteToken = "KNRP2S4471i6BEzUAHan";
+        mqttAndroidClient = new MqttAndroidClient( null, mqttURL, "AppClient");
+
+        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+        mqttConnectOptions.setCleanSession(true);
+        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setUserName(myWriteToken);
+
+        try {
+            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.e("MQTT Connection", "Success");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.e("MQTT Connection", "Failed");
+                }
+            });
+        }catch (Exception e){e.printStackTrace();}
+    }
+
+    public static void mqttDisconnect(){
+        try {
+            mqttAndroidClient.disconnect();
+        }catch (Exception e){e.printStackTrace();}
     }
 }
