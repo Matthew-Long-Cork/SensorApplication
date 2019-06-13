@@ -4,13 +4,14 @@ import com.google.android.apps.forscience.whistlepunk.DataObject;
 
 import java.util.UUID;
 import static com.google.android.apps.forscience.whistlepunk.blew.BleSensorService.*;
+import static java.lang.Math.floorDiv;
 import static java.lang.Math.pow;
 
 
 public enum Sensor{
     LUX(LUX_SERV, LUX_WRITE, LUX_READ){
         @Override
-        public String parse(byte[] value){
+        public String parseString(byte[] value){
             Integer sfloat = shortUnsignedAtOffset(value, 0);
             int mantissa = sfloat & 0x0FFF;
             int exponent = (sfloat >> 12) & 0xFF;
@@ -21,15 +22,28 @@ public enum Sensor{
             return "SensTag/Luxometer : " + output;
         }
     },
-    TEMP(TEMP_SERV, TEMP_WRITE, TEMP_READ){
+    TEMP_AMB(TEMP_SERV, TEMP_WRITE, TEMP_READ){
         public String sensorID;
         @Override
-        public String parse(byte[] values){
-            double ambienceTemperature = shortSignedAtOffset(values, 2) / 128.0;
-            double objectTemperature = shortSignedAtOffset(values, 0) / 128.0;
+        public String parseJson(byte[] values){
+            return "{AmbienceTemperature: " + parseFloat(values) + "}";
+        }
 
-            //return  new DataObject()
-            return "{AmbienceTemperature: " + ambienceTemperature + ", ObjectTemperature: " + objectTemperature + "}";
+        @Override
+        public float parseFloat(byte[] value) {
+            return (float)(shortSignedAtOffset(value, 2) / 128.0);
+        }
+    },
+    TEMP_OBJ(TEMP_SERV, TEMP_WRITE, TEMP_READ){
+        public String sensorID;
+        @Override
+        public String parseJson(byte[] values){
+           return "{ObjectTemperature: " + parseFloat(values) + "}";
+        }
+
+        @Override
+        public float parseFloat(byte[] value) {
+            return (float)(shortSignedAtOffset(value, 0) / 128.0);
         }
     },
     /*ACC(ACC_SERV, ACC_WRITE, ACC_READ){
@@ -74,7 +88,7 @@ public enum Sensor{
     },*/
     HUM(HUM_SERV, HUM_WRITE, HUM_READ){
         @Override
-        public String parse(byte[] value) {
+        public String parseString(byte[] value) {
             int hum = shortUnsignedAtOffset(value, 2);
             hum -= (hum % 4);
             float output = (-6f) + 125f * (hum / 65535f);
@@ -84,11 +98,16 @@ public enum Sensor{
     },
     BAR(BAR_SERV, BAR_WRITE, BAR_READ){
         @Override
-        public String parse(byte[] value) {
+        public String parseString(byte[] value) {
+            return  "Barometer: " + parseFloat(value);
+        }
+
+        @Override
+        public float parseFloat(byte[] value){
             if (value.length > 4) {
                 int val = twentyFourBitUnsignedAtOffset(value, 2);
                 double output = (double) val / 100.0;
-                return "Barometer: " + output;
+                return (float)output;
             }
             else {
                 int mantissa;
@@ -102,7 +121,7 @@ public enum Sensor{
                 double magnitude = pow(2.0f, exponent);
                 output = (mantissa * magnitude) / 100.0f;
 
-                return "Barometer: " + output;
+                return (float) output;
             }
         }
     };
@@ -161,10 +180,15 @@ public enum Sensor{
         throw new UnsupportedOperationException("Error: Override this method.");
     }
 
-    public String parse(byte[] value) {
+    public String parseString(byte[] value) {
         throw new UnsupportedOperationException("Error: Override this method.");
     }
-    public String parseFloat(byte[] value){
+
+    public float parseFloat(byte[] value){
+        throw new UnsupportedOperationException("Error: Override this method.");
+    }
+
+    public DataObject parseDataObject(byte[] value){
         throw new UnsupportedOperationException("Error: Override this method.");
     }
 

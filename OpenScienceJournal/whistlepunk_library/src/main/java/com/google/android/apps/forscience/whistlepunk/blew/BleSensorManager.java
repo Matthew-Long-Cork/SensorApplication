@@ -1,12 +1,18 @@
 package com.google.android.apps.forscience.whistlepunk.blew;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
@@ -36,7 +42,6 @@ public class BleSensorManager {
         checkPermission();
         checkBluetooth();
 
-        //bluetoothDeviceList = new ArrayList<BluetoothDevice>();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -67,7 +72,7 @@ public class BleSensorManager {
                 Log.e("", "");
             }
         } else {
-            getTelemetry(Sensor.TEMP, bluetoothDeviced);
+            getTelemetry(Sensor.TEMP_AMB, bluetoothDeviced);
         }
     }
 
@@ -105,6 +110,7 @@ public class BleSensorManager {
                     String result = sensor.parse(characteristic.getValue());
                     DatabaseConnectionService.sendData(result);
                     dummy_timer = System.currentTimeMillis();
+                    monitor(characteristic);
                 }
             }
 
@@ -112,6 +118,7 @@ public class BleSensorManager {
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicWrite(gatt, characteristic, status);
                 bluetoothGatt.readCharacteristic(bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getRead()));
+
             }
 
             @Override
@@ -120,7 +127,8 @@ public class BleSensorManager {
                 if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
                     String result = sensor.parse(characteristic.getValue());
                     DatabaseConnectionService.sendData(result);
-                    //BleObservable.broadcast(result);
+
+                    BleObservable.broadcast(sensor.parseFloat(characteristic.getValue()));
                     dummy_timer = System.currentTimeMillis();
                 }
             }
@@ -150,7 +158,7 @@ public class BleSensorManager {
                                 bluetoothDeviced = bluetoothDevice;
                                 Log.e("Found: ", "fOUND");
                                 bluetoothAdapter.stopLeScan(this);
-                                getTelemetry(Sensor.TEMP, bluetoothDevice);
+                                getTelemetry(Sensor.TEMP_AMB, bluetoothDevice);
 
                             }
                         }
@@ -162,12 +170,27 @@ public class BleSensorManager {
         bluetoothGatt.disconnect();
     }
 
+    public void monitor(Sensor sensor){
+        BluetoothGattService service = bluetoothGatt.getService(sensor.getServ());
+        BluetoothGattCharacteristic charRead = service.getCharacteristic(sensor.getRead());
+        bluetoothGatt.setCharacteristicNotification(charRead, true);
+        BluetoothGattDescriptor descriptor = charRead.getDescriptors().get(0);
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        bluetoothGatt.writeDescriptor(descriptor);
+    }
 
+    public void monitor(BluetoothGattCharacteristic characteristic){
+        bluetoothGatt.setCharacteristicNotification(characteristic, true);
+        BluetoothGattDescriptor descriptor = characteristic.getDescriptors().get(0);
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        bluetoothGatt.writeDescriptor(descriptor);
+    }
 
     private void checkPermission(){
         //Permissions, do using Permission manager
         //Permissions
-/*        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED)
+
+        /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, 2);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);

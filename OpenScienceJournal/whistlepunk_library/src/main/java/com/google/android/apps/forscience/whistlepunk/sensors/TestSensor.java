@@ -17,11 +17,16 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class TestSensor extends ScalarSensor {
-    private static final String ID = "TestSensor";
+    public static final String ID = "TestSensor";
+    private static boolean available = true;
     private BleObserver observer;
 
 
     public TestSensor(){super(ID); }
+
+    public static boolean isAvailable(){
+        return available;
+    }
 
     @Override
     protected SensorRecorder makeScalarControl(StreamConsumer c, SensorEnvironment environment, Context context, SensorStatusListener listener) {
