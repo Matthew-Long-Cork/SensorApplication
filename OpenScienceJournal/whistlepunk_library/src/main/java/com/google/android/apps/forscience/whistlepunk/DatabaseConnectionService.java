@@ -37,6 +37,7 @@ public class DatabaseConnectionService {
         // get the experiment name
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
 
+
         if(sensorType == "AmbientLightSensor")       // light
             dataField = experimentName + "_" + "AmbientLight";
         if(sensorType == "DecibelSource")            // sound
@@ -54,17 +55,18 @@ public class DatabaseConnectionService {
         if(sensorType == "MagneticRotationSensor")   // magnetic levels
             dataField = experimentName + "_" + "MagneticLevel";
 
+
         //==========================================================================
         // this is for a ThingsBoard.com connection
         // =========================================================================
 
         //data to send
-        data = "{" + dataField + ":" + sensorValue + "}";
+        data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
 
         // for thingsBoard:
         //==========================================================================================
-        //myWriteToken = "temp";
-        //myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
+        myWriteToken = "temp";
+        myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
         //==========================================================================================
         myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
@@ -122,6 +124,88 @@ public class DatabaseConnectionService {
             System.out.println(" ");
             System.out.println(" ");
             System.out.println("      Error: " + sensorType);
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("        " + e);
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("======================================");
+            System.out.println("======================================");
+        }
+    }
+
+    public static void sendData(String json){
+        String sensorType;
+        Float sensorValue;
+        String dataField = null;
+        String data;
+        String myUrl;
+
+        data = json;
+
+        // for thingsBoard:
+        //==========================================================================================
+        myWriteToken = "temp";
+        myWebsite = "http://thingsboard.tec-gateway.com";          //<-- for testing
+        //==========================================================================================
+        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
+
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("    trying to sent: ");
+        System.out.println("    website address: " + myWebsite);
+        System.out.println("    website token: " + myWriteToken);
+        System.out.println("    data : " + data);
+        System.out.println(" ");
+        System.out.println(" ");
+        System.out.println("======================================");
+        System.out.println(" ");
+        System.out.println("======================================");
+
+        try{
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+                    .build();
+
+            RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
+            Request request = new Request.Builder()
+                    .url(myUrl)
+                    .post(body)
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println( response.body().string());
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("    sent: ");
+                System.out.println("    website address: " + myWebsite);
+                System.out.println("    website token: " + myWriteToken);
+                System.out.println("    data : " + data);
+                System.out.println(" ");
+                System.out.println(" ");
+                System.out.println("======================================");
+                System.out.println(" ");
+                System.out.println("======================================");
+            }
+        }
+        catch (Exception e) {
+
+            System.out.println("\n====================================");
+            System.out.println("                  ");
+            System.out.println("======================================");
+            System.out.println(" ");
+            System.out.println(" ");
+            System.out.println("      Error: " );
             System.out.println(" ");
             System.out.println(" ");
             System.out.println(" ");
