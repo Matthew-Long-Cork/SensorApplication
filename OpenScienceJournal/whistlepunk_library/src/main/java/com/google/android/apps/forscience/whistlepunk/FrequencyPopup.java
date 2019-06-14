@@ -138,26 +138,16 @@ public class FrequencyPopup extends Activity {
                 frequencyPicked = numberPicked*milliSeconds;
                 // put into the stored data
                 editor.putInt(experimentName_sensor_frequency, frequencyPicked );
-                //finally, call the commit() method.
+                // call the commit() method.
                 editor.commit();
-//                Toast.makeText(this, mySensorDisplayName + " Sensor will send data every " + frequencyPicked + " milliseconds to " + databaseName, Toast.LENGTH_LONG).show();
-
-                // call the sensor here to collect the new frequency ... but how ???
-                doThings();
-
-                if(mySensorDisplayName == "Light"){
-                    Toast.makeText(this, "match !!!", Toast.LENGTH_LONG).show();
-                }
-
-                //then finish
+                // stop observing the sensor
+                RecorderControllerImpl.stopObservingSelectedSensor(currentSensorName, "observerIdUnknown");
+                // then finish
                 finish();
             }
         });
     }// end of onCreate()
 
-    private void doThings(){
-        // change the sensor from here///
-    }
     private void setupSensorDisplayName(){
 
         // get the intent and get the string passed in

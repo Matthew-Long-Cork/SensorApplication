@@ -36,6 +36,7 @@ public class MultiTouchDrawerLayout extends DrawerLayout {
         super(context, attrs);
     }
 
+
     public MultiTouchDrawerLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }

@@ -58,7 +58,7 @@
     <item
         android:id="@+id/action_BT"
         android:orderInCategory="105"
-        android:title="test"
+        android:title="test- connect sensorTag"
         android:icon="@drawable/transmit_image"
         app:showAsAction="never"/>
 </menu>

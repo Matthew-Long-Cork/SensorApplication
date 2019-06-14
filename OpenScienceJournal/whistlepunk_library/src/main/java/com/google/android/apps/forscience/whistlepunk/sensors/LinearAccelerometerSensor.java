@@ -70,16 +70,10 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
                 System.out.println("        Starting linear movement sensor ");
                 System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                System.out.println(" ");
-                System.out.println(" ");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
 
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
@@ -110,7 +104,6 @@ public class LinearAccelerometerSensor extends ScalarSensor {
 
                         // convert doubleValue to float
                         dataValue = (float)doubleValue;
-
                     }
 
                     @Override
@@ -120,19 +113,12 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                 };
                 sensorManager.registerListener(mSensorEventListener, sensor,
                         SensorManager.SENSOR_DELAY_UI);
-
             }
             else{
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        +++linear sensor is already active+++");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        linear sensor is ALREADY ACTIVE");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
         }
@@ -148,23 +134,15 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                         // change sensor state to NOT ACTIVE
                         ExperimentDetailsFragment.changeTheSensorState(ID, false);
                     }
-
                     // no longer active
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Stopping linear movement sensor");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        STOPPING linear movement sensor");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     // added: stop the timer task as the observing of the sensors is no longer needed
                     timer.cancel();
-
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
@@ -172,16 +150,11 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                 else{
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("         sensor: "+ ID);
-                    System.out.println("         Experiment is still active. not stopping");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }
-
             }
         };
     }
@@ -207,7 +180,6 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                     firstTime = false;
                 } catch (InterruptedException ex) {}
             }
-
             // send the data to the DatabaseConnectionService
             DatabaseConnectionService.sendData(data);
         }

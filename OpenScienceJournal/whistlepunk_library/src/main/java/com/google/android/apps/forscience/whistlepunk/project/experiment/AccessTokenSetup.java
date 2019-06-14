@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.R;
 
 public class AccessTokenSetup extends AppCompatActivity  {
@@ -117,6 +118,7 @@ public class AccessTokenSetup extends AppCompatActivity  {
 
                 //finally, when you are done adding the values, call the commit() method.
                 editor.commit();
+
                 // returns RESULT_OK
                 Intent resultIntent = new Intent();
                 setResult(RESULT_OK, resultIntent);

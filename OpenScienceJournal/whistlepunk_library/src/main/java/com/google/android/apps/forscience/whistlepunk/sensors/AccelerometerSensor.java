@@ -93,16 +93,10 @@ public class AccelerometerSensor extends ScalarSensor {
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
 
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Starting Accelerometer sensor " + mAxis.getSensorId());
+                    System.out.println("        STARTING Accelerometer sensor " + mAxis.getSensorId());
                     System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
@@ -135,15 +129,9 @@ public class AccelerometerSensor extends ScalarSensor {
                             SensorManager.SENSOR_DELAY_UI);
                 } else {
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        +++Acc sensor " + mAxis.getSensorId() + " is already active+++");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        Acc sensor " + mAxis.getSensorId() + " is ALREADY ACTIVE");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
                 }
             }
@@ -153,7 +141,6 @@ public class AccelerometerSensor extends ScalarSensor {
 
                 boolean active =  ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId());
                 // if experiment is no longer active
-
                 if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(active)) {
 
                     if(active) {
@@ -162,15 +149,9 @@ public class AccelerometerSensor extends ScalarSensor {
                     }
 
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println( ExperimentDetailsFragment.getIsActiveStatus());
-                    System.out.println("        Stopping Accelerometer sensor " + mAxis.getSensorId());
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        STOPPING Accelerometer sensor " + mAxis.getSensorId());
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     // stop the timer task as the observing of the sensors is no longer needed
@@ -179,21 +160,14 @@ public class AccelerometerSensor extends ScalarSensor {
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
                 }
-
                 else{
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("         sensor: "+ mAxis.getSensorId());
-                    System.out.println("         Experiment is still active. not stopping");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }
-
-
             }
         };
     }

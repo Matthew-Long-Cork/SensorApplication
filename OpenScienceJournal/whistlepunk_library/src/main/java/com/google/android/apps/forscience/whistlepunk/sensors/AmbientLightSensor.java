@@ -72,21 +72,17 @@ public class AmbientLightSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                    // if the sensor is not yet active
-                    if(!ExperimentDetailsFragment.getTheSensorState(ID)){
-                        // now active - so change its state to ACTIVE
-                        ExperimentDetailsFragment.changeTheSensorState(ID, true);
-                        // retrieve the stored frequency value
-                        frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(ID)){
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(ID, true);
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Starting the light sensor");
+                    System.out.println("        STARTING the light sensor");
                     System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("======================================");
                     System.out.println("======================================");
 
@@ -127,16 +123,9 @@ public class AmbientLightSensor extends ScalarSensor {
 
                     // if not just ignore
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        +++ambient light sensor is already active+++");
-                    System.out.println("     THE TIMER IS SET TO : "+ frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("    ambient light sensor is ALREADY ACTIVE");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
                 }
             }
@@ -147,21 +136,6 @@ public class AmbientLightSensor extends ScalarSensor {
 
                 boolean sensorActive =  ExperimentDetailsFragment.getTheSensorState(ID);
                 // if experiment is no longer active
-
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        sensor active is: " + sensorActive);
-                System.out.println("        experiment active is: " + ExperimentDetailsFragment.getIsActiveStatus());
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-
-
                 if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(sensorActive)) {
 
                     if(sensorActive) {
@@ -170,15 +144,9 @@ public class AmbientLightSensor extends ScalarSensor {
                     }
 
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Stopping ambient light sensor");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        STOPPING ambient light sensor");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     // stop the timer task as the observing of the sensor is no longer needed
@@ -194,12 +162,8 @@ public class AmbientLightSensor extends ScalarSensor {
                 else{
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("         sensor: "+ ID);
-                    System.out.println("         Experiment is still active. data still sending");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }

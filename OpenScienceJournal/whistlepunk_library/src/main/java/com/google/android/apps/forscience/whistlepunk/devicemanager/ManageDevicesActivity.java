@@ -92,15 +92,9 @@ public class ManageDevicesActivity extends AppCompatActivity implements
                 TrackerConstants.SCREEN_DEVICE_MANAGER);
 
         System.out.println("\n======================================");
-        System.out.println("                  2");
         System.out.println("======================================");
-        System.out.println("1");
-        System.out.println("2");
         System.out.println("     ManageDevicesActivity.java - onStart() ");
-        System.out.println("4");
-        System.out.println("5");
         System.out.println("======================================");
-        System.out.println("                  2");
         System.out.println("======================================");
     }
 

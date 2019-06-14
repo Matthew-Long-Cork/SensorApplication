@@ -149,7 +149,7 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
             return false;
         }
 
-
+        /*
         //
         // This is the BLE
         mDeviceDiscoverer.startScanning(new DeviceDiscoverer.Callback() {
@@ -163,6 +163,7 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
                 // TODO: handle errors
             }
         });
+        */
         return true;
     }
 
@@ -191,12 +192,6 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
     private void onDeviceRecordFound(DeviceDiscoverer.DeviceRecord record,
             ScanListener scanListener) {
         WhistlepunkBleDevice device = record.device;
-
-        //
-        //                      ????
-        //
-        //
-
         // sensorScanCallbacks will handle duplicates
         final BleSensorSpec spec = new BleSensorSpec( device.getAddress(), device.getName());
 

@@ -179,7 +179,7 @@ public class ExperimentDetailsFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // this is a ref for getting the context  for storedData
+        // this is a ref for getting the context for storedData
         ExperimentDetailsFragment.context = getActivity();
 
         mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
@@ -201,14 +201,11 @@ public class ExperimentDetailsFragment extends Fragment
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println(" ");
         System.out.println("         experimentDetailsFragment()   ");
         System.out.println("         The title is: " + title);
         System.out.println("         The token is: " + accessToken);
         System.out.println("         The sensor is: " + sensor);
         System.out.println("         The sensorFrequency is: " + sensorFrequency);
-        System.out.println(" ");
-        System.out.println(" ");
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -238,15 +235,10 @@ public class ExperimentDetailsFragment extends Fragment
        boolean currentState = state;
 
         System.out.println("======================================");
-        System.out.println("                  ");
         System.out.println("======================================");
-        System.out.println(" ");
         System.out.println(" changeTheSensorState()");
         System.out.println("        the "+sensor + " sensor state is now " + state);
-        System.out.println(" ");
-        System.out.println(" ");
         System.out.println("======================================");
-        System.out.println("                  ");
         System.out.println("======================================");
 
         // create the name of the variable we now need
@@ -350,6 +342,8 @@ public class ExperimentDetailsFragment extends Fragment
 
                                    if(!accessToken.equals("")){
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
+                                       // initialise the MQTT connection
+                                       DatabaseConnectionService.mqttInit();  // this is temporary
                                    }
                                    //===============================================================
                                })
@@ -543,8 +537,10 @@ public class ExperimentDetailsFragment extends Fragment
             }
             if(isActive) {
                 isActive = false;
-            }
+                // disconnect the MQTT connection
+                DatabaseConnectionService.mqttDisconnect();  // this is temporary
 
+            }
             displayNamePromptOrGoUp();
             return true;
         }
@@ -612,6 +608,8 @@ public class ExperimentDetailsFragment extends Fragment
         // check isActive state
         if(isActive) {
             isActive = false;
+            // disconnect the MQTT connection
+            DatabaseConnectionService.mqttDisconnect();  // this is temporary
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();

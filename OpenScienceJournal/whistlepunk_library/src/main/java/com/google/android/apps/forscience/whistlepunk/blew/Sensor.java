@@ -33,6 +33,11 @@ public enum Sensor{
         public float parseFloat(byte[] value) {
             return (float)(shortSignedAtOffset(value, 2) / 128.0);
         }
+
+        @Override
+        public  DataObject parseDataObject(byte[] value){
+            return new DataObject("SensorTag Amb Temperature", parseFloat(value));
+        }
     },
     TEMP_OBJ(TEMP_SERV, TEMP_WRITE, TEMP_READ){
         public String sensorID;

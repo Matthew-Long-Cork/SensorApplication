@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
+import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorObserver;
 
 import java.util.List;
 
@@ -109,7 +110,8 @@ public class BleSensorManager {
                 super.onCharacteristicRead(gatt, characteristic, status);
                 //if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
                     String result = sensor.parseJson(characteristic.getValue());
-                    DatabaseConnectionService.sendData(result);
+                   // DatabaseConnectionService.sendDataWithTemporaryString(result); // temporary function
+                    DatabaseConnectionService.sendDataMqtt(sensor.parseDataObject((characteristic.getValue())));
                     dummy_timer = System.currentTimeMillis();
                     monitor(characteristic);
                 //}

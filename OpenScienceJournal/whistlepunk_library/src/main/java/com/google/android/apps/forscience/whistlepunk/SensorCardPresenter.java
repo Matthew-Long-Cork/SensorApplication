@@ -728,7 +728,6 @@ public class SensorCardPresenter {
                     BleSensorManager ble = BleSensorManager.getInstance();
                     ble.scan();
                 }
-
                 return false;
             }
         });
@@ -762,12 +761,10 @@ public class SensorCardPresenter {
     //==========================================================================================
     // added: function
     private boolean getUserInputForFrequency() {
+
         if (mParentFragment == null) {
             return false;
         }
-
-        Toast.makeText(mCardViewHolder.getContext(), "This is in SensorCardPresenter.java intent!!", Toast.LENGTH_SHORT).show();
-
         // create the intent to go to FrequencyPopup class and get the user input
         Intent frequencyIntent = new Intent(mParentFragment.getActivity(), FrequencyPopup.class);
         // add the 'sensorListAsString'
@@ -775,6 +772,7 @@ public class SensorCardPresenter {
         frequencyIntent.putExtra("currentSensor", mSensorId);
         // start the intent
         mParentFragment.getActivity().startActivityForResult(frequencyIntent, REQUENCY_CHANGED);
+        RecorderControllerImpl.setSensorsOnDisplay(false);
         return true;
     }
     //==========================================================================================
@@ -786,13 +784,14 @@ public class SensorCardPresenter {
 
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
+                RecorderControllerImpl.setSensorsOnDisplay(true);
                 //PanesActivity.toolPicker.getTabAt(1).select();
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
                 System.out.println(" ");
                 System.out.println(" ");
-                System.out.println("        test ok");
+                System.out.println("       sensors on display = TRUE...");
                 System.out.println(" ");
                 System.out.println(" ");
                 System.out.println("======================================");
