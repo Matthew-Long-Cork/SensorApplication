@@ -22,6 +22,7 @@ public class TestSensor extends ScalarSensor {
     private BleObserver observer;
 
 
+
     public TestSensor(){super(ID); }
 
     public static boolean isAvailable(){

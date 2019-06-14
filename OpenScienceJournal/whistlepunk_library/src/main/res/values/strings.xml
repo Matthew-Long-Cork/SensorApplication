@@ -1496,4 +1496,7 @@ Permissions notice:
     <!-- NOTE! newly-added strings should have char limits and context comments
          (see the first elements in this file for examples) -->
 
+    <string name="ble_ambient_temperature"  translatable="false">"Ble Ambient Temperature"</string>
+
+
 </resources>

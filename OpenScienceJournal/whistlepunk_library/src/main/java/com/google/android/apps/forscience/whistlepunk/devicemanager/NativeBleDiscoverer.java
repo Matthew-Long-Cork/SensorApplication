@@ -69,6 +69,8 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
         return PROVIDER;
     }
 
+
+
     @Override
     public boolean startScanning(final ScanListener listener, FailureListener onScanError) {
        // MainActivity.DEVICE_SCANNER.scanLeDevice(false);
@@ -148,6 +150,8 @@ public class NativeBleDiscoverer implements SensorDiscoverer {
         }
 
 
+        //
+        // This is the BLE
         mDeviceDiscoverer.startScanning(new DeviceDiscoverer.Callback() {
             @Override
             public void onDeviceFound(final DeviceDiscoverer.DeviceRecord record) {

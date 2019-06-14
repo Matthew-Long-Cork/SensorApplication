@@ -28,9 +28,9 @@ public class BleSensorManager {
     private boolean found = false;
 
     private long dummy_timer = System.currentTimeMillis();
-    private final long SCHEDULE = 3000;
+    private final long SCHEDULE = 2000;
 
-    private final int SCANNER_TIMEOUT = 5000;
+    private final int SCANNER_TIMEOUT = 2000;
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothGatt bluetoothGatt;
@@ -101,17 +101,18 @@ public class BleSensorManager {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 super.onConnectionStateChange(gatt, status, newState);
+                bluetoothGatt.discoverServices();
             }
 
             @Override
             public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicRead(gatt, characteristic, status);
-                if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
-                    String result = sensor.parse(characteristic.getValue());
+                //if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
+                    String result = sensor.parseJson(characteristic.getValue());
                     DatabaseConnectionService.sendData(result);
                     dummy_timer = System.currentTimeMillis();
                     monitor(characteristic);
-                }
+                //}
             }
 
             @Override
@@ -124,19 +125,19 @@ public class BleSensorManager {
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
-                if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
-                    String result = sensor.parse(characteristic.getValue());
-                    DatabaseConnectionService.sendData(result);
+               // if(System.currentTimeMillis() - dummy_timer >= SCHEDULE){
 
+                    //DatabaseConnectionService.sendData(result);
                     BleObservable.broadcast(sensor.parseFloat(characteristic.getValue()));
+
                     dummy_timer = System.currentTimeMillis();
-                }
+                //}
             }
         });
 
         bluetoothGatt.connect();
 
-        bluetoothGatt.discoverServices();
+
 
 
     }

@@ -440,5 +440,8 @@
     <string name="input_camera_permission_denied" msgid="647063985319912627">"The camera cannot be used because Science Journal does not have permission to access it."</string>
     <string name="input_photo_library_permission_denied" msgid="5779659490264636585">"Your photo library cannot be used because Science Journal does not have permission to access it."</string>
     <!-- no translation found for input_blocked_open_settings_button (4065294335092002359) -->
+
+
+
     <skip />
 </resources>
