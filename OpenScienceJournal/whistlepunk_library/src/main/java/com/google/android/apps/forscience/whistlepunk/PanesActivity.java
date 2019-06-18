@@ -515,6 +515,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         // get the current title
         theTitle = experiment.getTitle();
 
+        //DatabaseConnectionService.mqttInit();
         System.out.println("======================================");
         System.out.println("                  ");
         System.out.println("======================================");

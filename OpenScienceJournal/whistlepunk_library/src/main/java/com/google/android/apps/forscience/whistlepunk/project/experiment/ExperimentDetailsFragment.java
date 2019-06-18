@@ -47,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
@@ -343,7 +342,7 @@ public class ExperimentDetailsFragment extends Fragment
                                    if(!accessToken.equals("")){
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
                                        // initialise the MQTT connection
-                                       DatabaseConnectionService.mqttInit();  // this is temporary
+                                       //DatabaseConnectionService.mqttInit();  // this is temporary
                                    }
                                    //===============================================================
                                })

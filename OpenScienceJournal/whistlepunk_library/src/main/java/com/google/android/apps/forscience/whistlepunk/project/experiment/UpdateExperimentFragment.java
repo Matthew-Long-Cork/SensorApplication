@@ -45,7 +45,6 @@ import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.DataController;
-import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.PermissionUtils;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
@@ -90,11 +89,14 @@ public class UpdateExperimentFragment extends Fragment {
 
     //==============================================================================================
     private SharedPreferences storedData;
-    private int defaultFrequency = 5000;
+    private int Frequency = 5000;
     private String newSensorVariableFrequency;
     private String newSensorVariableState;
     private String previousTitle = "";
     private String newValue;
+    private List sensorsList;
+    private boolean swap = false, state;
+    private String variableName, variableName2;
     //==============================================================================================
     private static Context context;
 
@@ -184,69 +186,79 @@ public class UpdateExperimentFragment extends Fragment {
                 mPhotoPreview.getResources().getColor(R.color.text_color_light_grey),
                 PorterDuff.Mode.SRC_IN);
 
+        // get preferences
+        storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
+        // interface used for modifying values in a sharedPreference object
+        SharedPreferences.Editor editor = storedData.edit();
+
         mExperiment.subscribe(experiment -> {
             title.setText(experiment.getTitle());
             previousTitle = experiment.getTitle();
 
             mSaved.happens().subscribe(o -> {
+
+                // get the user input
                 newValue = title.getText().toString().trim();
+                //compare to currently stored title
                 if (!newValue.equals(previousTitle)) {
-
-                    //==============================================================================
-                    // here we set the title so we pass that through to ExperimentDetailsFragment
-                    // to keep track of the title future on
+                    // change the title
                     experiment.setTitle(newValue);
+                    // pass to ExperimentDetailsFragment to reference later
                     ExperimentDetailsFragment.setCurrentTitle(newValue);
-
-                    //==============================================================================
-                    // now we need to create stored data variables for each new set of sensors as
-                    // the experiment is created
-                    //===========================================================================
-
-                    storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
-                    // interface used for modifying values in a sharedPreference object
-                    SharedPreferences.Editor editor = storedData.edit();
-                    // the 10 sensors we use:
-                    List newList = new ArrayList();
-                    newList.add("AmbientLightSensor");
-                    newList.add("DecibelSource");
-                    newList.add("LinearAccelerometerSensor");
-                    newList.add("AccX");
-                    newList.add("AccY");
-                    newList.add("AccZ");
-                    newList.add("CompassSensor");
-                    newList.add("MagneticRotationSensor");
-                    newList.add("RemoteTemperature");               //<-- class not modified for this version
-                    newList.add("RemoteHumidity");                  //<-- class not modified for this version
-
-                    // create all the names of these new stored variables for this experiment
-                    for(int i =0; i< newList.size(); i++) {
-
-                        // starting with the sensors
-                        // name  of the experiment + the current sensor + '_frequency'
-                        // this is the new stored data variable:
-                        newSensorVariableFrequency = newValue + "_" + newList.get(i) + "_frequency";
-                        editor.putInt(newSensorVariableFrequency, defaultFrequency);
-
-                        // then the sensor state
-                        // name  of the experiment + the current sensor + '_state'
-                        // this is the new stored data variable:
-                        newSensorVariableState = newValue + "_" + newList.get(i) + "_state";
-                        editor.putBoolean(newSensorVariableState, false);
+                    // check if there is a token set for this experiment
+                    String accessToken = storedData.getString(previousTitle + "_experimentAccessToken", "");
+                    // if there is...
+                    if (!accessToken.equals(null)) {
+                        // remove the old variable as it will no longer be referenced
+                        storedData.edit().remove(previousTitle + "_experimentAccessToken");
+                        // then add the new token
+                        editor.putString(newValue + "_experimentAccessToken", accessToken);
+                    } else {
+                        // put in a default websiteAccessToken
+                        editor.putString(newValue + "_experimentAccessToken", null);
+                        // prompt user for the access token
+                        updateAccessToken();
                     }
+                    // if the current title is not the default title
+                    if (!previousTitle.equals("")) {
+                        // user is renaming the experiment
+                        swap = true;
+                    }
+                    makeDefaultListOfSensors();
+                    // create the variables for this newly titled experiment
+                    for (int i = 0; i < sensorsList.size(); i++) {
+                        //default sensor state
+                        state = false;
+                        // if we are swapping the stored frequency values to the new title
+                        if (swap) {
+                            // get the sensor frequency
+                            variableName = previousTitle + "_" + sensorsList.get(i) + "_frequency";
+                            Frequency = storedData.getInt(variableName, 0);
+                            // then remove old variable
+                            storedData.edit().remove(variableName);
 
-                    // put in a default websiteAccessToken
-                    editor.putString(newValue + "_experimentAccessToken", null);
-                    // keep the access token up to date
-                    updateAccessToken();
+                            // get the sensor state
+                            variableName2 = previousTitle + "_" + sensorsList.get(i) + "_state";
+                            state = storedData.getBoolean(variableName2, false);
+                            // then remove old variable
+                            storedData.edit().remove(variableName2);
+                        }
 
-                    // when you are done adding the values, call the commit() method to commit all
+                        // this is the new stored data variable:
+                        newSensorVariableFrequency = newValue + "_" + sensorsList.get(i) + "_frequency";
+                        editor.putInt(newSensorVariableFrequency, Frequency);
+
+                        // this is the new stored data variable:
+                        newSensorVariableState = newValue + "_" + sensorsList.get(i) + "_state";
+                        editor.putBoolean(newSensorVariableState, state);
+                    }
+                }
+                    // when you are done adding/changing the values, call the commit() method to commit all
                     editor.commit();
                     //==============================================================================
                     // finally save the experiment
                     saveExperiment();
                     //==============================================================================
-                }
             });
 
             if (!TextUtils.isEmpty(experiment.getExperimentOverview().imagePath)) {
@@ -301,6 +313,24 @@ public class UpdateExperimentFragment extends Fragment {
             return false;
         });
         return view;
+    }
+
+    private void makeDefaultListOfSensors(){
+        // the 13 sensors we use:
+        sensorsList = new ArrayList();
+        sensorsList.add("AmbientLightSensor");
+        sensorsList.add("DecibelSource");
+        sensorsList.add("LinearAccelerometerSensor");
+        sensorsList.add("AccX");
+        sensorsList.add("AccY");
+        sensorsList.add("AccZ");
+        sensorsList.add("CompassSensor");
+        sensorsList.add("MagneticRotationSensor");
+        sensorsList.add("SensorTagTemperature");             //<-- class CREATED for this version
+        sensorsList.add("SensorTagValue2");                  //<-- class not modified for this version
+        sensorsList.add("SensorTagValue3");                  //<-- class not modified for this version
+        sensorsList.add("SensorTagValue4");                  //<-- class not modified for this version
+        sensorsList.add("SensorTagValue5");                  //<-- class not modified for this version
     }
 
     @Override

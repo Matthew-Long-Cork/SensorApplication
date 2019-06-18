@@ -428,12 +428,10 @@ public class RecorderControllerImpl implements RecorderController {
         return mSensorEnvironment.getDefaultClock().getNow();
     }
 
-    public static void addSelectedSensorToList(String sensorId) {
+
+    public static void addSelectedSensorToList() {
         currentSensorChecked = true;
         sensorsOnDisplay = true;
-        System.out.println("======================================");
-        System.out.println(" SENSORS ON DISPLAY IS TRUE");
-        System.out.println("======================================");
     }
 
     public static void stopObservingSelectedSensor(String sensorId, String observerId) {
@@ -483,14 +481,15 @@ public class RecorderControllerImpl implements RecorderController {
            sensorInList = true;
             System.out.println("======================================");
             System.out.println("======================================");
-            System.out.println("     " +sensorId + " is not in the list");
+            System.out.println("     " +sensorId + " is in the list");
             System.out.println("======================================");
             System.out.println("======================================");
         }
 
         // if the experiment is active && the sensor cards are on display
         // && the current sensor is not null && the current sensor has not been removed from the list
-        if(ExperimentDetailsFragment.getIsActiveStatus() && sensorId != null && sensorsOnDisplay && sensorInList) {
+        if(ExperimentDetailsFragment.getIsActiveStatus() && sensorId != null && sensorsOnDisplay && sensorInList){
+
             swapSensor = true;
 
             System.out.println("======================================");

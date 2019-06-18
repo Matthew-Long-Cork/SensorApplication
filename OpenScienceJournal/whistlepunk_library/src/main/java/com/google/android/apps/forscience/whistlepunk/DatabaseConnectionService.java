@@ -38,58 +38,8 @@ public class DatabaseConnectionService {
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
 
         // check which option was selected:
-        sendDataMqtt(dataObject);
-        //sendDataHttp(dataObject);
-    }
-
-    //==============================================================================================
-    //  TEMPORARY CONNECTION USING A STRING
-    //==============================================================================================
-    public static void sendDataWithTemporaryString(String json){
-
-        String myUrl;
-        String  data = json;
-
-        // for thingsBoard:
-        //==========================================================================================
-        //myWriteToken = "temp";
-        myWebsite = "http://thingsboard.tec-gateway.com";          //<-- for testing
-        //==========================================================================================
-        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
-
-        try{
-
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
-                    .build();
-
-            RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
-            Request request = new Request.Builder()
-                    .url(myUrl)
-                    .post(body)
-                    .build();
-
-            try (Response response = client.newCall(request).execute()) {
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println( response.body().string());
-                System.out.println("    sent: ");
-                System.out.println("    website address: " + myWebsite);
-                System.out.println("    website token: " + myWriteToken);
-                System.out.println("    data : " + data);
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
-        }
-        catch (Exception e) {
-
-            System.out.println("\n====================================");
-            System.out.println("======================================");
-            System.out.println("      Error: " + e );
-            System.out.println("======================================");
-            System.out.println("======================================");
-        }
+        //sendDataMqtt(dataObject);
+        sendDataHttp(dataObject);
     }
 
     //==============================================================================================
@@ -105,10 +55,8 @@ public class DatabaseConnectionService {
         //data to send
         data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
 
-        // for thingsBoard:
         //==========================================================================================
-        // myWriteToken = "temp";
-        //myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
+        myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
         //==========================================================================================
         myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
 
@@ -171,6 +119,7 @@ public class DatabaseConnectionService {
         mqttConnectOptions.setUserName(myWriteToken);
 
         try {
+
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -188,6 +137,11 @@ public class DatabaseConnectionService {
     public static void mqttDisconnect(){
         try {
             mqttAndroidClient.disconnect();
+            System.out.println("\n====================================");
+            System.out.println("======================================");
+            System.out.println("     disconnected MQTT");
+            System.out.println("======================================");
+            System.out.println("======================================");
         }catch (Exception e){e.printStackTrace();}
     }
 }
