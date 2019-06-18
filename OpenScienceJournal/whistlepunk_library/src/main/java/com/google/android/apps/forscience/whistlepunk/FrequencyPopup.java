@@ -85,7 +85,7 @@ public class FrequencyPopup extends Activity {
                         // get the selected units anmd set the number picker values
                         if(currentlySelected.equals("Millisecond(s)")){
                             milliSeconds = 1;
-                            showPicker(100, 900,100, 100);
+                            showPicker(25, 900,100, 100);
                         }
                         if(currentlySelected.equals("Second(s)")){
                             milliSeconds = 1000;

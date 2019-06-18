@@ -336,13 +336,17 @@ public class ExperimentDetailsFragment extends Fragment
                                    // interface used for modifying values in a sharedPreference object
                                    editor = storedData.edit();
                                    //get the stored access token for this experiment
-                                   String word = title + "_experimentAccessToken";
-                                   String accessToken = storedData.getString(word, "");
+                                   String word1 = title + "_experimentAccessToken";
+                                   String accessToken = storedData.getString(word1, "");
+                                   //get the stored connection type for this experiment
+                                   String word2 = title + "_experimentConnectionType";
+                                   String connType = storedData.getString(word2, "");
 
                                    if(!accessToken.equals("")){
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
-                                       // initialise the MQTT connection
-                                       //DatabaseConnectionService.mqttInit();  // this is temporary
+                                   }
+                                   if(!connType.equals("")){
+                                       DatabaseConnectionService.setMyConnectionType(connType);
                                    }
                                    //===============================================================
                                })

@@ -205,20 +205,43 @@ public class UpdateExperimentFragment extends Fragment {
                     experiment.setTitle(newValue);
                     // pass to ExperimentDetailsFragment to reference later
                     ExperimentDetailsFragment.setCurrentTitle(newValue);
-                    // check if there is a token set for this experiment
+                    //==============================================================================
+                    // access token and connection type
+                    //==============================================================================
+                    // check if there is a token set for this experiment and a connection type
                     String accessToken = storedData.getString(previousTitle + "_experimentAccessToken", "");
-                    // if there is...
+                    String connectionType = storedData.getString(previousTitle + "_experimentConnectionType", "");
+
+                    // if there is a token entered
                     if (!accessToken.equals(null)) {
                         // remove the old variable as it will no longer be referenced
                         storedData.edit().remove(previousTitle + "_experimentAccessToken");
                         // then add the new token
                         editor.putString(newValue + "_experimentAccessToken", accessToken);
-                    } else {
+                    }
+                    else{
                         // put in a default websiteAccessToken
                         editor.putString(newValue + "_experimentAccessToken", null);
-                        // prompt user for the access token
-                        updateAccessToken();
                     }
+                    // if there is a connection type selected
+                    if (!connectionType.equals(null)) {
+                        // remove the old variable as it will no longer be referenced
+                        storedData.edit().remove(previousTitle + "_experimentConnectionType");
+                        // then add the new token
+                        editor.putString(newValue + "_experimentConnectionType", connectionType);
+
+                    }
+                    else{
+                        // put in a default connection type
+                        editor.putString(newValue + "_experimentConnectionType", null);
+                    }
+                    // if either values are null then prompt user
+                    if(accessToken.equals(null) || connectionType.equals(null)){
+                        updateConnectionSetup();
+                    }
+                    //==============================================================================
+                    //  experiment variables
+                    //==============================================================================
                     // if the current title is not the default title
                     if (!previousTitle.equals("")) {
                         // user is renaming the experiment
@@ -437,7 +460,7 @@ public class UpdateExperimentFragment extends Fragment {
                 });
     }
 
-    private void updateAccessToken(){
+    private void updateConnectionSetup(){
 
             Intent SetupIntent = new Intent(getContext(), AccessTokenSetup.class);
             SetupIntent.putExtra( "CURRENT_TITLE", newValue);

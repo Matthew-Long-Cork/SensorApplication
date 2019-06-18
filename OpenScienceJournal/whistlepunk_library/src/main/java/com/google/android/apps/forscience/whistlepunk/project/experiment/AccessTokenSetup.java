@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,8 +18,9 @@ import com.google.android.apps.forscience.whistlepunk.R;
 public class AccessTokenSetup extends AppCompatActivity  {
 
     // declare the variables
-    private String experimentAccessToken;
+    private String experimentAccessToken, experimentConnectionType;
     private Button enterBtn, cancelBtn, confirmBtn;
+    private Spinner spinner;
     private EditText websiteTokenTxtBox;
     private TextView message1, message2, headerMessage;
     private SharedPreferences storedData;
@@ -34,6 +36,8 @@ public class AccessTokenSetup extends AppCompatActivity  {
         message1 = findViewById(R.id.connection_note_lbl);
         message2 = findViewById(R.id.connection_note_lbl2);
         websiteTokenTxtBox = findViewById(R.id.token_input_textbox);
+
+        spinner = (Spinner) findViewById(R.id.connection_spinner);
         enterBtn = findViewById(R.id.connection_btn);
         cancelBtn = findViewById(R.id.cancel_btn);
         confirmBtn = findViewById(R.id.confirm_btn);
@@ -52,16 +56,25 @@ public class AccessTokenSetup extends AppCompatActivity  {
 
         // get the stored web token, if any
         experimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
-
-        //if there is currently a token saved, get it and display it
-        if (experimentAccessToken != null) {
-            websiteTokenTxtBox.setText(experimentAccessToken);
-        }
+        // get the stored connection type, if any
+        experimentConnectionType = storedData.getString( currentTitle + "_experimentConnectionType", experimentConnectionType);
 
         //if the old title is not "" then get it and display it
         if(!currentTitle.equals("")){
             experimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
             websiteTokenTxtBox.setText(experimentAccessToken);
+        }
+
+        //if there is currently a token saved, get it and display it
+        if (experimentAccessToken != null) {
+            websiteTokenTxtBox.setText(experimentAccessToken);
+        }
+        //if there is currently a connection type saved, get it and display it
+        if (experimentConnectionType != null) {
+            if (experimentConnectionType.equals("HTTP Connection"))
+                spinner.setSelection(1);
+            else if(experimentConnectionType.equals("MQTT Connection"))
+                spinner.setSelection(2);
         }
 
         //=====================================================================================
@@ -71,14 +84,23 @@ public class AccessTokenSetup extends AppCompatActivity  {
 
             // collect the input data
             experimentAccessToken = websiteTokenTxtBox.getText().toString();
+            experimentConnectionType = spinner.getSelectedItem().toString();
 
-            //check if there was data inputted
-            if (experimentAccessToken.equals("")) {
+            // if nothing is selected
+            if (experimentAccessToken.equals("") && (experimentConnectionType.equals("Please Select"))) {
+                Toast.makeText(getApplicationContext(), "Please enter data.", Toast.LENGTH_SHORT).show();
+            }
+            //check for the token
+            else if (experimentAccessToken.equals("")) {
                 Toast.makeText(getApplicationContext(), "The access token is needed.", Toast.LENGTH_SHORT).show();
             }
+            //check for the selected connection
+            else if (experimentConnectionType.equals("Please Select")) {
+                Toast.makeText(getApplicationContext(), "The connection type is needed.", Toast.LENGTH_SHORT).show();
+            }
 
-            // if the text boxes have data, show confirmation window
-            if (!experimentAccessToken.equals("")) {
+            // if the boxes have data, show confirmation window
+            if (!experimentAccessToken.equals("") && !experimentConnectionType.equals("Please Select")) {
 
                 // hide what we need to hide
                 message1.setVisibility(View.INVISIBLE);
@@ -87,8 +109,9 @@ public class AccessTokenSetup extends AppCompatActivity  {
                 message2.setVisibility(View.VISIBLE);
                 cancelBtn.setVisibility(View.VISIBLE);
                 confirmBtn.setVisibility(View.VISIBLE);
-                // disable the text box as the user must confirm or cancel
+                // disable input as the user must confirm or cancel
                 websiteTokenTxtBox.setEnabled(false);
+                spinner.setEnabled(false);
             }
         });
 
@@ -97,24 +120,27 @@ public class AccessTokenSetup extends AppCompatActivity  {
         //=====================================================================================
         confirmBtn.setOnClickListener((View v) -> {
 
-            // collect the input data
+            /*
+            //collect the input data
             experimentAccessToken = websiteTokenTxtBox.getText().toString();
 
             //check if there was data inputted
-            if (experimentAccessToken.equals("")) {
+           if (experimentAccessToken.equals("")) {
                 Toast.makeText(getApplicationContext(), "The access token is needed.", Toast.LENGTH_SHORT).show();
             }
+            */
 
             // if the text boxes have data, show confirmation window
-            if (!experimentAccessToken.equals("")) {
+            //if (!experimentAccessToken.equals("")) {
                 // interface used for modifying values in a sharedPreference
                 SharedPreferences.Editor editor = storedData.edit();
 
-                String currentToken = currentTitle + "_experimentAccessToken";
+               // String currentToken = currentTitle + "_experimentAccessToken";
                 // remove the old variable as it will no longer be referenced
-                storedData.edit().remove(currentToken).commit();
+               // storedData.edit().remove(currentToken);
                 // then add the new token
                 editor.putString(currentTitle + "_experimentAccessToken", experimentAccessToken);
+                editor.putString(currentTitle + "_experimentConnectionType", experimentConnectionType);
 
                 //finally, when you are done adding the values, call the commit() method.
                 editor.commit();
@@ -123,7 +149,7 @@ public class AccessTokenSetup extends AppCompatActivity  {
                 Intent resultIntent = new Intent();
                 setResult(RESULT_OK, resultIntent);
                 finish();
-            }
+                //}
         });
 
         //=====================================================================================
@@ -131,11 +157,12 @@ public class AccessTokenSetup extends AppCompatActivity  {
         //=====================================================================================
         cancelBtn.setOnClickListener((View v) -> {
 
-            // clear the variables
+            // clear the variable
             experimentAccessToken = "";
 
-            // enable the text box for text enter
+            // enable user input
             websiteTokenTxtBox.setEnabled(true);
+            spinner.setEnabled(true);
 
             //clear the text fields and focus on the website input field
             websiteTokenTxtBox.getText().clear();

@@ -1,5 +1,6 @@
 package com.google.android.apps.forscience.whistlepunk;
 
+import android.util.JsonReader;
 import android.util.Log;
 
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
@@ -10,6 +11,8 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import java.util.Arrays;
+
+import dagger.multibindings.ElementsIntoSet;
 import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -19,8 +22,7 @@ import okhttp3.Response;
 
 public class DatabaseConnectionService {
 
-    private static String myWebsite ="";
-    private static String myWriteToken ="";
+    private static String myWebsite ="", myWriteToken ="", myconnType;
     private static String experimentName;
 
     private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
@@ -33,13 +35,25 @@ public class DatabaseConnectionService {
 
     public static void setMyAccessToken(String token){ myWriteToken = token; }
 
+    public static void setMyConnectionType(String connType){
+        myconnType = connType;
+        if(myconnType.equals("MQTT Connection")) {
+            mqttInit();
+        }
+    }
+
     public static void sendData(DataObject dataObject){
         // get the experiment name
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
+        //sendDataHttp(dataObject);
+
 
         // check which option was selected:
-        //sendDataMqtt(dataObject);
-        sendDataHttp(dataObject);
+        if(myconnType.equals("MQTT Connection"))
+            sendDataMqtt(dataObject);
+        else
+            sendDataHttp(dataObject);
+
     }
 
     //==============================================================================================
@@ -86,11 +100,7 @@ public class DatabaseConnectionService {
             }
         }
         catch (Exception e) {
-            System.out.println("\n====================================");
-            System.out.println("======================================");
             System.out.println("      Error: " + sensorType + " "+ e);
-            System.out.println("======================================");
-            System.out.println("======================================");
         }
     }
 
@@ -103,6 +113,15 @@ public class DatabaseConnectionService {
             String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
             try {
                 mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
+
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("    sent: ");
+                System.out.println("    website address: " + myWebsite);
+                System.out.println("    website token: " + myWriteToken);
+                System.out.println("    data : " + jsonData);
+                System.out.println("======================================");
+                System.out.println("======================================");
             } catch (Exception e) {
                 e.printStackTrace();
             } ;
@@ -119,7 +138,6 @@ public class DatabaseConnectionService {
         mqttConnectOptions.setUserName(myWriteToken);
 
         try {
-
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -137,11 +155,7 @@ public class DatabaseConnectionService {
     public static void mqttDisconnect(){
         try {
             mqttAndroidClient.disconnect();
-            System.out.println("\n====================================");
-            System.out.println("======================================");
-            System.out.println("     disconnected MQTT");
-            System.out.println("======================================");
-            System.out.println("======================================");
+
         }catch (Exception e){e.printStackTrace();}
     }
 }
