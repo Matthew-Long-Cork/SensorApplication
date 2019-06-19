@@ -47,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
@@ -130,7 +129,7 @@ public class ExperimentDetailsFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver;
     private String mActiveTrialId;
     private TextView mEmptyView;
-    private static Context context;
+    public static Context context;
 
     //==============================================================================================
 
@@ -179,7 +178,7 @@ public class ExperimentDetailsFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // this is a ref for getting the context  for storedData
+        // this is a ref for getting the context for storedData
         ExperimentDetailsFragment.context = getActivity();
 
         mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
@@ -201,14 +200,11 @@ public class ExperimentDetailsFragment extends Fragment
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println(" ");
         System.out.println("         experimentDetailsFragment()   ");
         System.out.println("         The title is: " + title);
         System.out.println("         The token is: " + accessToken);
         System.out.println("         The sensor is: " + sensor);
         System.out.println("         The sensorFrequency is: " + sensorFrequency);
-        System.out.println(" ");
-        System.out.println(" ");
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -238,15 +234,10 @@ public class ExperimentDetailsFragment extends Fragment
        boolean currentState = state;
 
         System.out.println("======================================");
-        System.out.println("                  ");
         System.out.println("======================================");
-        System.out.println(" ");
         System.out.println(" changeTheSensorState()");
         System.out.println("        the "+sensor + " sensor state is now " + state);
-        System.out.println(" ");
-        System.out.println(" ");
         System.out.println("======================================");
-        System.out.println("                  ");
         System.out.println("======================================");
 
         // create the name of the variable we now need
@@ -271,7 +262,6 @@ public class ExperimentDetailsFragment extends Fragment
 
         // experiment is active
         isActive = true;
-
         super.onStart();
 
         WhistlePunkApplication.getUsageTracker(getActivity()).trackScreenView(
@@ -345,11 +335,23 @@ public class ExperimentDetailsFragment extends Fragment
                                    // interface used for modifying values in a sharedPreference object
                                    editor = storedData.edit();
                                    //get the stored access token for this experiment
-                                   String word = title + "_experimentAccessToken";
-                                   String accessToken = storedData.getString(word, "");
+                                   String word1 = title + "_experimentAccessToken";
+                                   String accessToken = storedData.getString(word1, "");
+                                   //get the stored connection type for this experiment
+                                   String word2 = title + "_experimentConnectionType";
+                                   String connType = storedData.getString(word2, "");
 
                                    if(!accessToken.equals("")){
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
+                                   }
+                                   if(!connType.equals("")){
+                                       System.out.println("======================================");
+                                       System.out.println("======================================");
+                                       System.out.println("    the connection type : " + connType);
+                                       System.out.println("======================================");
+                                       System.out.println("======================================");
+
+                                       DatabaseConnectionService.setMyConnectionType(connType);
                                    }
                                    //===============================================================
                                })
@@ -408,7 +410,6 @@ public class ExperimentDetailsFragment extends Fragment
             mIncludeArchived = savedInstanceState.getBoolean(EXTRA_INCLUDE_ARCHIVED, false);
             getActivity().invalidateOptionsMenu();
         }
-
         return view;
     }
 
@@ -543,8 +544,14 @@ public class ExperimentDetailsFragment extends Fragment
             }
             if(isActive) {
                 isActive = false;
+                // disconnect the MQTT connection
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("         calling mqtt disconnect");
+                System.out.println("======================================");
+                System.out.println("======================================");
+                DatabaseConnectionService.mqttDisconnect();
             }
-
             displayNamePromptOrGoUp();
             return true;
         }
@@ -612,6 +619,13 @@ public class ExperimentDetailsFragment extends Fragment
         // check isActive state
         if(isActive) {
             isActive = false;
+            // disconnect the MQTT connection
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("         calling mqtt disconnect");
+            System.out.println("======================================");
+            System.out.println("======================================");
+            DatabaseConnectionService.mqttDisconnect();
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();

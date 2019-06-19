@@ -87,12 +87,8 @@ public class DecibelSensor extends ScalarSensor {
 
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Starting sound sensor ");
+                    System.out.println("        STARTING sound sensor ");
                     System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("======================================");
                     System.out.println("======================================");
 
@@ -113,15 +109,11 @@ public class DecibelSensor extends ScalarSensor {
                     //              issue - this check fails on the very first time, works then
                     //                    -  is it needed???
                     //==============================================================================
-
-                    //==========================================================================
-
                     if (mRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                       //  listener.onSourceError(getId(), SensorStatusListener.ERROR_FAILED_TO_CONNECT,
-                       //         "Could not connect to microphon");
+                       //         "Could not connect to microphone");
                         return;
                     }
-
                     //==========================================================================
 
                     // now active - so change its state to ACTIVE
@@ -180,15 +172,9 @@ public class DecibelSensor extends ScalarSensor {
                 // else if it is active. Ignore
                 else{
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        +++ambient light sensor is already active+++");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        sound sensor is ALREADY ACTIVE");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
         }
@@ -207,15 +193,9 @@ public class DecibelSensor extends ScalarSensor {
                     }
 
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Stopping sound sensor");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        STOPPING sound sensor");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     // added: stop the timer task as the observing of the sensors is no longer needed
@@ -236,12 +216,8 @@ public class DecibelSensor extends ScalarSensor {
                 else{
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("         sensor: "+ ID);
-                    System.out.println("         Experiment is still active. not stopping");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }

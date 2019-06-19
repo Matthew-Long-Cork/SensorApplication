@@ -497,8 +497,8 @@ public class ConnectableSensorRegistry {
     private void addSensorToCurrentExperiment(final ConnectableSensor sensor,
             final MaybeConsumer<ConnectableSensor> onAdded) {
 
-        // added: athis is to keep track of wither a sensor is active or not
-        RecorderControllerImpl.addSelectedSensorToList( sensor.getConnectedSensorId());
+        // added: this is to keep track of wither a sensor is active or not
+        RecorderControllerImpl.addSelectedSensorToList();
         //
         mDataController.addSensorToExperiment(mExperimentId, sensor.getConnectedSensorId(),
                 new LoggingConsumer<Success>(TAG, "add sensor to experiment") {

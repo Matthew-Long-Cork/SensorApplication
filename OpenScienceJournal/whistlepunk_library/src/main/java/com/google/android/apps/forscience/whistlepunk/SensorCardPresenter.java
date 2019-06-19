@@ -51,6 +51,8 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
+import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesActivity;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
@@ -76,6 +78,7 @@ import com.google.android.apps.forscience.whistlepunk.sensors.CompassSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.google.android.apps.forscience.whistlepunk.wireapi.RecordingMetadata;
 import com.google.common.collect.Lists;
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
@@ -173,7 +176,7 @@ public class SensorCardPresenter {
     private static final String[] SENSOR_ID_ORDER = {AmbientLightSensor.ID, DecibelSensor.ID,
             LinearAccelerometerSensor.ID, AccelerometerSensor.Axis.X.getSensorId(),
             AccelerometerSensor.Axis.Y.getSensorId(), AccelerometerSensor.Axis.Z.getSensorId(),
-            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID};
+            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID, TestSensor.ID};
 
     // Update the back data textview every .25 seconds maximum.
     private static final int MAX_TEXT_UPDATE_TIME_MS = 250;
@@ -721,6 +724,10 @@ public class SensorCardPresenter {
                 else if (itemId == R.id.action_set_sendData_to_db_frequency) {
                     return getUserInputForFrequency();
                 }
+                else if (itemId == R.id.action_BT) {
+                    BleSensorManager ble = BleSensorManager.getInstance();
+                    ble.scan();
+                }
                 return false;
             }
         });
@@ -754,12 +761,10 @@ public class SensorCardPresenter {
     //==========================================================================================
     // added: function
     private boolean getUserInputForFrequency() {
+
         if (mParentFragment == null) {
             return false;
         }
-
-        Toast.makeText(mCardViewHolder.getContext(), "This is in SensorCardPresenter.java intent!!", Toast.LENGTH_SHORT).show();
-
         // create the intent to go to FrequencyPopup class and get the user input
         Intent frequencyIntent = new Intent(mParentFragment.getActivity(), FrequencyPopup.class);
         // add the 'sensorListAsString'
@@ -767,6 +772,7 @@ public class SensorCardPresenter {
         frequencyIntent.putExtra("currentSensor", mSensorId);
         // start the intent
         mParentFragment.getActivity().startActivityForResult(frequencyIntent, REQUENCY_CHANGED);
+        RecorderControllerImpl.setSensorsOnDisplay(false);
         return true;
     }
     //==========================================================================================
@@ -778,13 +784,14 @@ public class SensorCardPresenter {
 
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
+                RecorderControllerImpl.setSensorsOnDisplay(true);
                 //PanesActivity.toolPicker.getTabAt(1).select();
                 System.out.println("======================================");
                 System.out.println("                  ");
                 System.out.println("======================================");
                 System.out.println(" ");
                 System.out.println(" ");
-                System.out.println("        test ok");
+                System.out.println("       sensors on display = TRUE...");
                 System.out.println(" ");
                 System.out.println(" ");
                 System.out.println("======================================");

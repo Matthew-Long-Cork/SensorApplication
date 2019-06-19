@@ -47,7 +47,7 @@
         android:layout_marginTop="25dp"
         android:gravity="center"
         android:text="@string/website_token"
-        android:textSize="24sp" />
+        android:textSize="22sp" />
 
     <EditText
         android:id="@+id/token_input_textbox"
@@ -60,6 +60,23 @@
         android:hint="@string/token_input_hint"
         android:inputType="text"
         android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/website_connection_type_lbl"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
+        android:gravity="center"
+        android:text="@string/website_connection_type"
+        android:textSize="22sp" />
+
+    <Spinner
+        android:id="@+id/connection_spinner"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginBottom="15dp"
+        android:entries="@array/connection_types" />
 
     <LinearLayout
         android:id="@+id/enter_box"

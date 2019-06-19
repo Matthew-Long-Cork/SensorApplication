@@ -84,7 +84,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     private ViewPager pager;
     public static TabLayout toolPicker;
 
-
     private int TOKEN_REQUEST = 1;
     private int FREQUENCY_CHANGED = 2;
 
@@ -516,6 +515,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         // get the current title
         theTitle = experiment.getTitle();
 
+        //DatabaseConnectionService.mqttInit();
         System.out.println("======================================");
         System.out.println("                  ");
         System.out.println("======================================");
@@ -589,56 +589,22 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 isTokenValid = checkExperimentAccessToken(experiment);
 
                 if (mSelectedTabIndex == 1 && !isTokenValid) {
-
                     // redirect the user to enter the access token
                     Intent tokenRequestIntent = new Intent(getApplicationContext(), AccessTokenSetup.class);
                     // as there is no token yet, send 'theTitle' twice
                     tokenRequestIntent.putExtra("CURRENT_TITLE", theTitle); // current title
                     //tokenRequestIntent.putExtra("OLD_TITLE", theTitle); // current title
                     startActivityForResult(tokenRequestIntent, TOKEN_REQUEST);
-
                 }
                 else{
                     // we have the token already
                     // check which tab is selected
                     if(mSelectedTabIndex == 1){
                         RecorderControllerImpl.setSensorsOnDisplay(true);
-                        System.out.println("\n======================================");
-                        System.out.println("                  2");
-                        System.out.println("======================================");
-                        System.out.println("1");
-                        System.out.println("2");
-                        System.out.println("     tab 1 selected, RecorderControllerImpl.setSensorsOnDisplay(true);");
-                        System.out.println("4");
-                        System.out.println("5");
-                        System.out.println("======================================");
-                        System.out.println("                  2");
-                        System.out.println("======================================");
                     }
-
-                    //
-                    //
-                    //
-                    //
                     if(mSelectedTabIndex != 1){
                         RecorderControllerImpl.setSensorsOnDisplay(false);
-                        System.out.println("\n======================================");
-                        System.out.println("                  2");
-                        System.out.println("======================================");
-                        System.out.println("1");
-                        System.out.println("2");
-                        System.out.println("     tab 1 NOT selected, RecorderControllerImpl.setSensorsOnDisplay(false);");
-                        System.out.println("4");
-                        System.out.println("5");
-                        System.out.println("======================================");
-                        System.out.println("                  2");
-                        System.out.println("======================================");
                     }
-                    //
-                    //
-                    //
-                    //
-
                     // continue to the sensors tab
                     pager.setCurrentItem(mSelectedTabIndex, true);
                     openPaneIfNeeded();
@@ -762,15 +728,9 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 isTokenValid = true;
 
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        result ok");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        onActivityResult -  ok");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
             if (resultCode == RESULT_CANCELED) {
@@ -779,15 +739,9 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 toolPicker.getTabAt(0).select();
 
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        result canceled");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        onActivityResult -  canceled");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
         }
@@ -797,29 +751,17 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             if (resultCode == RESULT_OK) {
                 //PanesActivity.toolPicker.getTabAt(1).select();
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        test ok");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        FREQUENCY_CHANGED ok");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
             if (resultCode == RESULT_CANCELED) {
                 //PanesActivity.toolPicker.getTabAt(1).select();
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        test canceled");
-                System.out.println(" ");
-                System.out.println(" ");
+                System.out.println("        FREQUENCY_CHANGED canceled");
                 System.out.println("======================================");
-                System.out.println("                  ");
                 System.out.println("======================================");
             }
         }
@@ -832,12 +774,8 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         super.onDestroy();
     }
 
-
     @Override
     public void onResume() {
-
-       // RecorderControllerImpl.setSensorsOnDisplay(true);
-
 
         //Intent intent = getIntent();
         super.onResume();
@@ -849,10 +787,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
     @Override
     protected void onPause() {
-
-        //RecorderControllerImpl.setSensorsOnDisplay(false);
-
-
 
         if (!isMultiWindowEnabled()) {
             updateRecorderControllerForPause();
@@ -873,7 +807,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     @Override
     protected void onStop() {
 
-
         //=====================================================================================
             // incomplete Google code
             //
@@ -888,7 +821,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             logPanesState(TrackerConstants.ACTION_PAUSED);
 
             super.onStop();
-
     }
 
     private void logPanesState(String action) {
@@ -923,7 +855,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         if (mExperimentFragment.handleOnBackPressed()) {
             return;
            }
-
         super.onBackPressed();
 
     }

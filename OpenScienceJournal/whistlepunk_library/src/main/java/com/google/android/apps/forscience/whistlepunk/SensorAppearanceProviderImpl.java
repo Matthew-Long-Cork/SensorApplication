@@ -32,6 +32,7 @@ import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SineWavePseudoSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
@@ -189,6 +190,12 @@ public class SensorAppearanceProviderImpl implements SensorAppearanceProvider {
 
         putAppearance(SineWavePseudoSensor.ID, new BuiltInSensorAppearance(R.string.sine_wave,
                 R.drawable.ic_sensors_white_24dp, SineWavePseudoSensor.ID));
+
+        putAppearance(TestSensor.ID, new BuiltInSensorAppearance(
+                R.string.ble_ambient_temperature, R.drawable.ic_sensors_white_24dp,
+                R.string.temperature_units, new SensorAnimationBehavior(
+                R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON),
+                TestSensor.ID));
     }
 
     private void putExternalSensorAppearance(String sensorId, ExternalSensorSpec sensor) {

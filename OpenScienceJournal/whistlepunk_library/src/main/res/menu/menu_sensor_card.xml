@@ -55,4 +55,10 @@
         android:title="@string/btn_sensor_card_close"
         android:id="@+id/btn_sensor_card_close"
         />
+    <item
+        android:id="@+id/action_BT"
+        android:orderInCategory="105"
+        android:title="test- connect sensorTag"
+        android:icon="@drawable/transmit_image"
+        app:showAsAction="never"/>
 </menu>

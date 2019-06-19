@@ -21,12 +21,24 @@
     <!--===============================================================================-->
 
     <!--added:-->
+    <!-- connection_settings_popup - connection types-->
+    <string-array name="connection_types">
+        <item>Please Select</item>
+        <item>HTTP Connection</item>
+        <item>MQTT Connection</item>
+    </string-array>
+
+    <!--added:-->
     <!-- connection_settings_popup - website address label-->
     <string name="website_address">Enter Web Address:</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token label-->
     <string name="website_token">Enter Device Token:</string>
+
+    <!--added:-->
+    <!-- connection_settings_popup - website connection type label-->
+    <string name="website_connection_type">Select Connection Type:</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website input hint-->
@@ -101,7 +113,7 @@
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
 
     <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
-    <string name="action_change_access_token">Change Access Token</string>
+    <string name="action_change_access_token">Change Experience Setup</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
@@ -1495,5 +1507,8 @@ Permissions notice:
 
     <!-- NOTE! newly-added strings should have char limits and context comments
          (see the first elements in this file for examples) -->
+
+    <string name="ble_ambient_temperature"  translatable="false">"Ble Ambient Temperature"</string>
+
 
 </resources>
