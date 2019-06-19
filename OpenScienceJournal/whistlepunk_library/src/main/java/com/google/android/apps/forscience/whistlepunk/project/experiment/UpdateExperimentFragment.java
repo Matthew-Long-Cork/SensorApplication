@@ -236,8 +236,9 @@ public class UpdateExperimentFragment extends Fragment {
                         editor.putString(newValue + "_experimentConnectionType", null);
                     }
                     // if either values are null then prompt user
-                    if(accessToken.equals(null) || connectionType.equals(null)){
+                    if(accessToken.equals("") || connectionType.equals("")){
                         updateConnectionSetup();
+
                     }
                     //==============================================================================
                     //  experiment variables
@@ -462,7 +463,7 @@ public class UpdateExperimentFragment extends Fragment {
 
     private void updateConnectionSetup(){
 
-            Intent SetupIntent = new Intent(getContext(), AccessTokenSetup.class);
+            Intent SetupIntent = new Intent(getContext(), AccessTokenSetupAndConnType.class);
             SetupIntent.putExtra( "CURRENT_TITLE", newValue);
             SetupIntent.putExtra( "OLD_TITLE", previousTitle);
             startActivity(SetupIntent);

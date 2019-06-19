@@ -63,6 +63,7 @@ import com.google.android.apps.forscience.whistlepunk.NoteViewHolder;
 import com.google.android.apps.forscience.whistlepunk.PanesActivity;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.RelativeTimeTextView;
 import com.google.android.apps.forscience.whistlepunk.RxDataController;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearance;
@@ -97,7 +98,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.PrimitiveIterator;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Consumer;
@@ -329,6 +329,9 @@ public class ExperimentDetailsFragment extends Fragment
                                       // show the update experiment details window
                                        UpdateExperimentActivity.launch(getActivity(), mExperimentId);
                                    }
+                                   //===============================================================
+                                   //  check for a stored token and/or connection type
+                                   //===============================================================
                                    // get preferences
                                    storedData = context.getSharedPreferences("info", MODE_PRIVATE);
                                    // THIS IS FOR LATER
@@ -340,19 +343,25 @@ public class ExperimentDetailsFragment extends Fragment
                                    //get the stored connection type for this experiment
                                    String word2 = title + "_experimentConnectionType";
                                    String connType = storedData.getString(word2, "");
-
+                                   //  if there is a token, set it now
                                    if(!accessToken.equals("")){
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
                                    }
+                                   //  if there is a connection type, set it now
                                    if(!connType.equals("")){
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-                                       System.out.println("    the connection type : " + connType);
-                                       System.out.println("======================================");
-                                       System.out.println("======================================");
-
                                        DatabaseConnectionService.setMyConnectionType(connType);
                                    }
+                                  /*
+                                   // if either are missing, prompt the user to input it now
+                                   if(accessToken.equals("") || connType.equals("")){
+                                       // redirect the user to enter the access token/connection type
+                                       Intent tokenRequestIntent = new Intent(getActivity(), AccessTokenSetupAndConnType.class);
+                                       // as there is no token yet, send 'theTitle' twice
+                                       tokenRequestIntent.putExtra("CURRENT_TITLE", title); // current title
+                                       //tokenRequestIntent.putExtra("OLD_TITLE", theTitle); // current title
+                                       startActivity(tokenRequestIntent);
+                                   }
+                                   */
                                    //===============================================================
                                })
                                .toCompletable();
@@ -556,6 +565,7 @@ public class ExperimentDetailsFragment extends Fragment
             return true;
         }
         else if (itemId == R.id.action_edit_experiment) {
+            RecorderControllerImpl.setSensorsOnDisplay(false);
             UpdateExperimentActivity.launch(getActivity(), mExperimentId);
             return true;
         } else if (itemId == R.id.action_archive_experiment
@@ -772,7 +782,7 @@ public class ExperimentDetailsFragment extends Fragment
 
     private void changeAccessToken(){
 
-        Intent SetupIntent = new Intent(getActivity(), AccessTokenSetup.class);
+        Intent SetupIntent = new Intent(getActivity(), AccessTokenSetupAndConnType.class);
         SetupIntent.putExtra( "CURRENT_TITLE", mExperiment.getTitle());
         SetupIntent.putExtra( "OLD_TITLE", ""); // BLANK VALUE
         startActivity(SetupIntent);

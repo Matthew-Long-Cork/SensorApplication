@@ -15,7 +15,7 @@ import android.widget.Toast;
 import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.R;
 
-public class AccessTokenSetup extends AppCompatActivity  {
+public class AccessTokenSetupAndConnType extends AppCompatActivity  {
 
     // declare the variables
     private String experimentAccessToken, experimentConnectionType;
