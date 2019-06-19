@@ -148,7 +148,6 @@ public class RecorderControllerImpl implements RecorderController {
         System.out.println("======================================");
         System.out.println("======================================");
 
-
         sensorsOnDisplay = state;
     }
     /**

@@ -43,11 +43,9 @@ import android.widget.ProgressBar;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
-import com.google.android.apps.forscience.whistlepunk.metadata.GoosciExperiment;
 import com.google.android.apps.forscience.whistlepunk.performance.PerfTrackerProvider;
-import com.google.android.apps.forscience.whistlepunk.project.experiment.AccessTokenSetup;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.AccessTokenSetupAndConnType;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
-import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import io.reactivex.Observable;
@@ -65,7 +63,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     private final SnackbarManager mSnackbarManager;
 
     private ProgressBar mRecordingBar;
-    private int mSelectedTabIndex;
+    private static int mSelectedTabIndex;
     private PanesBottomSheetBehavior mBottomBehavior;
     private boolean mTabsInitialized;
     private BehaviorSubject<Integer> mActivityHeight = BehaviorSubject.create();
@@ -111,10 +109,19 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
             switch (mDrawerState) {
                 case PanesBottomSheetBehavior.STATE_COLLAPSED:
+                    if(mSelectedTabIndex == 1) {
+                        RecorderControllerImpl.setSensorsOnDisplay(false);
+                    }
                     return 0;
                 case PanesBottomSheetBehavior.STATE_EXPANDED:
+                    if(mSelectedTabIndex == 1) {
+                        RecorderControllerImpl.setSensorsOnDisplay(true);
+                    }
                     return mActivityHeight;
                 case PanesBottomSheetBehavior.STATE_MIDDLE:
+                    if(mSelectedTabIndex == 1) {
+                        RecorderControllerImpl.setSensorsOnDisplay(true);
+                    }
                     return mActivityHeight / 2;
             }
 
@@ -514,21 +521,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         storedData = getSharedPreferences("info", MODE_PRIVATE);
         // get the current title
         theTitle = experiment.getTitle();
-
-        //DatabaseConnectionService.mqttInit();
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("        the checkExperimentAccessToken() title is: " + theTitle);
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
-
-
         // get the current token
         experimentAccessToken = storedData.getString(theTitle + "_experimentAccessToken", experimentAccessToken);
         // if null or blank invalid is TRUE
@@ -536,18 +528,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
         // if invalid res is false
         if(invalid)
             res = false;
-
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("        Token valid: " + res);
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
 
         return res;
     }
@@ -590,7 +570,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
                 if (mSelectedTabIndex == 1 && !isTokenValid) {
                     // redirect the user to enter the access token
-                    Intent tokenRequestIntent = new Intent(getApplicationContext(), AccessTokenSetup.class);
+                    Intent tokenRequestIntent = new Intent(getApplicationContext(), AccessTokenSetupAndConnType.class);
                     // as there is no token yet, send 'theTitle' twice
                     tokenRequestIntent.putExtra("CURRENT_TITLE", theTitle); // current title
                     //tokenRequestIntent.putExtra("OLD_TITLE", theTitle); // current title
@@ -608,10 +588,8 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                     // continue to the sensors tab
                     pager.setCurrentItem(mSelectedTabIndex, true);
                     openPaneIfNeeded();
-
                 }
             }
-
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
@@ -634,7 +612,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
         mTabsInitialized = false;
         toolPicker.getTabAt(mSelectedTabIndex).select();
-
         if (mInitialDrawerState >= 0) {
             mBottomBehavior.setState(mInitialDrawerState);
         } else if (experiment.getLabelCount() > 0 || experiment.getTrialCount() > 0) {
@@ -726,43 +703,11 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
                 openPaneIfNeeded();
                 //we now have a token
                 isTokenValid = true;
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        onActivityResult -  ok");
-                System.out.println("======================================");
-                System.out.println("======================================");
             }
             if (resultCode == RESULT_CANCELED) {
                 // user canceled this intent
                 // return to tab zero
                 toolPicker.getTabAt(0).select();
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        onActivityResult -  canceled");
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
-        }
-        if (requestCode == FREQUENCY_CHANGED) {
-
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                //PanesActivity.toolPicker.getTabAt(1).select();
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        FREQUENCY_CHANGED ok");
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
-            if (resultCode == RESULT_CANCELED) {
-                //PanesActivity.toolPicker.getTabAt(1).select();
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        FREQUENCY_CHANGED canceled");
-                System.out.println("======================================");
-                System.out.println("======================================");
             }
         }
     }
@@ -819,7 +764,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
             updateRecorderControllerForPause();
             logPanesState(TrackerConstants.ACTION_PAUSED);
-
             super.onStop();
     }
 
