@@ -24,10 +24,10 @@ public class DatabaseConnectionService {
 
     private static String myWebsite ="", myWriteToken ="", myconnType;
     private static String experimentName;
-
     private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
     private static final String mqttTag = "v1/devices/me/telemetry";
     private static MqttAndroidClient mqttAndroidClient;
+    private static boolean isConnected = false;
 
     public static void setMyWebsiteAddress(String website){
         myWebsite = website;
@@ -37,23 +37,26 @@ public class DatabaseConnectionService {
 
     public static void setMyConnectionType(String connType){
         myconnType = connType;
+        // if mqtt is selected and there is not a current connection. Connect
         if(myconnType.equals("MQTT Connection")) {
-            mqttInit();
+            if (mqttAndroidClient == null) {
+                mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
+            }
+            if (!isConnected) {
+                mqttInit();
+            }
         }
     }
 
     public static void sendData(DataObject dataObject){
+
         // get the experiment name
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
-        //sendDataHttp(dataObject);
-
-
         // check which option was selected:
         if(myconnType.equals("MQTT Connection"))
             sendDataMqtt(dataObject);
         else
             sendDataHttp(dataObject);
-
     }
 
     //==============================================================================================
@@ -108,8 +111,8 @@ public class DatabaseConnectionService {
     //  MQTT CONNECTION
     //==============================================================================================
     public static void sendDataMqtt(DataObject dataObject){
-        if(mqttAndroidClient.isConnected()) {
 
+        if(mqttAndroidClient.isConnected()) {
             String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
             try {
                 mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
@@ -122,6 +125,7 @@ public class DatabaseConnectionService {
                 System.out.println("    data : " + jsonData);
                 System.out.println("======================================");
                 System.out.println("======================================");
+
             } catch (Exception e) {
                 e.printStackTrace();
             } ;
@@ -130,18 +134,18 @@ public class DatabaseConnectionService {
 
     public static void mqttInit(){
 
-        mqttAndroidClient = new MqttAndroidClient( ExperimentDetailsFragment.context, mqttURL, "AppClient");
-
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
-        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setAutomaticReconnect(false);
         mqttConnectOptions.setUserName(myWriteToken);
 
         try {
+
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e("MQTT Connection", "Success");
+                    isConnected = true;
                 }
 
                 @Override
@@ -152,10 +156,19 @@ public class DatabaseConnectionService {
         }catch (Exception e){e.printStackTrace();}
     }
 
-    public static void mqttDisconnect(){
-        try {
-            mqttAndroidClient.disconnect();
+    public static void mqttDisconnect() {
 
-        }catch (Exception e){e.printStackTrace();}
+        if(isConnected){
+            try {
+                mqttAndroidClient.disconnect();
+                isConnected = false;
+                mqttAndroidClient.unregisterResources();
+                //mqttAndroidClient.close();
+                Log.e("MQTT disconnect", "Success");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

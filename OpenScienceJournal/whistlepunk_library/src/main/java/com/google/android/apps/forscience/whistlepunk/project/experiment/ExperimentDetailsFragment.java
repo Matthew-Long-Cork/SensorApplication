@@ -262,7 +262,6 @@ public class ExperimentDetailsFragment extends Fragment
 
         // experiment is active
         isActive = true;
-
         super.onStart();
 
         WhistlePunkApplication.getUsageTracker(getActivity()).trackScreenView(
@@ -346,6 +345,12 @@ public class ExperimentDetailsFragment extends Fragment
                                        DatabaseConnectionService.setMyAccessToken(accessToken);
                                    }
                                    if(!connType.equals("")){
+                                       System.out.println("======================================");
+                                       System.out.println("======================================");
+                                       System.out.println("    the connection type : " + connType);
+                                       System.out.println("======================================");
+                                       System.out.println("======================================");
+
                                        DatabaseConnectionService.setMyConnectionType(connType);
                                    }
                                    //===============================================================
@@ -405,7 +410,6 @@ public class ExperimentDetailsFragment extends Fragment
             mIncludeArchived = savedInstanceState.getBoolean(EXTRA_INCLUDE_ARCHIVED, false);
             getActivity().invalidateOptionsMenu();
         }
-
         return view;
     }
 
@@ -541,8 +545,12 @@ public class ExperimentDetailsFragment extends Fragment
             if(isActive) {
                 isActive = false;
                 // disconnect the MQTT connection
-                DatabaseConnectionService.mqttDisconnect();  // this is temporary
-
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("         calling mqtt disconnect");
+                System.out.println("======================================");
+                System.out.println("======================================");
+                DatabaseConnectionService.mqttDisconnect();
             }
             displayNamePromptOrGoUp();
             return true;
@@ -612,7 +620,12 @@ public class ExperimentDetailsFragment extends Fragment
         if(isActive) {
             isActive = false;
             // disconnect the MQTT connection
-            DatabaseConnectionService.mqttDisconnect();  // this is temporary
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("         calling mqtt disconnect");
+            System.out.println("======================================");
+            System.out.println("======================================");
+            DatabaseConnectionService.mqttDisconnect();
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
