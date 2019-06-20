@@ -12,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
+import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
+import com.google.android.apps.forscience.whistlepunk.sensors.AmbientLightSensor;
 import com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker;
 
 import java.util.ArrayList;
@@ -80,7 +82,7 @@ public class FrequencyPopup extends Activity {
                         if(currentlySelected.equals("Please Select")){
                             //setFrequencyBtn.setEnabled(false);
                         }
-                        // get the selected units and set the number picker values
+                        // get the selected units anmd set the number picker values
                         if(currentlySelected.equals("Millisecond(s)")){
                             milliSeconds = 1;
                             showPicker(100, 900,100, 100);
@@ -138,17 +140,24 @@ public class FrequencyPopup extends Activity {
                 editor.putInt(experimentName_sensor_frequency, frequencyPicked );
                 //finally, call the commit() method.
                 editor.commit();
-                //Toast.makeText(this, mySensorDisplayName + " Sensor will send data every " + frequencyPicked + " milliseconds to " + databaseName, Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, mySensorDisplayName + " Sensor will send data every " + frequencyPicked + " milliseconds to " + databaseName, Toast.LENGTH_LONG).show();
 
-                // stop observing the sensor and when we return top the display screen we
-                // will automatically restart observing.
-                RecorderControllerImpl.stopObservingSelectedSensor(currentSensorName,"unknown");
+                // call the sensor here to collect the new frequency ... but how ???
+                doThings();
+
+                if(mySensorDisplayName == "Light"){
+                    Toast.makeText(this, "match !!!", Toast.LENGTH_LONG).show();
+                }
+
                 //then finish
                 finish();
             }
         });
     }// end of onCreate()
 
+    private void doThings(){
+        // change the sensor from here///
+    }
     private void setupSensorDisplayName(){
 
         // get the intent and get the string passed in

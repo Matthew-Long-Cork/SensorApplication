@@ -64,6 +64,7 @@ import com.google.android.apps.forscience.whistlepunk.NoteViewHolder;
 import com.google.android.apps.forscience.whistlepunk.PanesActivity;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.RelativeTimeTextView;
 import com.google.android.apps.forscience.whistlepunk.RxDataController;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearance;
@@ -130,7 +131,6 @@ public class ExperimentDetailsFragment extends Fragment
     private BroadcastReceiver mBroadcastReceiver;
     private String mActiveTrialId;
     private TextView mEmptyView;
-
     public static Context context;
 
     //==============================================================================================
@@ -182,10 +182,10 @@ public class ExperimentDetailsFragment extends Fragment
 
         // this is a ref for getting the context  for storedData
         ExperimentDetailsFragment.context = getActivity();
-        DatabaseConnectionService.mqttInit();
-        //storedData = this.getActivity().getSharedPreferences("info", MODE_PRIVATE);
-        // collect the stored values ... here???
-        // check if the database connections page was filled in. If so, collect that stored data
+
+        mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
+        setHasOptionsMenu(true);
+    }
 
     //==============================================================================================
     // This function is called by each sensor when the sensor starts up
@@ -611,14 +611,7 @@ public class ExperimentDetailsFragment extends Fragment
             return true;
         }
         // check isActive state
-        System.out.println("======================================");
-        System.out.println("        handleOnBackPressed() isActive is: " + isActive);
-        System.out.println("======================================");
-
-        DatabaseConnectionService.mqttDisconnect();
-
         if(isActive) {
-
             isActive = false;
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
