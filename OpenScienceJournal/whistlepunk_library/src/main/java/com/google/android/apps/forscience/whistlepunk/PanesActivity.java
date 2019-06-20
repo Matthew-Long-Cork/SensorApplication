@@ -85,6 +85,9 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     private int TOKEN_REQUEST = 1;
     private int FREQUENCY_CHANGED = 2;
 
+    public static int getTabIndex(){
+       return mSelectedTabIndex;
+    }
     public PanesActivity() {
 
         mSnackbarManager = new SnackbarManager();
@@ -690,6 +693,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             mExperimentFragment.setExperimentId(experiment.getExperimentId());
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

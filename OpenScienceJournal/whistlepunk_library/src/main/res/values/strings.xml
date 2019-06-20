@@ -113,7 +113,7 @@
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
 
     <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
-    <string name="action_change_access_token">Change Experiemnt Setup</string>
+    <string name="action_change_access_token">Change Experiment Setup</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->

@@ -14,11 +14,12 @@ import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 
 public class AccessTokenSetupAndConnType extends AppCompatActivity  {
 
     // declare the variables
-    private String experimentAccessToken, experimentConnectionType;
+    private String currentexperimentAccessToken, experimentAccessToken, currentExperimentConnectionType, experimentConnectionType;
     private Button enterBtn, cancelBtn, confirmBtn;
     private Spinner spinner;
     private EditText websiteTokenTxtBox;
@@ -55,25 +56,20 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity  {
         String currentTitle = intent.getStringExtra("CURRENT_TITLE");
 
         // get the stored web token, if any
-        experimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
+        currentexperimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
         // get the stored connection type, if any
-        experimentConnectionType = storedData.getString( currentTitle + "_experimentConnectionType", experimentConnectionType);
-
-        //if the old title is not "" then get it and display it
-        if(!currentTitle.equals("")){
-            experimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
-            websiteTokenTxtBox.setText(experimentAccessToken);
-        }
+        currentExperimentConnectionType = storedData.getString( currentTitle + "_experimentConnectionType", experimentConnectionType);
 
         //if there is currently a token saved, get it and display it
-        if (experimentAccessToken != null) {
-            websiteTokenTxtBox.setText(experimentAccessToken);
+        if(!currentexperimentAccessToken.equals("")){
+            websiteTokenTxtBox.setText(currentexperimentAccessToken);
         }
+
         //if there is currently a connection type saved, get it and display it
-        if (experimentConnectionType != null) {
-            if (experimentConnectionType.equals("HTTP Connection"))
+        if (currentExperimentConnectionType != null) {
+            if (currentExperimentConnectionType.equals("HTTP Connection"))
                 spinner.setSelection(1);
-            else if(experimentConnectionType.equals("MQTT Connection"))
+            else if(currentExperimentConnectionType.equals("MQTT Connection"))
                 spinner.setSelection(2);
         }
 
@@ -120,36 +116,22 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity  {
         //=====================================================================================
         confirmBtn.setOnClickListener((View v) -> {
 
-            /*
-            //collect the input data
-            experimentAccessToken = websiteTokenTxtBox.getText().toString();
+            // interface used for modifying values in a sharedPreference
+            SharedPreferences.Editor editor = storedData.edit();
 
-            //check if there was data inputted
-           if (experimentAccessToken.equals("")) {
-                Toast.makeText(getApplicationContext(), "The access token is needed.", Toast.LENGTH_SHORT).show();
-            }
-            */
-
-            // if the text boxes have data, show confirmation window
-            //if (!experimentAccessToken.equals("")) {
-                // interface used for modifying values in a sharedPreference
-                SharedPreferences.Editor editor = storedData.edit();
-
-               // String currentToken = currentTitle + "_experimentAccessToken";
-                // remove the old variable as it will no longer be referenced
-               // storedData.edit().remove(currentToken);
-                // then add the new token
+            // before we go swapping out stored values, check if they differ from the current values
+            if(currentexperimentAccessToken != experimentAccessToken)
                 editor.putString(currentTitle + "_experimentAccessToken", experimentAccessToken);
+
+            if(currentExperimentConnectionType != experimentConnectionType)
                 editor.putString(currentTitle + "_experimentConnectionType", experimentConnectionType);
 
-                //finally, when you are done adding the values, call the commit() method.
-                editor.commit();
-
-                // returns RESULT_OK
-                Intent resultIntent = new Intent();
-                setResult(RESULT_OK, resultIntent);
-                finish();
-                //}
+            //finally, when you are done adding the values, call the apply() method.
+            editor.apply();  // done in the background
+            // returns RESULT_OK
+            Intent resultIntent = new Intent();
+            setResult(RESULT_OK, resultIntent);
+            finish();
         });
 
         //=====================================================================================
