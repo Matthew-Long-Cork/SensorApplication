@@ -113,7 +113,7 @@
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
 
     <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
-    <string name="action_change_access_token">Change Experience Setup</string>
+    <string name="action_change_access_token">Change Experiemnt Setup</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
@@ -452,7 +452,7 @@
     <string name="export_run_chooser_title">Save to\u2026</string>
 
     <!-- Settings strings -->
-    <skip/>
+    <skip />
 
     <!-- Title of a settings item that displays the app's version [CHAR_LIMIT=25]-->
     <string name="settings_version_title">Version</string>
@@ -858,7 +858,7 @@
     <string name="menu_btn_content_description">menu</string>
 
     <!-- Age verifier strings -->
-    <skip/>
+    <skip />
 
     <!-- Header on age verifier screen tells the user what this screen is doing [CHAR_LIMIT=30]-->
     <string name="age_verifier_header">Verify your age</string>
@@ -1508,7 +1508,7 @@ Permissions notice:
     <!-- NOTE! newly-added strings should have char limits and context comments
          (see the first elements in this file for examples) -->
 
-    <string name="ble_ambient_temperature"  translatable="false">"Ble Ambient Temperature"</string>
+    <string name="ble_ambient_temperature" translatable="false">"Ble Ambient Temperature"</string>
 
 
 </resources>

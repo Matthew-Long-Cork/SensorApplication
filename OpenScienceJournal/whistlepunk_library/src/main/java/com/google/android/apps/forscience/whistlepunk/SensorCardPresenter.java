@@ -53,6 +53,7 @@ import android.widget.Toast;
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
 import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
+import com.google.android.apps.forscience.whistlepunk.blew.testBTActivity;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesActivity;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
@@ -727,6 +728,10 @@ public class SensorCardPresenter {
                 else if (itemId == R.id.action_BT) {
                     BleSensorManager ble = BleSensorManager.getInstance();
                     ble.scan();
+                }
+                else if (itemId == R.id.action_Test) {
+                    Intent intent = new Intent(mParentFragment.getActivity(), testBTActivity.class);
+                    mParentFragment.getActivity().startActivity(intent);
                 }
                 return false;
             }
