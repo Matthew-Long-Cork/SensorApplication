@@ -177,7 +177,7 @@ public class SensorCardPresenter {
     private static final String[] SENSOR_ID_ORDER = {AmbientLightSensor.ID, DecibelSensor.ID,
             LinearAccelerometerSensor.ID, AccelerometerSensor.Axis.X.getSensorId(),
             AccelerometerSensor.Axis.Y.getSensorId(), AccelerometerSensor.Axis.Z.getSensorId(),
-            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID, TestSensor.ID};
+            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID/*, TestSensor.ID*/};
 
     // Update the back data textview every .25 seconds maximum.
     private static final int MAX_TEXT_UPDATE_TIME_MS = 250;
@@ -726,11 +726,12 @@ public class SensorCardPresenter {
                     return getUserInputForFrequency();
                 }
                 else if (itemId == R.id.action_BT) {
-                    BleSensorManager ble = BleSensorManager.getInstance();
-                    ble.scan();
+                    //BleSensorManager ble = BleSensorManager.getInstance();
+                    //ble.scan();
                 }
                 else if (itemId == R.id.action_Test) {
                     Intent intent = new Intent(mParentFragment.getActivity(), testBTActivity.class);
+                    intent.putExtra("experiment_id", mExperimentId);
                     mParentFragment.getActivity().startActivity(intent);
                 }
                 return false;

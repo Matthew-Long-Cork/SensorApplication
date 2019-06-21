@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,7 +23,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.javalib.MaybeConsumer;
+import com.google.android.apps.forscience.javalib.Success;
+import com.google.android.apps.forscience.whistlepunk.AppSingleton;
+import com.google.android.apps.forscience.whistlepunk.DataController;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.SensorRegistry;
+import com.google.android.apps.forscience.whistlepunk.devicemanager.ConnectableSensorRegistry;
+import com.google.android.apps.forscience.whistlepunk.devicemanager.ExpandableDeviceAdapter;
+import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesRecyclerFragment;
+import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+
+import junit.framework.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,7 +45,7 @@ public class testBTActivity extends AppCompatActivity {
 
     //declarations
     private TextView note;
-    private Button search_btn, paired_btn;
+    private Button search_btn, paired_btn, disc_btn;
     private int REQUEST__ENABLE_BT_CODE = 99;
     private boolean isBTAvailable = false, isLocationAvailable = false,
             isBluetoothEnabled = false, isDevicePaired =false, isReceiverRegistered = false;
@@ -45,21 +58,44 @@ public class testBTActivity extends AppCompatActivity {
     private ArrayAdapter<String> BTArrayAdapter;
     private IntentFilter filter;
 
+    private String experimentID;
+    private BleSensorManager bleSensorManager;
+    private SensorRegistry registry;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_bt);
 
+        experimentID = getIntent().getStringExtra("experiment_id");
+        bleSensorManager = BleSensorManager.getInstance();
+        registry = AppSingleton.getInstance(testBTActivity.this).getSensorRegistry();
+
         // initialisations
         note = findViewById(R.id.bt_note_tv);
         search_btn = findViewById(R.id.BT_btn);
         paired_btn = findViewById(R.id.BT_btn2);
+
+        disc_btn = findViewById(R.id.disc_btn);
+
         myPairedDeviceListView = findViewById(R.id.paired_device_list);
         myNewDeviceListView = findViewById(R.id.new_device_list);
 
+
+        myPairedDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                bleSensorManager.stopScan();
+                registry.addBuiltInSensor(new TestSensor());
+                bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
+
+                Toast.makeText(getApplicationContext(), "Bluetooth Device Connected", Toast.LENGTH_SHORT);
+            }
+        });
+
         // check for location permission and BT status
-        checkLocationPermission(); // set to true in result()
-        isBTAvailable = checkBluetoothStatus();
+        //checkLocationPermission(); // set to true in result()
+        // isBTAvailable = checkBluetoothStatus();
 
         // create the arrayAdapter that contains the BTDevices, and set it to the ListView
         BTArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
@@ -78,24 +114,8 @@ public class testBTActivity extends AppCompatActivity {
         // this is the search button
         //==========================================================================================
         search_btn.setOnClickListener((View v) -> {
-
-            // if the button is pressed when in the process of discovering, so cancel the discovery
-            if (BTAdapter.isDiscovering()) {
-
-                BTAdapter.cancelDiscovery();
-                // reset the button text
-                search_btn.setText("Search for new devices");
-            }
-            else if(isBTAvailable) {
-
-                getPairedDevices(v);
-                findNewDevices(v);
-            }
-            else
-                Toast.makeText(this, "Needs Bluetooth to be on...", Toast.LENGTH_SHORT).show();
-
-            // add BTArrayAdapter to the new list
-            myNewDeviceListView.setAdapter(BTArrayAdapter);
+            myPairedDeviceListView.setAdapter(BTArrayAdapter);
+            bleSensorManager.scan(BTArrayAdapter);
         });
 
         //==========================================================================================
@@ -103,45 +123,14 @@ public class testBTActivity extends AppCompatActivity {
         //==========================================================================================
         paired_btn.setOnClickListener((View v) -> {
 
-            if(isBTAvailable)
-                getPairedDevices(v);
-            else
-                Toast.makeText(this, "Needs Bluetooth to be on...", Toast.LENGTH_SHORT).show();
-
-            // add BTArrayAdapter to the paired list
-            myPairedDeviceListView.setAdapter(BTArrayAdapter);
         });
 
-        // myPairedDeviceListView.setAdapter(BTArrayAdapter);
-        //
-        //
-        // make two list views and if the second one "new devices list" is clicked:
-        // do below code
-        //
-        //
-
-        myNewDeviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            private Object ConnectToDeviceThread;
-
-            public void onItemClick(AdapterView<?> adapter, View v, int position, long id) {
-
-                // attempt to pair the newly selected device
-                isDevicePaired =  pairDevice(newDevices.get(position));
-                //if paired...
-                if(isDevicePaired){
-
-                    ConnectToDeviceThread = new ConnectToDeviceThread(newDevices.get(position));
-                    ((ConnectToDeviceThread) ConnectToDeviceThread).run();
-                }
-            }
+        disc_btn.setOnClickListener((View v) -> {
+            registry.refreshBuiltinSensors(testBTActivity.this);
+            bleSensorManager.disconnect();
         });
+    };
 
-    } // end of onCreate()
-
-    //==========================================================================================
-    // bluetooth setup - check status
-    //==========================================================================================
     protected boolean checkBluetoothStatus() {
 
         BTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -394,5 +383,4 @@ public class testBTActivity extends AppCompatActivity {
     }
 
 } // end of class
-
 

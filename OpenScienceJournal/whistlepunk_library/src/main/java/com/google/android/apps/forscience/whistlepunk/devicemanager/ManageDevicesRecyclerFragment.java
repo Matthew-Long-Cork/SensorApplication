@@ -62,10 +62,12 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     private static final String KEY_MY_DEVICES = "state_key_my_devices";
     private static final String KEY_AVAILABLE_DEVICES = "state_key_available_devices";
 
+    public static ConnectableSensorRegistry mRegistry;
+
     private ExpandableDeviceAdapter mMyDevices;
     private ExpandableServiceAdapter mAvailableDevices;
     private Menu mMainMenu;
-    private ConnectableSensorRegistry mRegistry;
+    //private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
 
     @Override

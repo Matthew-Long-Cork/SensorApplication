@@ -47,6 +47,12 @@
             android:visibility="invisible"
             android:text="Scroll and select the device:" />
 
+        <Button
+            android:id="@+id/disc_btn"
+            android:layout_width="match_parent"
+            android:layout_height="135dp"
+            android:text="Disconnect" />
+
         <ListView
             android:id="@+id/new_device_list"
             android:layout_width="250dp"
