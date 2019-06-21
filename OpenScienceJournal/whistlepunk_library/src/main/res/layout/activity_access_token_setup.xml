@@ -41,7 +41,7 @@
         android:textSize="18sp" />
 
     <TextView
-        android:id="@+id/website_token_lbl"
+        android:id="@+id/website_address_lbl"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -50,7 +50,7 @@
         android:textSize="22sp" />
 
     <EditText
-        android:id="@+id/token_input_textbox"
+        android:id="@+id/website_address_input_textbox"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
@@ -85,7 +85,7 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/connection_btn"
+            android:id="@+id/enter_btn"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:background="@drawable/rounded_button"

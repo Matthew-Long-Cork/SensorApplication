@@ -1,8 +1,5 @@
 package com.google.android.apps.forscience.whistlepunk;
 
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
-import android.util.JsonReader;
 import android.util.Log;
 
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
@@ -14,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 
 import java.util.Arrays;
 
-import dagger.multibindings.ElementsIntoSet;
 import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -24,10 +20,10 @@ import okhttp3.Response;
 
 public class DatabaseConnectionService {
 
-    private static String myWebsite ="", myWriteToken ="", myconnType;
+    private static String myWebsite ="", myWriteToken ="", myConnType;
     private static String experimentName;
 
-    private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
+    private static String mqttURL, url;
     private static final String mqttTag = "v1/devices/me/telemetry";
 
     private static MqttAndroidClient mqttAndroidClient;
@@ -41,16 +37,19 @@ public class DatabaseConnectionService {
 
     public static void setMyConnectionType(String connType){
 
-        myconnType = connType;
+        myConnType = connType;
         // if mqtt is selected and there is not a current connection. Connect
-        if(myconnType.equals("MQTT Connection")) {
+        if(myConnType.equals("MQTT Connection")) {
             if (mqttAndroidClient == null) {
+                mqttURL = "tcp://" + myWebsite + ":1883";
                 mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
             }
             if (!mqttAndroidClient.isConnected()) {
                 mqttInit();
             }
         }
+        else
+            url  = "http://" + myWebsite;
     }
 
     public static void sendData(DataObject dataObject){
@@ -58,7 +57,7 @@ public class DatabaseConnectionService {
         // get the experiment name
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
         // check which option was selected:
-        if(myconnType.equals("MQTT Connection"))
+        if(myConnType.equals("MQTT Connection"))
             sendDataMqtt(dataObject);
         else
             sendDataHttp(dataObject);
@@ -74,13 +73,19 @@ public class DatabaseConnectionService {
         sensorType = dataObject.Id;
         sensorValue = dataObject.dataValue;
 
+
+        System.out.println("======================================");
+        System.out.println("======================================");
+        System.out.println("    TRYING TO SEND TO: ");
+        System.out.println("    website address: " + url);
+        System.out.println("    website token: " + myWriteToken);
+        System.out.println("======================================");
+        System.out.println("======================================");
+
         //data to send
         data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
 
-        //==========================================================================================
-        myWebsite = "http://thingsboard.tec-gateway.com";              //<-- for testing
-        //==========================================================================================
-        myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
+        myUrl = url + "/api/v1/" + myWriteToken + "/telemetry";
 
         try{
 
@@ -117,7 +122,15 @@ public class DatabaseConnectionService {
     //==============================================================================================
     public static void sendDataMqtt(DataObject dataObject){
 
-        if(mqttAndroidClient.isConnected()) {
+        System.out.println("======================================");
+        System.out.println("======================================");
+        System.out.println("    TRYING TO SEND TO: ");
+        System.out.println("    website address: " + myWebsite);
+        System.out.println("    website token: " + myWriteToken);
+        System.out.println("======================================");
+        System.out.println("======================================");
+
+        if(!mqttAndroidClient.equals(null) && mqttAndroidClient.isConnected()) {
             String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
             try {
                 mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);

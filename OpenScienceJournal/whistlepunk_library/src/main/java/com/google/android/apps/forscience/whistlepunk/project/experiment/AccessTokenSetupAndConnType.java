@@ -33,10 +33,10 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity  {
         headerMessage = findViewById(R.id.connection_setup_lbl);
         message1 = findViewById(R.id.connection_note_lbl);
         message2 = findViewById(R.id.connection_note_lbl2);
-        websiteTokenTxtBox = findViewById(R.id.token_input_textbox);
+        websiteTokenTxtBox = findViewById(R.id.website_address_input_textbox);
 
         spinner = (Spinner) findViewById(R.id.connection_spinner);
-        enterBtn = findViewById(R.id.connection_btn);
+        enterBtn = findViewById(R.id.enter_btn);
         cancelBtn = findViewById(R.id.cancel_btn);
         confirmBtn = findViewById(R.id.confirm_btn);
 

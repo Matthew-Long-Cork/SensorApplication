@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,9 +18,10 @@ import com.google.android.apps.forscience.whistlepunk.R;
 public class DatabaseLinkSetup extends Activity {
 
     // declare the variables
-    private String websiteAddress;
+    private String websiteAddress, currentWebsiteAddress, defaultAddress, currentWebsiteAddressType;
     private Button enterBtn, cancelBtn, confirmBtn;
     private EditText websiteAddressTxtBox;
+    private Spinner spinner;
     private TextView message1, message2, headerMessage;
     private SharedPreferences storedData;
     private static boolean CONNECTION_SETUP = false;
@@ -33,8 +36,9 @@ public class DatabaseLinkSetup extends Activity {
         headerMessage = findViewById(R.id.connection_setup_lbl);
         message1 = findViewById(R.id.connection_note_lbl);
         message2 = findViewById(R.id.connection_note_lbl2);
-        websiteAddressTxtBox = findViewById(R.id.token_input_textbox);
-        enterBtn = findViewById(R.id.connection_btn);
+        spinner = (Spinner) findViewById(R.id.website_address_type_spinner);
+        websiteAddressTxtBox = findViewById(R.id.website_address_input_textbox);
+        enterBtn = findViewById(R.id.enter_btn);
         cancelBtn = findViewById(R.id.cancel_btn);
         confirmBtn = findViewById(R.id.confirm_btn);
 
@@ -42,18 +46,68 @@ public class DatabaseLinkSetup extends Activity {
         cancelBtn.setVisibility(View.INVISIBLE);
         confirmBtn.setVisibility(View.INVISIBLE);
         message2.setVisibility(View.INVISIBLE);
+        // disable input
+        websiteAddressTxtBox.setEnabled(false);
 
+        //=====================================================================================
+        defaultAddress = "thingsboard.tec-gateway.com";
         //=====================================================================================
         // check if there is stored data for these values
         // Note: The user may want to stay connected the current connection configuration
         //=====================================================================================
-        storedData = getSharedPreferences("info", MODE_PRIVATE);
-        // get the stored web address, if any
-        websiteAddress = storedData.getString("websiteAddress", websiteAddress);
 
-        if (websiteAddress != null) {
-            websiteAddressTxtBox.setText(websiteAddress);
+        storedData = getSharedPreferences("info", MODE_PRIVATE);
+        // get the stored web address type, if any
+        currentWebsiteAddressType = storedData.getString("websiteAddressType", currentWebsiteAddressType);
+        // get the stored web address, if any
+        currentWebsiteAddress = storedData.getString("websiteAddress", currentWebsiteAddress);
+
+        /*
+        //if there is currently a connection type saved, get it and display it
+        if (currentWebsiteAddressType != null) {
+            if (currentWebsiteAddressType.equals("Default (Thingsboards)")) {
+                spinner.setSelection(1);
+                websiteAddressTxtBox.setText(defaultAddress);
+            }
+            if (currentWebsiteAddressType.equals("Custom Address")) {
+                spinner.setSelection(2);
+                websiteAddressTxtBox.setEnabled(true);
+                if(!currentWebsiteAddress.equals(defaultAddress))
+                    websiteAddressTxtBox.setText(currentWebsiteAddress);
+            }
         }
+        */
+
+        // when option selected
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                // get option
+                int optionIndex = spinner.getSelectedItemPosition();
+                if (optionIndex == 1){
+                    // if one, default
+                    websiteAddressTxtBox.setText(defaultAddress);
+                    websiteAddressTxtBox.setEnabled(false);
+                }
+                if (optionIndex == 2){
+                    // allow text input
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("    default: " + defaultAddress);
+                    System.out.println("    current: " + currentWebsiteAddress);
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    websiteAddressTxtBox.setEnabled(true);
+                    if(!(currentWebsiteAddress.equals(defaultAddress))) {
+                        websiteAddressTxtBox.setText(currentWebsiteAddress);
+                    }
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
+
 
         //=====================================================================================
         // call function when 'enter' button is clicked
@@ -106,15 +160,13 @@ public class DatabaseLinkSetup extends Activity {
         //=====================================================================================
         cancelBtn.setOnClickListener((View v) -> {
 
-            // clear the variables
+            // clear the value
             websiteAddress = "";
-
-            // enable the text box for text enter
-            websiteAddressTxtBox.setEnabled(true);
-
-            //clear the text fields and focus on the website input field
+            //clear the text field
             websiteAddressTxtBox.getText().clear();
-            websiteAddressTxtBox.requestFocus();
+            // disable the text box
+            websiteAddressTxtBox.setEnabled(false);
+            spinner.setSelection(0);
 
             // switch the elements back:
             // show what we need to hide
