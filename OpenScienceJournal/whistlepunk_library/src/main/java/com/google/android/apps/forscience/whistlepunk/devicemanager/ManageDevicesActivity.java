@@ -143,7 +143,7 @@ public class ManageDevicesActivity extends AppCompatActivity implements
     }
 
     private void registerBtReceiverIfNecessary() {
-        if (mBtReceiver == null) {
+        /*if (mBtReceiver == null) {
             mBtReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -153,7 +153,7 @@ public class ManageDevicesActivity extends AppCompatActivity implements
             IntentFilter filter = new IntentFilter();
             filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
             registerReceiver(mBtReceiver, filter);
-        }
+        }*/
     }
 
     private void unregisterBtReceiverIfNecessary() {

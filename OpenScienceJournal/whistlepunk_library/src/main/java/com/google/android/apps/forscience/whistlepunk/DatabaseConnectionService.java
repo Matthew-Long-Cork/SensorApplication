@@ -26,8 +26,10 @@ public class DatabaseConnectionService {
 
     private static String myWebsite ="", myWriteToken ="", myconnType;
     private static String experimentName;
+
     private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
     private static final String mqttTag = "v1/devices/me/telemetry";
+
     private static MqttAndroidClient mqttAndroidClient;
     //private static boolean isConnected = false;
 

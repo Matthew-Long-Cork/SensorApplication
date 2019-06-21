@@ -222,8 +222,8 @@ public class SensorRegistry {
             addBuiltInSensor(new BarometerSensor());
         }
 
-        if(TestSensor.isAvailable())
-            addBuiltInSensor(new TestSensor());
+        /*if(TestSensor.isAvailable())
+            addBuiltInSensor(new TestSensor());*/
 
         if (MagneticStrengthSensor.isMagneticRotationSensorAvailable(available)) {
             addBuiltInSensor(new MagneticStrengthSensor());
@@ -244,7 +244,7 @@ public class SensorRegistry {
         }
     }
 
-    protected void addBuiltInSensor(SensorChoice source) {
+    public void addBuiltInSensor(SensorChoice source) {
         String id = source.getId();
         addSource(new SensorRegistryItem(WP_HARDWARE_PROVIDER_ID, null, source, id));
     }

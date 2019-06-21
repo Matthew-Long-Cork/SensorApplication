@@ -39,11 +39,15 @@ import java.util.Map;
 public class ExpandableDeviceAdapter extends
         CompositeSensitiveExpandableAdapter<DeviceParentViewHolder, SensorChildViewHolder>
         implements SensorGroup, CompositeRecyclerAdapter.CompositeSensitiveAdapter {
+
+    //I have to get the registry somehow, sorry!
+    public static ConnectableSensorRegistry mRegistry;
+
     private static final String KEY_COLLAPSED_DEVICE_ADDRESSES = "key_collapsed_devices";
     private final List<DeviceParentListItem> mDeviceParents;
     private final DeviceRegistry mDeviceRegistry;
     private Map<String, ConnectableSensor> mSensorMap = new ArrayMap<>();
-    private ConnectableSensorRegistry mRegistry;
+    //private ConnectableSensorRegistry mRegistry;
     private final SensorAppearanceProvider mAppearanceProvider;
     private final SensorRegistry mSensorRegistry;
     private ArrayList<String> mInitiallyCollapsedAddresses = new ArrayList<>();
