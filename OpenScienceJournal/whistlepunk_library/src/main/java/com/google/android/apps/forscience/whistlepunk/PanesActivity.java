@@ -83,7 +83,6 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     public static TabLayout toolPicker;
 
     private int TOKEN_REQUEST = 1;
-    private int FREQUENCY_CHANGED = 2;
 
     public static int getTabIndex(){
        return mSelectedTabIndex;

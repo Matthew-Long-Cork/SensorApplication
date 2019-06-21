@@ -1,6 +1,5 @@
 package com.google.android.apps.forscience.whistlepunk.project.experiment;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,14 +11,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.R;
-import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 
 public class AccessTokenSetupAndConnType extends AppCompatActivity  {
 
     // declare the variables
-    private String currentexperimentAccessToken, experimentAccessToken, currentExperimentConnectionType, experimentConnectionType;
+    private String currentExperimentAccessToken, experimentAccessToken, currentExperimentConnectionType, experimentConnectionType;
     private Button enterBtn, cancelBtn, confirmBtn;
     private Spinner spinner;
     private EditText websiteTokenTxtBox;
@@ -56,13 +53,13 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity  {
         String currentTitle = intent.getStringExtra("CURRENT_TITLE");
 
         // get the stored web token, if any
-        currentexperimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
+        currentExperimentAccessToken = storedData.getString( currentTitle + "_experimentAccessToken", experimentAccessToken);
         // get the stored connection type, if any
         currentExperimentConnectionType = storedData.getString( currentTitle + "_experimentConnectionType", experimentConnectionType);
 
         //if there is currently a token saved, get it and display it
-        if(!currentexperimentAccessToken.equals("")){
-            websiteTokenTxtBox.setText(currentexperimentAccessToken);
+        if(!currentExperimentAccessToken.equals("")){
+            websiteTokenTxtBox.setText(currentExperimentAccessToken);
         }
 
         //if there is currently a connection type saved, get it and display it
@@ -120,7 +117,7 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity  {
             SharedPreferences.Editor editor = storedData.edit();
 
             // before we go swapping out stored values, check if they differ from the current values
-            if(currentexperimentAccessToken != experimentAccessToken)
+            if(currentExperimentAccessToken != experimentAccessToken)
                 editor.putString(currentTitle + "_experimentAccessToken", experimentAccessToken);
 
             if(currentExperimentConnectionType != experimentConnectionType)
