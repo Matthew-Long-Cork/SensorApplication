@@ -18,21 +18,23 @@ package com.google.android.apps.forscience.whistlepunk.devicemanager;
 
 import android.app.Fragment;
 
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 
 
@@ -47,8 +49,12 @@ import com.google.android.apps.forscience.whistlepunk.SensorRegistry;
 import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.UsageTracker;
 import com.google.android.apps.forscience.whistlepunk.api.scalarinput.InputDeviceSpec;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
+import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.sensors.SystemScheduler;
+import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.squareup.leakcanary.RefWatcher;
 
 import java.util.Map;
@@ -69,6 +75,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     private Menu mMainMenu;
     //private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
+    private BleSensorManager bleSensorManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +94,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 deviceRegistry, appearanceProvider, tracker, appSingleton.getSensorConnector());
 
         mSensorRegistry = appSingleton.getSensorRegistry();
+        bleSensorManager = BleSensorManager.getInstance();
         //
         // creating empty adapters
         //
@@ -115,18 +123,59 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
             mMyDevices.onRestoreInstanceState(savedInstanceState.getBundle(KEY_MY_DEVICES));
             mAvailableDevices.onRestoreInstanceState(
                     savedInstanceState.getBundle(KEY_AVAILABLE_DEVICES));
-
         }
-        CompositeRecyclerAdapter adapter = new CompositeRecyclerAdapter(myHeader, mMyDevices,
-                availableHeader, mAvailableDevices);
+
+        CompositeRecyclerAdapter adapter = new CompositeRecyclerAdapter(myHeader, mMyDevices
+                );//, availableHeader, mAvailableDevices);
         adapter.setHasStableIds(true);
         recyclerView.setAdapter(adapter);
+
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         // Don't animate on change: https://code.google.com/p/android/issues/detail?id=204277.
         SimpleItemAnimator animator = new DefaultItemAnimator();
         animator.setSupportsChangeAnimations(false);
         recyclerView.setItemAnimator(animator);
+
+
+        //Init Bluetooth
+        Button bluetoothButton = view.findViewById(R.id.ble_con_btn);
+        ListView deviceListView = view.findViewById(R.id.ble_device_list);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(ExperimentDetailsFragment.context, android.R.layout.simple_list_item_1);
+
+        if(bleSensorManager.connected) {
+            deviceListView.setVisibility(View.GONE);
+            bluetoothButton.setText("Disconnect Bluetooth Device");
+        }
+
+        bluetoothButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(bleSensorManager.connected) {
+                    bleSensorManager.disconnect();
+                    mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+
+                    deviceListView.setVisibility(View.VISIBLE);
+                    bluetoothButton.setText("Search Bluetooth Device");
+                } else {
+                    bleSensorManager.scan(arrayAdapter);
+                    deviceListView.setAdapter(arrayAdapter);
+                }
+            }
+        });
+
+        deviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    bleSensorManager.stopScan();
+                    mSensorRegistry.addBuiltInSensor(new TestSensor());
+                    bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
+                    //Go Back To Previous Menu
+                    ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                    ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+            }
+        });
+
         return view;
     }
 

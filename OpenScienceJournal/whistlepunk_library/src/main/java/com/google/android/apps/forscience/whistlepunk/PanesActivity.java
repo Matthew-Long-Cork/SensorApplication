@@ -93,7 +93,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     public static class DrawerLayoutState {
         private final int mActivityHeight;
         private final int mDrawerState;
-        private Experiment mExperiment;
+        public static Experiment mExperiment;
 
         private DrawerLayoutState(int activityHeight, int drawerState, Experiment experiment) {
             mActivityHeight = activityHeight;

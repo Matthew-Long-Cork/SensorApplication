@@ -27,10 +27,8 @@ public class BleSensorManager {
     private static BleSensorManager bleSensorManager;
 
     private static boolean ENABLED = false;
-    private boolean SCANNING = false;
-    private boolean found = false;
+    public boolean connected = false;
 
-    private long dummy_timer = System.currentTimeMillis();
     private final long SCANNER_TIMEOUT = 5000;
 
     private BluetoothAdapter bluetoothAdapter;
@@ -115,7 +113,6 @@ public class BleSensorManager {
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicWrite(gatt, characteristic, status);
                 bluetoothGatt.readCharacteristic(bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getRead()));
-
             }
 
             @Override
@@ -126,6 +123,7 @@ public class BleSensorManager {
         });
 
         bluetoothGatt.connect();
+        connected = true;
     }
 
     public static void enable(){
@@ -136,8 +134,8 @@ public class BleSensorManager {
         new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-                if (bluetoothDevice.getName() != null)
-                        //&& bluetoothDevice.getName().contains("SensorTag")) {
+                if (bluetoothDevice.getName() != null
+                        && bluetoothDevice.getName().contains("SensorTag"))
                     if(!bluetoothDeviceList.contains(bluetoothDevice)) {
                         bluetoothDeviceList.add(bluetoothDevice);
                         bluetoothDeviceArray.add(bluetoothDevice.getName() + "  "
@@ -148,6 +146,7 @@ public class BleSensorManager {
 
     public void disconnect(){
         bluetoothGatt.disconnect();
+        connected = false;
     }
 
     public void monitor(Sensor sensor){
@@ -168,6 +167,10 @@ public class BleSensorManager {
         BluetoothGattDescriptor descriptor = characteristic.getDescriptors().get(0);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         bluetoothGatt.writeDescriptor(descriptor);
+    }
+
+    public boolean isConnected(){
+        return connected;
     }
 
     private void checkPermission(){

@@ -48,19 +48,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
-import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
-import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
-import com.google.android.apps.forscience.whistlepunk.blew.testBTActivity;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesActivity;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Label;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.SensorTrigger;
 import com.google.android.apps.forscience.whistlepunk.metadata.TriggerListActivity;
-import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.scalarchart.ScalarDisplayOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.BlankReadableSensorOptions;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.DataViewOptions;
@@ -79,7 +74,6 @@ import com.google.android.apps.forscience.whistlepunk.sensors.CompassSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
-import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.google.android.apps.forscience.whistlepunk.wireapi.RecordingMetadata;
 import com.google.common.collect.Lists;
 import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
@@ -91,7 +85,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.PrimitiveIterator;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
@@ -730,9 +723,7 @@ public class SensorCardPresenter {
                     //ble.scan();
                 }
                 else if (itemId == R.id.action_Test) {
-                    Intent intent = new Intent(mParentFragment.getActivity(), testBTActivity.class);
-                    intent.putExtra("experiment_id", mExperimentId);
-                    mParentFragment.getActivity().startActivity(intent);
+                    //Remove these two test options
                 }
                 return false;
             }
