@@ -459,61 +459,21 @@ public class RecorderControllerImpl implements RecorderController {
         // we modified this code to send data from multiple sensors to Thingsboard.com, and to stop
         // all of them at the end when the experiment is closed
         //=========================================================================================
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("     recordControllerImpl.java - stopObserving()");
-        System.out.println("======================================");
-        System.out.println("======================================");
-
-        if(!sensorsOnDisplay){
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("       NOT SWAPPING");
-            System.out.println("======================================");
-            System.out.println("======================================");
-        }
 
         boolean swapSensor = false, sensorInList = false;
 
-        if(mRecorders.containsKey(sensorId)){
-           sensorInList = true;
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("     " +sensorId + " is in the list");
-            System.out.println("======================================");
-            System.out.println("======================================");
+        if (mRecorders.containsKey(sensorId)) {
+            sensorInList = true;
         }
 
         // if the experiment is active && the sensor cards are on display
         // && the current sensor is not null && the current sensor has not been removed from the list
-        if(ExperimentDetailsFragment.getIsActiveStatus() && sensorId != null && sensorsOnDisplay && sensorInList){
+        if (ExperimentDetailsFragment.getIsActiveStatus() && sensorId != null && sensorsOnDisplay && sensorInList) {
 
             swapSensor = true;
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println(" sensor ID: "+ sensorId);
-            System.out.println("    about to swap sensor");
-            System.out.println("======================================");
-            System.out.println("======================================");
-        }
-        if(!currentSensorChecked){
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("     the " + sensorId + " is NOW UNCHECKED");
-            System.out.println("======================================");
-            System.out.println("======================================");
         }
 
-        if(swapSensor){
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("       swapping out "+ sensorId);
-            System.out.println("======================================");
-            System.out.println("======================================");
+        if (swapSensor) {
 
             // is is the on screen registry
             ExperimentDetailsFragment.changeTheSensorState(sensorId, false);
@@ -526,93 +486,50 @@ public class RecorderControllerImpl implements RecorderController {
             currentSensorChecked = true;
         }
 
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("       experiment isActive = "+ ExperimentDetailsFragment.getIsActiveStatus());
-        System.out.println("       sensors unregistered = "+ sensorsUnregistered);
-        System.out.println("======================================");
-        System.out.println("======================================");
-
         // if the ExperimentDetailsFragment (the current experiment) is not active
         // AND the sensors have not yet been unregistered
         // [stopObserving is called for each active sensor]
         // /////////////////////////////////////////////////////////////////////////////////////////
-        if(!ExperimentDetailsFragment.getIsActiveStatus() && !sensorsUnregistered) {
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("        Unregistering sensors...");
-            System.out.println("        mRecorders size is: " + mRecorders.size());
-            System.out.println("        sensorIdList size is: " +   sensorIdList.size());
-            System.out.println("======================================");
-            System.out.println("======================================");
-
-            // we loop though the mRecorders list to stop sending data to Thingsboard
-            // there always has to ber the one display-card ['serviceObserver'] // N/A
-
-            for (int j = 0; j < mRecorders.size(); j++) {
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        sensor index is: " + j);
-                System.out.println("======================================");
-                System.out.println("======================================");
-
-                mRecorders.get(sensorIdList.get(j)).stopObserving();
-            }
-
-            // loop through the list and remove them from the registry
-            for (i = 0; i < sensorIdList.size();) {
-
-                mRegistry.remove(sensorIdList.get(i), observerIdList.get(i));
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        sensors: " + sensorIdList.get(i) );
-                System.out.println("======================================");
-                System.out.println("======================================");
-
-                i++;
-            }
-
-            // when the last sensor is removed, the index++'s one last time (not size-1)
-            if (i == sensorIdList.size()) {
-                sensorsUnregistered = true;
-                RecordFragment.stopObservingCurrentSensors();
-
-                // this above line is to stop the display cards. not the sensors themselves < is it????
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        All active sensors unregistered");
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
-
-            // If there are no listeners left except for our serviceObserver, remove it.
-            if (mRegistry.countListeners(sensorId) == 1) {
-                stopObservingServiceObserver(sensorId);
-            }
-
-            sensorIdList.clear();
-            cleanUpUnusedRecorders();
-            updateObservedIdListeners();
-            if (mRecorders.isEmpty()) {
-                SensorHistoryStorage storage = mSensorEnvironment.getSensorHistoryStorage();
-                storage.setMostRecentSensorIds(Lists.newArrayList(sensorId));
-            }
-        }
-        else{
-            if(sensorsUnregistered) {
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        sensorsUnregistered " + sensorsUnregistered);
-                System.out.println("        Sensors are already unregistered");
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
+        if (!ExperimentDetailsFragment.getIsActiveStatus() && !sensorsUnregistered) {
+            shutDownAllSensors();
         }
     }
 
+    public void shutDownAllSensors(){
+        // we loop though the mRecorders list to stop sending data to Thingsboard
+        // there always has to ber the one display-card ['serviceObserver'] // N/A
+
+        for (int j = 0; j < mRecorders.size(); j++) {
+            mRecorders.get(sensorIdList.get(j)).stopObserving();
+        }
+
+        // loop through the list and remove them from the registry
+        for (i = 0; i < sensorIdList.size();) {
+            mRegistry.remove(sensorIdList.get(i), observerIdList.get(i));
+            i++;
+        }
+        // when the last sensor is removed, the index++'s one last time (not size-1)
+        if (i == sensorIdList.size()) {
+            sensorsUnregistered = true;
+            RecordFragment.stopObservingCurrentSensors();
+            // this above line is to stop the display cards. not the sensors themselves
+        }
+
+        // If there are no listeners left except for our serviceObserver, remove it.
+        if (mRegistry.countListeners(sensorIdList.get(0)) == 1) {
+
+            stopObservingServiceObserver(sensorIdList.get(0));
+        }
+
+        //sensorIdList.clear();
+        cleanUpUnusedRecorders();
+        updateObservedIdListeners();
+        if (mRecorders.isEmpty()) {
+            SensorHistoryStorage storage = mSensorEnvironment.getSensorHistoryStorage();
+            storage.setMostRecentSensorIds(Lists.newArrayList(sensorIdList.get(0)));
+            sensorIdList.clear();
+        }
+    }
 
     private void stopObservingServiceObserver(String sensorId) {
         final StatefulRecorder r = mRecorders.get(sensorId);
