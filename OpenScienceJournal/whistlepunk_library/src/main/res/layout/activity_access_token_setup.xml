@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
-    android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_alignParentStart="true"
     android:layout_alignParentTop="true"
@@ -15,17 +15,19 @@
 
     <TextView
         android:id="@+id/connection_setup_lbl"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:gravity="center|center_horizontal"
+        android:shadowColor="#404040"
         android:text="@string/connnection_setup"
+        android:textColor="#000000"
         android:textSize="30sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/connection_note_lbl"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="125dp"
         android:gravity="center"
         android:text="@string/connnection_setup_note"
@@ -33,7 +35,7 @@
 
     <TextView
         android:id="@+id/connection_note_lbl2"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="125dp"
         android:layout_marginTop="-125dp"
         android:gravity="center|center_horizontal"
@@ -42,16 +44,16 @@
 
     <TextView
         android:id="@+id/website_address_lbl"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:gravity="center"
         android:text="@string/website_token"
-        android:textSize="22sp" />
+        android:textSize="24sp" />
 
     <EditText
         android:id="@+id/website_address_input_textbox"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
         android:autofillHints=""
@@ -59,16 +61,18 @@
         android:gravity="center"
         android:hint="@string/token_input_hint"
         android:inputType="text"
-        android:textSize="18sp" />
+        android:textColorHint="#3F51B5"
+        android:textSize="18sp"
+        tools:targetApi="o" />
 
     <TextView
         android:id="@+id/website_connection_type_lbl"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
         android:gravity="center"
         android:text="@string/website_connection_type"
-        android:textSize="22sp" />
+        android:textSize="24sp" />
 
     <Spinner
         android:id="@+id/connection_spinner"
@@ -80,7 +84,7 @@
 
     <LinearLayout
         android:id="@+id/enter_box"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="110dp"
         android:orientation="horizontal">
 
@@ -95,7 +99,7 @@
 
     <LinearLayout
         android:id="@+id/cancelAndConfirmBtnBox"
-        android:layout_width="250dp"
+        android:layout_width="260dp"
         android:layout_height="115dp"
         android:layout_marginTop="-110dp"
         android:orientation="vertical">

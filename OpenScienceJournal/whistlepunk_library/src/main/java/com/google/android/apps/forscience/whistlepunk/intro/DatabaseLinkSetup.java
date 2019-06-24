@@ -12,19 +12,20 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
 import com.google.android.apps.forscience.whistlepunk.R;
 
 public class DatabaseLinkSetup extends Activity {
 
     // declare the variables
-    private String websiteAddress, currentWebsiteAddress, defaultAddress, currentWebsiteAddressType;
+    private String websiteAddress, currentWebsiteAddress, defaultAddress, websiteAddressType;
     private Button enterBtn, cancelBtn, confirmBtn;
     private EditText websiteAddressTxtBox;
     private Spinner spinner;
     private TextView message1, message2, headerMessage;
     private SharedPreferences storedData;
-    private static boolean CONNECTION_SETUP = false;
+    private static boolean CONNECTION_SETUP;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +47,6 @@ public class DatabaseLinkSetup extends Activity {
         cancelBtn.setVisibility(View.INVISIBLE);
         confirmBtn.setVisibility(View.INVISIBLE);
         message2.setVisibility(View.INVISIBLE);
-        // disable input
-        websiteAddressTxtBox.setEnabled(false);
 
         //=====================================================================================
         defaultAddress = "thingsboard.tec-gateway.com";
@@ -58,48 +57,51 @@ public class DatabaseLinkSetup extends Activity {
 
         storedData = getSharedPreferences("info", MODE_PRIVATE);
         // get the stored web address type, if any
-        currentWebsiteAddressType = storedData.getString("websiteAddressType", currentWebsiteAddressType);
+        websiteAddressType = storedData.getString("websiteAddressType", "");
         // get the stored web address, if any
-        currentWebsiteAddress = storedData.getString("websiteAddress", currentWebsiteAddress);
+        currentWebsiteAddress = storedData.getString("websiteAddress", "");
 
-        /*
         //if there is currently a connection type saved, get it and display it
-        if (currentWebsiteAddressType != null) {
-            if (currentWebsiteAddressType.equals("Default (Thingsboards)")) {
+        if (websiteAddressType != null) {
+            if (websiteAddressType.equals("Default")) {
                 spinner.setSelection(1);
+                websiteAddressTxtBox.setEnabled(false);
                 websiteAddressTxtBox.setText(defaultAddress);
             }
-            if (currentWebsiteAddressType.equals("Custom Address")) {
+            if (websiteAddressType.equals("Custom")) {
                 spinner.setSelection(2);
                 websiteAddressTxtBox.setEnabled(true);
-                if(!currentWebsiteAddress.equals(defaultAddress))
+                if(!(currentWebsiteAddress.equals(defaultAddress))){
                     websiteAddressTxtBox.setText(currentWebsiteAddress);
+                }
             }
         }
-        */
 
         // when option selected
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 // get option
                 int optionIndex = spinner.getSelectedItemPosition();
+                if (optionIndex == 0){
+                    // if zero
+                    websiteAddressTxtBox.setText("");
+                    websiteAddressTxtBox.setEnabled(false);
+                }
                 if (optionIndex == 1){
                     // if one, default
                     websiteAddressTxtBox.setText(defaultAddress);
+                    websiteAddressType = "Default";
                     websiteAddressTxtBox.setEnabled(false);
                 }
                 if (optionIndex == 2){
                     // allow text input
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("    default: " + defaultAddress);
-                    System.out.println("    current: " + currentWebsiteAddress);
-                    System.out.println("======================================");
-                    System.out.println("======================================");
+                    websiteAddressType = "Custom";
                     websiteAddressTxtBox.setEnabled(true);
-                    if(!(currentWebsiteAddress.equals(defaultAddress))) {
+                    // check if that value is not the default
+                    if(currentWebsiteAddress.compareTo(defaultAddress)==0)
+                        websiteAddressTxtBox.setText("");
+                    else
                         websiteAddressTxtBox.setText(currentWebsiteAddress);
-                    }
                 }
             }
 
@@ -124,7 +126,6 @@ public class DatabaseLinkSetup extends Activity {
 
             // if the text boxes have data, show confirmation window
             if (!websiteAddress.equals("")) {
-
                 // hide what we need to hide
                 message1.setVisibility(View.INVISIBLE);
                 enterBtn.setVisibility(View.INVISIBLE);
@@ -143,9 +144,12 @@ public class DatabaseLinkSetup extends Activity {
         confirmBtn.setOnClickListener((View v) -> {
 
             CONNECTION_SETUP = true;
+            // send this to the DatabaseConnectionService.java to be used later
+            DatabaseConnectionService.setMyWebsiteAddress(websiteAddress);
             // interface used for modifying values in a sharedPreference object
             SharedPreferences.Editor editor = storedData.edit();
             editor.putString("websiteAddress", websiteAddress);
+            editor.putString("websiteAddressType", websiteAddressType);
             editor.putBoolean("CONNECTION_SETUP", CONNECTION_SETUP);
             //finally, when you are done adding the values, call the commit() method.
             editor.commit();
@@ -167,7 +171,6 @@ public class DatabaseLinkSetup extends Activity {
             // disable the text box
             websiteAddressTxtBox.setEnabled(false);
             spinner.setSelection(0);
-
             // switch the elements back:
             // show what we need to hide
             headerMessage.setVisibility(View.VISIBLE);
