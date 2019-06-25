@@ -26,7 +26,7 @@ public class BleSensorManager {
 
     private static BleSensorManager bleSensorManager;
 
-    private static boolean ENABLED = false;
+    private static boolean ENABLED = true;
     public boolean connected = false;
 
     private final long SCANNER_TIMEOUT = 5000;
@@ -38,7 +38,10 @@ public class BleSensorManager {
     private List<BluetoothDevice> bluetoothDeviceList;
     private ArrayAdapter<String> bluetoothDeviceArray;
 
+    private Sensor currentSensor;
+
     private BleSensorManager(){
+        connected = false;
         bluetoothDeviceList = new ArrayList<BluetoothDevice>();
         checkPermission();
         checkBluetooth();
@@ -55,11 +58,6 @@ public class BleSensorManager {
         return bleSensorManager;
     }
 
-    public void scan(final List<BluetoothDevice> bluetoothDeviceList){
-        this.bluetoothDeviceList = bluetoothDeviceList;
-        //scan();
-    }
-
     public void scan(final ArrayAdapter bluetoothDeviceArray){
         this.bluetoothDeviceArray = bluetoothDeviceArray;
         bluetoothDeviceArray.clear();
@@ -74,56 +72,62 @@ public class BleSensorManager {
         }, SCANNER_TIMEOUT);
     }
 
-    public void getTelemetry(Sensor sensor, int pos){
-        if(bluetoothDeviceList.isEmpty())
-            Log.e("Bluetooth Manager:", " No Bluetooth Device Found, Star discovery first");
-        else {
-            device = bluetoothDeviceList.get(pos);
-            getTelemetry(sensor, device);
+    public void updateSensor(Sensor sensor){
+        if(currentSensor != null) {
+            turnSensor(currentSensor, (byte) 0);
+            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(currentSensor.getServ())
+                    .getCharacteristic(currentSensor.getWrite());
+            monitor(characteristic, false);
         }
+
+        monitorTelemetry(sensor);
+        currentSensor = sensor;
     }
 
-    private void getTelemetry(Sensor sensor, BluetoothDevice device){
+    public void connect(int devicePos){
+        if(!bluetoothDeviceList.isEmpty()) {
+            device = bluetoothDeviceList.get(devicePos);
+            bluetoothGatt = device.connectGatt(null, false, new BluetoothGattCallback() {
+                @Override
+                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    super.onConnectionStateChange(gatt, status, newState);
+                    bluetoothGatt.discoverServices();
+                }
 
-        bluetoothGatt = device.connectGatt(null, false, new BluetoothGattCallback() {
+                @Override
+                public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                    super.onCharacteristicRead(gatt, characteristic, status);
+                    monitor(characteristic, true);
+                }
 
-            @Override
-            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                super.onServicesDiscovered(gatt, status);
-                BluetoothGattCharacteristic char_write = bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getWrite());
-                char_write.setValue(new byte[]{1});//Enable
-                bluetoothGatt.writeCharacteristic(char_write);
-            }
+                @Override
+                public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                    super.onCharacteristicChanged(gatt, characteristic);
+                    BleObservable.broadcast(currentSensor.parseFloat(characteristic.getValue()));
+                }
+            });
 
-            @Override
-            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                super.onConnectionStateChange(gatt, status, newState);
-                bluetoothGatt.discoverServices();
-            }
+            bluetoothGatt.connect();
+            connected = true;
+        } else
+            Log.e("Bluetooth:", "No device found");
+    }
 
-            @Override
-            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                super.onCharacteristicRead(gatt, characteristic, status);
-                //DatabaseConnectionService.sendDataMqtt(sensor.parseDataObject((characteristic.getValue())));
-                monitor(characteristic);
-
-            }
-
-            @Override
-            public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                super.onCharacteristicWrite(gatt, characteristic, status);
-                bluetoothGatt.readCharacteristic(bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getRead()));
-            }
-
-            @Override
-            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                super.onCharacteristicChanged(gatt, characteristic);
-                BleObservable.broadcast(sensor.parseFloat(characteristic.getValue()));
-            }
-        });
-
-        bluetoothGatt.connect();
-        connected = true;
+    private void monitorTelemetry(Sensor sensor){
+        if(bluetoothGatt.getServices().size() != 0) {
+            turnSensor(sensor, (byte) 1);
+            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(sensor.getServ())
+                    .getCharacteristic(sensor.getRead());
+            monitor(characteristic,true);
+        } else {
+            //If is still Discovering
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    monitorTelemetry(sensor);
+                }
+            }, 500);
+        }
     }
 
     public static void enable(){
@@ -146,27 +150,23 @@ public class BleSensorManager {
 
     public void disconnect(){
         bluetoothGatt.disconnect();
+        bluetoothGatt.close();
+        bluetoothGatt = null;
         connected = false;
-    }
-
-    public void monitor(Sensor sensor){
-        BluetoothGattService service = bluetoothGatt.getService(sensor.getServ());
-        BluetoothGattCharacteristic charRead = service.getCharacteristic(sensor.getRead());
-        bluetoothGatt.setCharacteristicNotification(charRead, true);
-        BluetoothGattDescriptor descriptor = charRead.getDescriptors().get(0);
-        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(descriptor);
     }
 
     public void stopScan(){
         bluetoothAdapter.stopLeScan(leScanCallback);
     }
 
-    public void monitor(BluetoothGattCharacteristic characteristic){
-        bluetoothGatt.setCharacteristicNotification(characteristic, true);
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptors().get(0);
-        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(descriptor);
+    private void turnSensor(Sensor sensor, byte b){
+        BluetoothGattCharacteristic char_write = bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getWrite());
+        char_write.setValue(new byte[]{b});//Enable
+        bluetoothGatt.writeCharacteristic(char_write);
+    }
+
+    private void monitor(BluetoothGattCharacteristic characteristic, boolean monitor){
+        bluetoothGatt.setCharacteristicNotification(characteristic, monitor);
     }
 
     public boolean isConnected(){

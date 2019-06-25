@@ -37,6 +37,10 @@
 
         <service android:name="org.eclipse.paho.android.service.MqttService" />
         <service
+            android:name=".blew.Exiter"
+            android:stopWithTask="false">
+        </service>
+        <service
             android:name="com.google.android.apps.forscience.ble.MyBleService"
             android:enabled="true"
             android:exported="false" />
@@ -55,6 +59,8 @@
             <intent-filter>
                 <action android:name="com.google.android.apps.forscience.whistlepunk.OBSERVER" />
             </intent-filter>
+
+
         </service>
 
         <activity

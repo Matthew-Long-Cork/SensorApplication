@@ -5,6 +5,7 @@ import android.content.Context;
 import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
@@ -13,13 +14,13 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusListener;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
-public class LuxSensorT extends ScalarSensor {
+public class LightSensorT extends ScalarSensor {
     public static final String ID = "LuxSensorT";
     private static boolean available = true;
     private BleObserver observer;
-    private Sensor sensor = Sensor.LUX;
+    private final Sensor sensor = Sensor.LUX;
 
-    public LuxSensorT(){super(ID); }
+    public LightSensorT(){super(ID); }
 
     public static boolean isAvailable(){
         return available;
@@ -32,6 +33,7 @@ public class LuxSensorT extends ScalarSensor {
             @Override
             public void startObserving() {
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                BleSensorManager.getInstance().updateSensor(sensor);
                 final Clock clock = environment.getDefaultClock();
 
                 observer = new BleObserver() {

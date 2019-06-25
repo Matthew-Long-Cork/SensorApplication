@@ -8,6 +8,7 @@ import android.hardware.SensorManager;
 import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
@@ -20,7 +21,7 @@ public class TemperatureSensorT extends ScalarSensor {
     public static final String ID = "TemperatureSensorT";
     private static boolean available = true;
     private BleObserver observer;
-    private Sensor sensor = Sensor.TEMP_AMB;
+    private final Sensor sensor = Sensor.TEMP_AMB;
 
     public TemperatureSensorT(){super(ID); }
 
@@ -35,6 +36,7 @@ public class TemperatureSensorT extends ScalarSensor {
             @Override
             public void startObserving() {
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                BleSensorManager.getInstance().updateSensor(sensor);
                 final Clock clock = environment.getDefaultClock();
 
                 observer = new BleObserver() {

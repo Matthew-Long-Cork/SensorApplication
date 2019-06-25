@@ -17,6 +17,7 @@
 package com.google.android.apps.forscience.whistlepunk;
 
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,6 +44,7 @@ import io.reactivex.Single;
 import io.reactivex.subjects.PublishSubject;
 
 public class AppSingleton {
+
     private static final String SENSOR_DATABASE_NAME = "sensors.db";
     private static final String TAG = "AppSingleton";
     private static AppSingleton sInstance;
@@ -114,6 +116,8 @@ public class AppSingleton {
     private AppSingleton(Context context) {
         mApplicationContext = context.getApplicationContext();
     }
+
+
 
     public DataController getDataController() {
         return internalGetDataController();
@@ -231,4 +235,5 @@ public class AppSingleton {
         }
         return null;
     }
+
 }

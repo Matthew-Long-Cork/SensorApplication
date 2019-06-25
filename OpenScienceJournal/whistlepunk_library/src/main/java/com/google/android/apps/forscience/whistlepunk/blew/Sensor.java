@@ -12,14 +12,18 @@ public enum Sensor{
     LUX(LUX_SERV, LUX_WRITE, LUX_READ){
         @Override
         public String parseString(byte[] value){
+            return "SensTag/Luxometer : " + parseFloat(value);
+        }
+
+        @Override
+        public float parseFloat(byte[] value){
             Integer sfloat = shortUnsignedAtOffset(value, 0);
             int mantissa = sfloat & 0x0FFF;
             int exponent = (sfloat >> 12) & 0xFF;
 
             double magnitude = pow(2.0f, exponent);
             double output = (mantissa * magnitude) / 100.0f;
-
-            return "SensTag/Luxometer : " + output;
+            return (float)output;
         }
     },
     TEMP_AMB(TEMP_SERV, TEMP_WRITE, TEMP_READ){
@@ -94,11 +98,15 @@ public enum Sensor{
     HUM(HUM_SERV, HUM_WRITE, HUM_READ){
         @Override
         public String parseString(byte[] value) {
+            return "{\"Humidity Sensor\" : \"" + parseFloat(value) + "\"}";
+        }
+
+        @Override
+        public  float parseFloat(byte[] value){
             int hum = shortUnsignedAtOffset(value, 2);
             hum -= (hum % 4);
             float output = (-6f) + 125f * (hum / 65535f);
-
-            return "{\"Humidity Sensor\" : \"" + output + "\"}";
+            return output;
         }
     },
     BAR(BAR_SERV, BAR_WRITE, BAR_READ){

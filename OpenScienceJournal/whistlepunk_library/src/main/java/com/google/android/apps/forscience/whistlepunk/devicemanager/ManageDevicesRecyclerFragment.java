@@ -53,10 +53,18 @@ import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
+import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SystemScheduler;
 import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.TemperatureSensorT;
 import com.squareup.leakcanary.RefWatcher;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,6 +84,10 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     //private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
     private BleSensorManager bleSensorManager;
+
+    //Add Sensors Here!
+    private final List<ScalarSensor> sensorList = new ArrayList<ScalarSensor>(Arrays.asList(
+            new BarometerSensorT(), new TemperatureSensorT(), new LightSensorT(), new HumiditySensorT()));
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -154,7 +166,6 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 if(bleSensorManager.connected) {
                     bleSensorManager.disconnect();
                     mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
-
                     deviceListView.setVisibility(View.VISIBLE);
                     bluetoothButton.setText("Search Bluetooth Device");
                 } else {
@@ -168,8 +179,15 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     bleSensorManager.stopScan();
-                    mSensorRegistry.addBuiltInSensor(new TestSensor());
-                    bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
+
+                    for(ScalarSensor sensor : sensorList)
+                        mSensorRegistry.addBuiltInSensor(sensor);
+
+
+                    bleSensorManager.connect(i);
+
+                    //mSensorRegistry.addBuiltInSensor(new TestSensor());
+                    //bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
                     //Go Back To Previous Menu
                     ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
                     ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));

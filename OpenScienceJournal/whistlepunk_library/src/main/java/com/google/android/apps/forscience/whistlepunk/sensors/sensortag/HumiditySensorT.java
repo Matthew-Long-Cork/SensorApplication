@@ -5,6 +5,7 @@ import android.content.Context;
 import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
@@ -17,7 +18,7 @@ public class HumiditySensorT extends ScalarSensor {
     public static final String ID = "HumiditySensort";
     private static boolean available = true;
     private BleObserver observer;
-    private Sensor sensor = Sensor.HUM;
+    private final Sensor sensor = Sensor.HUM;
 
     public HumiditySensorT(){super(ID); }
 
@@ -32,6 +33,7 @@ public class HumiditySensorT extends ScalarSensor {
             @Override
             public void startObserving() {
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                BleSensorManager.getInstance().updateSensor(sensor);
                 final Clock clock = environment.getDefaultClock();
 
                 observer = new BleObserver() {

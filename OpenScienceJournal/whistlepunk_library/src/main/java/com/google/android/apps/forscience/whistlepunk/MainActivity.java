@@ -24,15 +24,18 @@ import android.bluetooth.BluetoothAdapter;
 
 import android.bluetooth.BluetoothManager;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -42,6 +45,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -50,6 +54,7 @@ import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
+import com.google.android.apps.forscience.whistlepunk.blew.Exiter;
 import com.google.android.apps.forscience.whistlepunk.feedback.FeedbackProvider;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.intro.AgeVerifier;
@@ -75,6 +80,7 @@ public class MainActivity extends AppCompatActivity
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
     public static BluetoothAdapter BLUETOOTH_ADAPTER;
+
     Boolean isDatabaseLinkSetup;
 
     /** Receives an event every time the activity pauses */
@@ -87,6 +93,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        bindExiter();
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, 2);
@@ -533,6 +542,46 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+    }
+
+
+    private boolean mShouldUnbind = false;
+    private ServiceConnection sc = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.e("Connected Service ", "");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.e("Disconnected Service", "");
+        }
+    };
+
+    private void bindExiter(){
+        Intent intent = new Intent(MainActivity.this, Exiter.class);
+
+        if (bindService(intent, sc, Context.BIND_AUTO_CREATE)) {
+            ContextCompat.startForegroundService(this, intent);
+            mShouldUnbind = true;
+        } else {
+            Log.e("MY_APP_TAG", "Error: The requested service doesn't " +
+                    "exist, or this client isn't allowed access to it.");
+        }
+    }
+
+    private  void unbindExiter(){
+        if (mShouldUnbind) {
+            // Release information about the service's state.
+            unbindService(sc);
+            mShouldUnbind = false;
+        }
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        unbindExiter();
     }
 
 }
