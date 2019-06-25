@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity
 
         // get the URL for website
         String myWebsiteAddress = storedData.getString("websiteAddress", "");
+        String myWebsiteAddressType = storedData.getString("websiteAddressType", "");
         // send this to the DatabaseConnectionService.java to be used later
         DatabaseConnectionService.setMyWebsiteAddress(myWebsiteAddress);
 
@@ -402,7 +403,6 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         }
-
         return false;
     }
 

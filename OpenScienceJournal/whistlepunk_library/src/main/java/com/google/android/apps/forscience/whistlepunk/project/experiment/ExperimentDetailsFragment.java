@@ -63,6 +63,7 @@ import com.google.android.apps.forscience.whistlepunk.NoteViewHolder;
 import com.google.android.apps.forscience.whistlepunk.PanesActivity;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderController;
 import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.RelativeTimeTextView;
 import com.google.android.apps.forscience.whistlepunk.RxDataController;
@@ -102,6 +103,8 @@ import java.util.Objects;
 import io.reactivex.Completable;
 import io.reactivex.functions.Consumer;
 
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
@@ -138,6 +141,7 @@ public class ExperimentDetailsFragment extends Fragment
     private static SharedPreferences.Editor editor;
     private static int sensorFrequency;
     private static Boolean sensorState;
+    private int TOKEN_REQUEST = 1;
 
     public static String getCurrentTitle(){return title;}
 
@@ -351,17 +355,6 @@ public class ExperimentDetailsFragment extends Fragment
                                    if(!connType.equals("")){
                                        DatabaseConnectionService.setMyConnectionType(connType);
                                    }
-                                  /*
-                                   // if either are missing, prompt the user to input it now
-                                   if(accessToken.equals("") || connType.equals("")){
-                                       // redirect the user to enter the access token/connection type
-                                       Intent tokenRequestIntent = new Intent(getActivity(), AccessTokenSetupAndConnType.class);
-                                       // as there is no token yet, send 'theTitle' twice
-                                       tokenRequestIntent.putExtra("CURRENT_TITLE", title); // current title
-                                       //tokenRequestIntent.putExtra("OLD_TITLE", theTitle); // current title
-                                       startActivity(tokenRequestIntent);
-                                   }
-                                   */
                                    //===============================================================
                                })
                                .toCompletable();
@@ -586,6 +579,8 @@ public class ExperimentDetailsFragment extends Fragment
             confirmDeleteExperiment();
         }
         else if (itemId == R.id.action_change_access_token) {
+            // might already by false, but no issue if that is the case
+            RecorderControllerImpl.setSensorsOnDisplay(false);
             changeAccessToken();
     }
         return super.onOptionsItemSelected(item);
@@ -722,6 +717,12 @@ public class ExperimentDetailsFragment extends Fragment
                 dialog.onActivityResult(requestCode, resultCode, data);
             }
         }
+        // Check if request was for token
+        if (requestCode == TOKEN_REQUEST) {
+            int currentTab = PanesActivity.getTabIndex();
+            if(currentTab==1)
+                RecorderControllerImpl.setSensorsOnDisplay(true);
+        }
     }
 
     void deleteLabel(Label label) {
@@ -785,7 +786,7 @@ public class ExperimentDetailsFragment extends Fragment
         Intent SetupIntent = new Intent(getActivity(), AccessTokenSetupAndConnType.class);
         SetupIntent.putExtra( "CURRENT_TITLE", mExperiment.getTitle());
         SetupIntent.putExtra( "OLD_TITLE", ""); // BLANK VALUE
-        startActivity(SetupIntent);
+        startActivityForResult(SetupIntent, TOKEN_REQUEST);
     }
 
     @Override

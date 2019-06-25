@@ -5,23 +5,27 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
 import com.google.android.apps.forscience.whistlepunk.R;
 
 public class DatabaseLinkSetup extends Activity {
 
     // declare the variables
-    private String websiteAddress;
+    private String websiteAddress, currentWebsiteAddress, defaultAddress, websiteAddressType;
     private Button enterBtn, cancelBtn, confirmBtn;
     private EditText websiteAddressTxtBox;
+    private Spinner spinner;
     private TextView message1, message2, headerMessage;
     private SharedPreferences storedData;
-    private static boolean CONNECTION_SETUP = false;
+    private static boolean CONNECTION_SETUP;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +37,9 @@ public class DatabaseLinkSetup extends Activity {
         headerMessage = findViewById(R.id.connection_setup_lbl);
         message1 = findViewById(R.id.connection_note_lbl);
         message2 = findViewById(R.id.connection_note_lbl2);
-        websiteAddressTxtBox = findViewById(R.id.token_input_textbox);
-        enterBtn = findViewById(R.id.connection_btn);
+        spinner = (Spinner) findViewById(R.id.website_address_type_spinner);
+        websiteAddressTxtBox = findViewById(R.id.website_address_input_textbox);
+        enterBtn = findViewById(R.id.enter_btn);
         cancelBtn = findViewById(R.id.cancel_btn);
         confirmBtn = findViewById(R.id.confirm_btn);
 
@@ -44,16 +49,67 @@ public class DatabaseLinkSetup extends Activity {
         message2.setVisibility(View.INVISIBLE);
 
         //=====================================================================================
+        defaultAddress = "thingsboard.tec-gateway.com";
+        //=====================================================================================
         // check if there is stored data for these values
         // Note: The user may want to stay connected the current connection configuration
         //=====================================================================================
-        storedData = getSharedPreferences("info", MODE_PRIVATE);
-        // get the stored web address, if any
-        websiteAddress = storedData.getString("websiteAddress", websiteAddress);
 
-        if (websiteAddress != null) {
-            websiteAddressTxtBox.setText(websiteAddress);
+        storedData = getSharedPreferences("info", MODE_PRIVATE);
+        // get the stored web address type, if any
+        websiteAddressType = storedData.getString("websiteAddressType", "");
+        // get the stored web address, if any
+        currentWebsiteAddress = storedData.getString("websiteAddress", "");
+
+        //if there is currently a connection type saved, get it and display it
+        if (websiteAddressType != null) {
+            if (websiteAddressType.equals("Default")) {
+                spinner.setSelection(1);
+                websiteAddressTxtBox.setEnabled(false);
+                websiteAddressTxtBox.setText(defaultAddress);
+            }
+            if (websiteAddressType.equals("Custom")) {
+                spinner.setSelection(2);
+                websiteAddressTxtBox.setEnabled(true);
+                if(!(currentWebsiteAddress.equals(defaultAddress))){
+                    websiteAddressTxtBox.setText(currentWebsiteAddress);
+                }
+            }
         }
+
+        // when option selected
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                // get option
+                int optionIndex = spinner.getSelectedItemPosition();
+                if (optionIndex == 0){
+                    // if zero
+                    websiteAddressTxtBox.setText("");
+                    websiteAddressTxtBox.setEnabled(false);
+                }
+                if (optionIndex == 1){
+                    // if one, default
+                    websiteAddressTxtBox.setText(defaultAddress);
+                    websiteAddressType = "Default";
+                    websiteAddressTxtBox.setEnabled(false);
+                }
+                if (optionIndex == 2){
+                    // allow text input
+                    websiteAddressType = "Custom";
+                    websiteAddressTxtBox.setEnabled(true);
+                    // check if that value is not the default
+                    if(currentWebsiteAddress.compareTo(defaultAddress)==0)
+                        websiteAddressTxtBox.setText("");
+                    else
+                        websiteAddressTxtBox.setText(currentWebsiteAddress);
+                }
+            }
+
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                return;
+            }
+        });
+
 
         //=====================================================================================
         // call function when 'enter' button is clicked
@@ -70,7 +126,6 @@ public class DatabaseLinkSetup extends Activity {
 
             // if the text boxes have data, show confirmation window
             if (!websiteAddress.equals("")) {
-
                 // hide what we need to hide
                 message1.setVisibility(View.INVISIBLE);
                 enterBtn.setVisibility(View.INVISIBLE);
@@ -89,9 +144,12 @@ public class DatabaseLinkSetup extends Activity {
         confirmBtn.setOnClickListener((View v) -> {
 
             CONNECTION_SETUP = true;
+            // send this to the DatabaseConnectionService.java to be used later
+            DatabaseConnectionService.setMyWebsiteAddress(websiteAddress);
             // interface used for modifying values in a sharedPreference object
             SharedPreferences.Editor editor = storedData.edit();
             editor.putString("websiteAddress", websiteAddress);
+            editor.putString("websiteAddressType", websiteAddressType);
             editor.putBoolean("CONNECTION_SETUP", CONNECTION_SETUP);
             //finally, when you are done adding the values, call the commit() method.
             editor.commit();
@@ -106,16 +164,13 @@ public class DatabaseLinkSetup extends Activity {
         //=====================================================================================
         cancelBtn.setOnClickListener((View v) -> {
 
-            // clear the variables
+            // clear the value
             websiteAddress = "";
-
-            // enable the text box for text enter
-            websiteAddressTxtBox.setEnabled(true);
-
-            //clear the text fields and focus on the website input field
+            //clear the text field
             websiteAddressTxtBox.getText().clear();
-            websiteAddressTxtBox.requestFocus();
-
+            // disable the text box
+            websiteAddressTxtBox.setEnabled(false);
+            spinner.setSelection(0);
             // switch the elements back:
             // show what we need to hide
             headerMessage.setVisibility(View.VISIBLE);

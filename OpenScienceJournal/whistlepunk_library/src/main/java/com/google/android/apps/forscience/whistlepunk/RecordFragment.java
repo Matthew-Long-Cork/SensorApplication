@@ -467,22 +467,9 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
 
     public static void stopObservingCurrentSensors() {
 
-        if (mSensorCardAdapter == null) {
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("      mSensorCardAdapter is null");
-            System.out.println("======================================");
-            System.out.println("======================================");
-        }
         if (mSensorCardAdapter != null) {
             for (SensorCardPresenter presenter : mSensorCardAdapter.getSensorCardPresenters()) {
                 presenter.stopObserving();
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        stopping observing" + presenter);
-                System.out.println("======================================");
-                System.out.println("======================================");
             }
         }
     }

@@ -22,12 +22,23 @@
 
     <!--added:-->
     <!-- connection_settings_popup - connection types-->
+    <string-array name="web_address_types">
+        <item>Please Select</item>
+        <item>Default (Thingsboards)</item>
+        <item>Custom Address</item>
+    </string-array>
+
+    <!--added:-->
+    <!-- connection_settings_popup - connection types-->
     <string-array name="connection_types">
         <item>Please Select</item>
         <item>HTTP Connection</item>
         <item>MQTT Connection</item>
     </string-array>
 
+    <!--added:-->
+    <!-- connection_settings_popup - website connection type label-->
+    <string name="website_address_type">Select Address Type:</string>
     <!--added:-->
     <!-- connection_settings_popup - website address label-->
     <string name="website_address">Enter Web Address:</string>
@@ -42,7 +53,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website input hint-->
-    <string name="website_input_hint"><font size="14">"https://thingsboard.nameHere.com"</font></string>
+    <string name="website_input_hint"><font size="14">"thingsboard.nameHere.com"</font></string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
@@ -54,7 +65,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - connection notice-->
-    <string name="connnection_setup_note">"NOTE: You must enter the information below to allow for data to be sent to ThingsBoard.com"</string>
+    <string name="connnection_setup_note">"NOTE: You must enter the information below to allow for data to be sent."</string>
 
     <!--added:-->
     <!-- connection_settings_popup - 'please confirm' message-->
@@ -113,7 +124,7 @@
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
 
     <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
-    <string name="action_change_access_token">Change Experiemnt Setup</string>
+    <string name="action_change_access_token">Change Experiment Setup</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
