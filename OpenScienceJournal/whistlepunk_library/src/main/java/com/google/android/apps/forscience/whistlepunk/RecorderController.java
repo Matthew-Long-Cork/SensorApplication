@@ -77,6 +77,8 @@ public interface RecorderController {
         }
     }
 
+    void shutDownAllSensors();
+
     /**
      * @return observerId: should be passed to stopObserving, so that this client only kills
      * observers that it creates.

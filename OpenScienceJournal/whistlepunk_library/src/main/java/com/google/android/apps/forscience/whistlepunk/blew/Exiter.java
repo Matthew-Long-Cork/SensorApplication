@@ -18,14 +18,13 @@ public class Exiter extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.e("Bindded", "Bindded");
         return null;
     }
 
-    @Override
+       @Override
     public void onTaskRemoved(Intent rootIntent){
-
-        Log.e("Before: ", "Close!!!!");
+        BleSensorManager.getInstance().disconnect();
+        AppSingleton.getInstance(this).getRecorderController().shutDownAllSensors();
 
         stopForeground(true);
         stopSelf();

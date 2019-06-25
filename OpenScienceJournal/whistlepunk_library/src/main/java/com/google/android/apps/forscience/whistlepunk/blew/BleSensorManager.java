@@ -149,9 +149,14 @@ public class BleSensorManager {
             };
 
     public void disconnect(){
-        bluetoothGatt.disconnect();
-        bluetoothGatt.close();
-        bluetoothGatt = null;
+        if(bluetoothGatt != null && connected)
+            bluetoothGatt.disconnect();
+
+        if(bluetoothGatt != null) {
+            bluetoothGatt.close();
+            bluetoothGatt = null;
+        }
+
         connected = false;
     }
 

@@ -572,7 +572,6 @@ public class MainActivity extends AppCompatActivity
 
     private  void unbindExiter(){
         if (mShouldUnbind) {
-            // Release information about the service's state.
             unbindService(sc);
             mShouldUnbind = false;
         }
