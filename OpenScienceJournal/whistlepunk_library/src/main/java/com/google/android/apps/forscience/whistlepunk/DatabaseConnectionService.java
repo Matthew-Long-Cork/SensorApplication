@@ -175,26 +175,30 @@ public class DatabaseConnectionService {
     }
 
     public static void mqttDisconnect() {
+        if (mqttAndroidClient != null) {
+            if (mqttAndroidClient.isConnected()) {
+                    try {
+                        mqttAndroidClient.disconnect().setActionCallback(new IMqttActionListener() {
+                            @Override
+                            public void onSuccess(IMqttToken asyncActionToken) {
+                                mqttAndroidClient.unregisterResources();
+                                mqttAndroidClient.close();
+                                mqttAndroidClient = null;
+                                //isConnected = false;
+                                Log.e("MQTT disconnect", "Success");
+                            }
 
-        if (mqttAndroidClient != null && mqttAndroidClient.isConnected()) {
-            try {
-                mqttAndroidClient.disconnect().setActionCallback(new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        mqttAndroidClient.close();
-                        mqttAndroidClient.unregisterResources();
-                        mqttAndroidClient = null;
-                        //isConnected = false;
-                        Log.e("MQTT disconnect", "Success");
+                            @Override
+                            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                                Log.e("MQTT disconnect", exception.getMessage());
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        Log.e("MQTT disconnect", exception.getMessage());
-                    }
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else {
+                mqttAndroidClient.unregisterResources();
+                mqttAndroidClient.close();
             }
         }
     }

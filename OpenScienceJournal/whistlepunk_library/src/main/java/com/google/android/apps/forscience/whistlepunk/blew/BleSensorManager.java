@@ -84,7 +84,7 @@ public class BleSensorManager {
         currentSensor = sensor;
     }
 
-    public void connect(int devicePos){
+    public void connect(int devicePos, Runnable runnable){
         if(!bluetoothDeviceList.isEmpty()) {
             device = bluetoothDeviceList.get(devicePos);
             bluetoothGatt = device.connectGatt(null, false, new BluetoothGattCallback() {
@@ -92,6 +92,13 @@ public class BleSensorManager {
                 public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                     super.onConnectionStateChange(gatt, status, newState);
                     bluetoothGatt.discoverServices();
+                }
+
+                @Override
+                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    super.onServicesDiscovered(gatt, status);
+                    runnable.run();
+                    turnSensor(currentSensor, (byte) 1);
                 }
 
                 @Override
@@ -114,19 +121,21 @@ public class BleSensorManager {
     }
 
     private void monitorTelemetry(Sensor sensor){
-        if(bluetoothGatt.getServices().size() != 0) {
-            turnSensor(sensor, (byte) 1);
-            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(sensor.getServ())
-                    .getCharacteristic(sensor.getRead());
-            monitor(characteristic,true);
-        } else {
-            //If is still Discovering
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    monitorTelemetry(sensor);
-                }
-            }, 500);
+        if(bluetoothGatt != null) {
+            if (bluetoothGatt.getServices().size() != 0) {
+                turnSensor(sensor, (byte) 1);
+                BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(sensor.getServ())
+                        .getCharacteristic(sensor.getRead());
+                monitor(characteristic, true);
+            } else {
+                //If is still Discovering
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        monitorTelemetry(sensor);
+                    }
+                }, 500);
+            }
         }
     }
 

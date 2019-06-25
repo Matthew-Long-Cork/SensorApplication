@@ -142,7 +142,8 @@ public class LinearAccelerometerSensor extends ScalarSensor {
                     System.out.println("======================================");
 
                     // added: stop the timer task as the observing of the sensors is no longer needed
-                    timer.cancel();
+                    if (timer !=null)
+                        timer.cancel();
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);

@@ -20,6 +20,7 @@ import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 
 import android.bluetooth.BluetoothManager;
@@ -563,6 +564,8 @@ public class MainActivity extends AppCompatActivity
 
         if (bindService(intent, sc, Context.BIND_AUTO_CREATE)) {
             ContextCompat.startForegroundService(this, intent);
+            //Service.startForground();
+
             mShouldUnbind = true;
         } else {
             Log.e("MY_APP_TAG", "Error: The requested service doesn't " +
@@ -575,6 +578,7 @@ public class MainActivity extends AppCompatActivity
             unbindService(sc);
             mShouldUnbind = false;
         }
+        //this.onStartCommand();
     }
 
     @Override
