@@ -28,6 +28,8 @@ public class BleSensorManager {
 
     private static boolean ENABLED = true;
     public boolean connected = false;
+    private boolean serviceDiscovered = false;
+    private boolean currentSensorEnabled = false;
 
     private final long SCANNER_TIMEOUT = 5000;
 
@@ -39,9 +41,11 @@ public class BleSensorManager {
     private ArrayAdapter<String> bluetoothDeviceArray;
 
     private Sensor currentSensor;
+    private Sensor nextSensor;
 
     private BleSensorManager(){
         connected = false;
+        //currentSensor = Sensor.VOID;
         bluetoothDeviceList = new ArrayList<BluetoothDevice>();
         checkPermission();
         checkBluetooth();
@@ -73,18 +77,28 @@ public class BleSensorManager {
     }
 
     public void updateSensor(Sensor sensor){
-        if(currentSensor != null) {
-            turnSensor(currentSensor, (byte) 0);
-            BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(currentSensor.getServ())
-                    .getCharacteristic(currentSensor.getWrite());
-            monitor(characteristic, false);
-        }
+        if(bluetoothGatt != null && serviceDiscovered) {
+            nextSensor = sensor;
 
-        monitorTelemetry(sensor);
-        currentSensor = sensor;
+            if (currentSensor != null) {
+                if (!nextSensor.equals(currentSensor)) {
+                    disableSensor(currentSensor);
+                }
+            }else {
+                turnSensor(sensor, (byte) 1);
+            }
+
+        } else{
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    updateSensor(sensor);
+                }
+            }, 500);
+        }
     }
 
-    public void connect(int devicePos, Runnable runnable){
+    public void connect(int devicePos){
         if(!bluetoothDeviceList.isEmpty()) {
             device = bluetoothDeviceList.get(devicePos);
             bluetoothGatt = device.connectGatt(null, false, new BluetoothGattCallback() {
@@ -97,8 +111,7 @@ public class BleSensorManager {
                 @Override
                 public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                     super.onServicesDiscovered(gatt, status);
-                    runnable.run();
-                    turnSensor(currentSensor, (byte) 1);
+                    serviceDiscovered = true;
                 }
 
                 @Override
@@ -112,31 +125,25 @@ public class BleSensorManager {
                     super.onCharacteristicChanged(gatt, characteristic);
                     BleObservable.broadcast(currentSensor.parseFloat(characteristic.getValue()));
                 }
+
+                @Override
+                public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
+                    super.onCharacteristicWrite(gatt,characteristic, status);
+
+                    if(currentSensor != null && !nextSensor.equals((currentSensor))) {
+                        turnSensor(nextSensor, 1);
+                        currentSensor = nextSensor;
+                    } else {
+                        currentSensor = nextSensor;
+                        read(currentSensor);
+                    }
+
+                }
             });
 
-            bluetoothGatt.connect();
-            connected = true;
+            connected = bluetoothGatt.connect();
         } else
             Log.e("Bluetooth:", "No device found");
-    }
-
-    private void monitorTelemetry(Sensor sensor){
-        if(bluetoothGatt != null) {
-            if (bluetoothGatt.getServices().size() != 0) {
-                turnSensor(sensor, (byte) 1);
-                BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(sensor.getServ())
-                        .getCharacteristic(sensor.getRead());
-                monitor(characteristic, true);
-            } else {
-                //If is still Discovering
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        monitorTelemetry(sensor);
-                    }
-                }, 500);
-            }
-        }
     }
 
     public static void enable(){
@@ -167,15 +174,17 @@ public class BleSensorManager {
         }
 
         connected = false;
+        serviceDiscovered = false;
+        currentSensor = null;
     }
 
     public void stopScan(){
         bluetoothAdapter.stopLeScan(leScanCallback);
     }
 
-    private void turnSensor(Sensor sensor, byte b){
+    private void turnSensor(Sensor sensor, int b){
         BluetoothGattCharacteristic char_write = bluetoothGatt.getService(sensor.getServ()).getCharacteristic(sensor.getWrite());
-        char_write.setValue(new byte[]{b});//Enable
+        char_write.setValue(new byte[]{(byte) b});//Enable
         bluetoothGatt.writeCharacteristic(char_write);
     }
 
@@ -183,8 +192,27 @@ public class BleSensorManager {
         bluetoothGatt.setCharacteristicNotification(characteristic, monitor);
     }
 
+    private void monitor(Sensor sensor, boolean monitor){
+        BluetoothGattCharacteristic characteristic = bluetoothGatt.getService(sensor.getServ())
+                .getCharacteristic(sensor.getRead());
+        bluetoothGatt.setCharacteristicNotification(characteristic, monitor);
+    }
+
     public boolean isConnected(){
         return connected;
+    }
+
+    private void disableSensor(Sensor sensor){
+        Log.e("DISABLED: ", "" + sensor.description);
+
+        monitor(sensor, false);
+        turnSensor(sensor, (byte) 0);
+        currentSensorEnabled = false;
+    }
+
+    private void read(Sensor sensor){
+        bluetoothGatt.readCharacteristic(bluetoothGatt.getService(sensor.getServ())
+                .getCharacteristic(sensor.getRead()));
     }
 
     private void checkPermission(){

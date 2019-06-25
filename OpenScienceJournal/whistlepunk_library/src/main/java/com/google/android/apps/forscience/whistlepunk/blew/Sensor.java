@@ -9,7 +9,7 @@ import static java.lang.Math.pow;
 
 
 public enum Sensor{
-    LUX(LUX_SERV, LUX_WRITE, LUX_READ){
+    LUX(LUX_SERV, LUX_WRITE, LUX_READ,"LUX"){
         @Override
         public String parseString(byte[] value){
             return "SensTag/Luxometer : " + parseFloat(value);
@@ -26,7 +26,7 @@ public enum Sensor{
             return (float)output;
         }
     },
-    TEMP_AMB(TEMP_SERV, TEMP_WRITE, TEMP_READ){
+    TEMP_AMB(TEMP_SERV, TEMP_WRITE, TEMP_READ, "TEMP_AMB"){
         public String sensorID;
         @Override
         public String parseJson(byte[] values){
@@ -43,7 +43,7 @@ public enum Sensor{
             return new DataObject("SensorTag Amb Temperature", parseFloat(value));
         }
     },
-    TEMP_OBJ(TEMP_SERV, TEMP_WRITE, TEMP_READ){
+    TEMP_OBJ(TEMP_SERV, TEMP_WRITE, TEMP_READ, "TEMP_OBJ"){
         public String sensorID;
         @Override
         public String parseJson(byte[] values){
@@ -95,7 +95,7 @@ public enum Sensor{
             }
         }*//*
     },*/
-    HUM(HUM_SERV, HUM_WRITE, HUM_READ){
+    HUM(HUM_SERV, HUM_WRITE, HUM_READ, "HUM"){
         @Override
         public String parseString(byte[] value) {
             return "{\"Humidity Sensor\" : \"" + parseFloat(value) + "\"}";
@@ -109,7 +109,7 @@ public enum Sensor{
             return output;
         }
     },
-    BAR(BAR_SERV, BAR_WRITE, BAR_READ){
+    BAR(BAR_SERV, BAR_WRITE, BAR_READ, "BAR"){
         @Override
         public String parseString(byte[] value) {
             return  "Barometer: " + parseFloat(value);
@@ -140,11 +140,17 @@ public enum Sensor{
     };
 
     private UUID serv, write, read;
+    public String description;
 
     Sensor(UUID serv, UUID write, UUID read) {
         this.serv = serv;
         this.write = write;
         this.read = read;
+    }
+
+    Sensor(UUID serv, UUID write, UUID read, String description) {
+        this(serv, write, read);
+        this.description = description;
     }
 
     public UUID getServ() {

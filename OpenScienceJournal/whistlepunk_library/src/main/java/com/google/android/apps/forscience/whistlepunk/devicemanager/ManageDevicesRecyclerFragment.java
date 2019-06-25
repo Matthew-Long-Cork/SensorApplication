@@ -180,23 +180,18 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     bleSensorManager.stopScan();
 
+                for(ScalarSensor sensor : sensorList)
+                    mSensorRegistry.addBuiltInSensor(sensor);
 
+                    bleSensorManager.connect(i);
 
-                    bleSensorManager.connect(i, new Runnable() {
-                        @Override
-                        public void run() {
-                            for(ScalarSensor sensor : sensorList)
-                                mSensorRegistry.addBuiltInSensor(sensor);
-
-
-                        }
-                    });
-
+                    deviceListView.setVisibility(View.GONE);
+                    bluetoothButton.setText("Disconnect Bluetooth Device");
                     //mSensorRegistry.addBuiltInSensor(new TestSensor());
                     //bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
                     //Go Back To Previous Menu
-                ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+                //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+                //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             }
         });
 
