@@ -39,7 +39,6 @@ public class BarometerSensorT extends ScalarSensor {
                 observer = new BleObserver() {
                     @Override
                     public void onValueChange(float value) {
-
                         c.addData(clock.getNow(), value);
                     }
                 };
