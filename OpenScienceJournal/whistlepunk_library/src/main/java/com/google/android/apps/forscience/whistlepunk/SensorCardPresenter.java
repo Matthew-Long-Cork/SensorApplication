@@ -701,7 +701,6 @@ public class SensorCardPresenter {
                     if (mParentFragment == null) {
                         return false;
                     }
-
                     Intent intent = new Intent(mParentFragment.getActivity(),
                             TriggerListActivity.class);
                     intent.putExtra(TriggerListActivity.EXTRA_SENSOR_ID, mSensorId);
@@ -717,13 +716,6 @@ public class SensorCardPresenter {
                 }
                 else if (itemId == R.id.action_set_sendData_to_db_frequency) {
                     return getUserInputForFrequency();
-                }
-                else if (itemId == R.id.action_BT) {
-                    //BleSensorManager ble = BleSensorManager.getInstance();
-                    //ble.scan();
-                }
-                else if (itemId == R.id.action_Test) {
-                    //Remove these two test options
                 }
                 return false;
             }

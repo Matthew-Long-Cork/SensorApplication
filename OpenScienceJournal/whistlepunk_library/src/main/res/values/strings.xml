@@ -100,11 +100,11 @@
 
     <!--added:-->
     <!-- frequency_popup - select sensor -->
-    <string name="selected_sensor_to_set_frequency">Selected Sensor:</string>
+    <string name="selected_sensor_to_set_frequency">Sensor:</string>
 
     <!--added:-->
     <!-- frequency_popup - units label -->
-    <string name="select_frequency_units">Units:</string>
+    <string name="select_frequency_units">Select Units:</string>
 
     <!--added:-->
     <!-- frequency_popup - select frequency label -->

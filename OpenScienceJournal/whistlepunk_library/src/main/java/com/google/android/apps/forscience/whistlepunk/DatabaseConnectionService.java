@@ -1,6 +1,7 @@
 package com.google.android.apps.forscience.whistlepunk;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
@@ -24,6 +25,7 @@ public class DatabaseConnectionService {
     private static String experimentName;
 
     private static String mqttURL, url;
+    private static int i =0;
     private static final String mqttTag = "v1/devices/me/telemetry";
 
     private static MqttAndroidClient mqttAndroidClient;
@@ -79,6 +81,7 @@ public class DatabaseConnectionService {
         System.out.println("    TRYING TO SEND TO: ");
         System.out.println("    website address: " + url);
         System.out.println("    website token: " + myWriteToken);
+        System.out.println("    connection type: " + myConnType);
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -108,6 +111,7 @@ public class DatabaseConnectionService {
                 System.out.println("    website address: " + myWebsite);
                 System.out.println("    website token: " + myWriteToken);
                 System.out.println("    data : " + data);
+                System.out.println("    connection type: " + myConnType);
                 System.out.println("======================================");
                 System.out.println("======================================");
             }
@@ -127,6 +131,7 @@ public class DatabaseConnectionService {
         System.out.println("    TRYING TO SEND TO: ");
         System.out.println("    website address: " + myWebsite);
         System.out.println("    website token: " + myWriteToken);
+        System.out.println("    connection type: " + myConnType);
         System.out.println("======================================");
         System.out.println("======================================");
 
@@ -141,6 +146,7 @@ public class DatabaseConnectionService {
                 System.out.println("    website address: " + myWebsite);
                 System.out.println("    website token: " + myWriteToken);
                 System.out.println("    data : " + jsonData);
+                System.out.println("    connection type: " + myConnType);
                 System.out.println("======================================");
                 System.out.println("======================================");
 
@@ -154,7 +160,7 @@ public class DatabaseConnectionService {
 
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
-        mqttConnectOptions.setAutomaticReconnect(false);
+        mqttConnectOptions.setAutomaticReconnect(true);
         mqttConnectOptions.setUserName(myWriteToken);
 
         try {
@@ -163,12 +169,16 @@ public class DatabaseConnectionService {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
                     Log.e("MQTT Connection", "Success");
-                    //isConnected = true;
                 }
 
                 @Override
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Log.e("MQTT Connection", "Failed");
+                    i++;
+                    Log.e("MQTT Connection", "Connection no." + i+ " - Failed");
+                    if(i<3)
+                        Toast.makeText(ExperimentDetailsFragment.context, "Connection Failed. Retrying...", Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(ExperimentDetailsFragment.context, "FAIL!!", Toast.LENGTH_LONG).show();
                 }
             });
         }catch (Exception e){e.printStackTrace();}
@@ -184,7 +194,6 @@ public class DatabaseConnectionService {
                                 mqttAndroidClient.unregisterResources();
                                 mqttAndroidClient.close();
                                 mqttAndroidClient = null;
-                                //isConnected = false;
                                 Log.e("MQTT disconnect", "Success");
                             }
 

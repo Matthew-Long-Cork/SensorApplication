@@ -73,32 +73,27 @@
         android:id="@+id/select_frequency_lbl"
         android:layout_width="260dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:gravity="center"
         android:text="@string/select_frequency"
         android:textSize="24sp" />
 
-        <com.michaelmuenzer.android.scrollablennumberpicker.ScrollableNumberPicker
-            android:id="@+id/frequency_picker"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="40dp"
-            android:background="@drawable/number_picker"
-            android:gravity="center"
-            app:snp_buttonIconDown="@drawable/ic_action_down_arrow"
-            app:snp_buttonIconUp="@drawable/ic_action_up_arrow"
-            app:snp_maxValue="10"
-            app:snp_minValue="1"
-            app:snp_orientation="vertical"
-            app:snp_stepSize="1" />
+    <NumberPicker
+        android:id="@+id/number_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="125dp" />
 
+    <NumberPicker
+        android:id="@+id/number_picker2_because_number_pickers_are_stupid"
+        android:layout_width="wrap_content"
+        android:layout_height="125dp"
+        android:layout_marginTop="-125dp" />
 
     <Button
         android:id="@+id/set_frequency_btn"
         android:layout_width="260dp"
         android:layout_height="50dp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:background="@drawable/rounded_button"
         android:text="@string/connnection_btn"
         android:textColor="@color/text_color_black" />

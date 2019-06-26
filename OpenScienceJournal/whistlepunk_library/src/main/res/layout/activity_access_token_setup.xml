@@ -46,7 +46,7 @@
         android:id="@+id/website_address_lbl"
         android:layout_width="260dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="15dp"
         android:gravity="center"
         android:text="@string/website_token"
         android:textSize="24sp" />
