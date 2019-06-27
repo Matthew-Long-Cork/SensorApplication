@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../OpenScienceJournal.iml" filepath="$PROJECT_DIR$/../OpenScienceJournal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app.iml" filepath="$PROJECT_DIR$/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../api/ScienceJournalApi/scalarinputapi.iml" filepath="$PROJECT_DIR$/../../api/ScienceJournalApi/scalarinputapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../whistlepunk_library/whistlepunk_library.iml" filepath="$PROJECT_DIR$/../whistlepunk_library/whistlepunk_library.iml" />
+    </modules>
+  </component>
+</project>

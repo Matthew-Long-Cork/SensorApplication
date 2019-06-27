@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.bignerdranch.android:expandablerecyclerview:2.1.1@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/expandablerecyclerview-2.1.1.aar/30e1f56177417b8325c0ba308b930a7c/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/expandablerecyclerview-2.1.1.aar/30e1f56177417b8325c0ba308b930a7c/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.bignerdranch.android/expandablerecyclerview/2.1.1/95b7a847f6c4afea063ecd141f9eda7f27875532/expandablerecyclerview-2.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
