@@ -158,20 +158,22 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         if(bleSensorManager.connected) {
             deviceListView.setVisibility(View.GONE);
             bluetoothButton.setText("Disconnect Bluetooth Device");
-        }
+        } else
+            mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
 
         bluetoothButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(bleSensorManager.connected) {
                     bleSensorManager.disconnect();
-                    mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
                     deviceListView.setVisibility(View.VISIBLE);
                     bluetoothButton.setText("Search Bluetooth Device");
+                    mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
                 } else {
                     bleSensorManager.scan(arrayAdapter);
                     deviceListView.setAdapter(arrayAdapter);
                 }
+
             }
         });
 

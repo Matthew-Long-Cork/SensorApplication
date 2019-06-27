@@ -31,5 +31,6 @@ public class Exiter extends Service {
         AppSingleton.getInstance(this).getSensorRegistry().refreshBuiltinSensors(this);
         stopForeground(true);
         stopSelf();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }
