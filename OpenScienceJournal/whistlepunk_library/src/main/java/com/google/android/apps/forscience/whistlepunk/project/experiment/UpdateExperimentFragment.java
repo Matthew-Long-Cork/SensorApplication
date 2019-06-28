@@ -40,6 +40,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
@@ -192,10 +193,15 @@ public class UpdateExperimentFragment extends Fragment {
         SharedPreferences.Editor editor = storedData.edit();
 
         mExperiment.subscribe(experiment -> {
+
             title.setText(experiment.getTitle());
             previousTitle = experiment.getTitle();
 
             mSaved.happens().subscribe(o -> {
+               // Toast.makeText(getContext(), "Question?.", Toast.LENGTH_SHORT).show();
+               // int number = 1;
+               // if(number ==0){
+
 
                 // get the user input
                 newValue = title.getText().toString().trim();
@@ -218,8 +224,7 @@ public class UpdateExperimentFragment extends Fragment {
                         storedData.edit().remove(previousTitle + "_experimentAccessToken");
                         // then add the new token
                         editor.putString(newValue + "_experimentAccessToken", accessToken);
-                    }
-                    else{
+                    } else {
                         // put in a default websiteAccessToken
                         editor.putString(newValue + "_experimentAccessToken", null);
                     }
@@ -230,13 +235,12 @@ public class UpdateExperimentFragment extends Fragment {
                         // then add the new token
                         editor.putString(newValue + "_experimentConnectionType", connectionType);
 
-                    }
-                    else{
+                    } else {
                         // put in a default connection type
                         editor.putString(newValue + "_experimentConnectionType", null);
                     }
                     // if either values are null then prompt user
-                    if(accessToken.equals("") || connectionType.equals("")){
+                    if (accessToken.equals("") || connectionType.equals("")) {
                         updateConnectionSetup();
 
                     }
@@ -277,12 +281,14 @@ public class UpdateExperimentFragment extends Fragment {
                         editor.putBoolean(newSensorVariableState, state);
                     }
                 }
-                    // when you are done adding/changing the values, call the commit() method to commit all
-                    editor.commit();
-                    //==============================================================================
-                    // finally save the experiment
-                    saveExperiment();
-                    //==============================================================================
+                // when you are done adding/changing the values, call the commit() method to commit all
+                editor.commit();
+                //==============================================================================
+                // finally save the experiment
+                saveExperiment();
+                //==============================================================================
+
+            //}
             });
 
             if (!TextUtils.isEmpty(experiment.getExperimentOverview().imagePath)) {

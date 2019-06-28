@@ -109,7 +109,6 @@ public class FrequencyPopup extends Activity {
                             numberPicker.setVisibility(View.INVISIBLE);
                             millisecondsNumberPicker.setVisibility(View.VISIBLE);
                             myTextView.setVisibility(View.VISIBLE);
-                            //===============================================
                         }
                         if(currentlySelectedUnits.equals("Second(s)")|| currentlySelectedUnits.equals("Minute(s)")){
                             numberPicker.setMinValue(0);

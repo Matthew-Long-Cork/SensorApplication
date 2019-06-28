@@ -199,19 +199,6 @@ public class ExperimentDetailsFragment extends Fragment
         // retrieve its value
         sensorFrequency = storedData.getInt(word1, 0);
 
-        String word2 = title + "_experimentAccessToken";
-        String accessToken = storedData.getString(word2, "");
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("         experimentDetailsFragment()   ");
-        System.out.println("         The title is: " + title);
-        System.out.println("         The token is: " + accessToken);
-        System.out.println("         The sensor is: " + sensor);
-        System.out.println("         The sensorFrequency is: " + sensorFrequency);
-        System.out.println("======================================");
-        System.out.println("======================================");
-
         return sensorFrequency;
     }
 
@@ -236,13 +223,6 @@ public class ExperimentDetailsFragment extends Fragment
     public static void changeTheSensorState(String sensor, boolean state){
 
        boolean currentState = state;
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println(" changeTheSensorState()");
-        System.out.println("        the "+sensor + " sensor state is now " + state);
-        System.out.println("======================================");
-        System.out.println("======================================");
 
         // create the name of the variable we now need
         String word = title + "_" + sensor + "_state";
