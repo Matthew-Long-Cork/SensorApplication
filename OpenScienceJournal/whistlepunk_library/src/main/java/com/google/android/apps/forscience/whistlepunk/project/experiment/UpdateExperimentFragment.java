@@ -54,6 +54,7 @@ import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
 import com.google.common.io.ByteStreams;
 
 import java.io.File;
@@ -355,6 +356,7 @@ public class UpdateExperimentFragment extends Fragment {
         sensorsList.add("SensorTagValue3");                  //<-- class not modified for this version
         sensorsList.add("SensorTagValue4");                  //<-- class not modified for this version
         sensorsList.add("SensorTagValue5");                  //<-- class not modified for this version
+        sensorsList.add(BarometerSensorT.ID);
     }
 
     @Override

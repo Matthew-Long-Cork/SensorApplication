@@ -3,6 +3,7 @@ package com.google.android.apps.forscience.whistlepunk;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.blew.MqttManager;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -21,12 +22,14 @@ import okhttp3.Response;
 
 public class DatabaseConnectionService {
 
-    private static String myWebsite ="", myWriteToken ="", myConnType;
+    private static String myWebsite = "", myWriteToken = "", myConnType;
     private static String experimentName;
 
     private static String mqttURL, url;
-    private static int i =0;
+    private static int i = 0;
     private static final String mqttTag = "v1/devices/me/telemetry";
+
+    private static MqttManager mqttManager;
 
     private static MqttAndroidClient mqttAndroidClient;
     //private static boolean isConnected = false;
@@ -44,10 +47,13 @@ public class DatabaseConnectionService {
         if(myConnType.equals("MQTT Connection")) {
             if (mqttAndroidClient == null) {
                 mqttURL = "tcp://" + myWebsite + ":1883";
-                mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
-            }
-            if (!mqttAndroidClient.isConnected()) {
-                mqttInit();
+                mqttManager = new MqttManager();
+                //mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
+                try {
+                    mqttManager.connect();
+                } catch (Exception e) {
+                    Log.e("Mqtt Connection: " ,  "Failed");
+                }
             }
         }
         else
@@ -59,10 +65,16 @@ public class DatabaseConnectionService {
         // get the experiment name
         experimentName = ExperimentDetailsFragment.getCurrentTitle();
         // check which option was selected:
-        if(myConnType.equals("MQTT Connection"))
-            sendDataMqtt(dataObject);
-        else
+        if(myConnType.equals("MQTT Connection")) {
+            String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
+            try {
+                mqttManager.sendDataMqtt(jsonData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
             sendDataHttp(dataObject);
+        }
     }
 
     //==============================================================================================
@@ -74,16 +86,6 @@ public class DatabaseConnectionService {
         Float sensorValue;
         sensorType = dataObject.Id;
         sensorValue = dataObject.dataValue;
-
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("    TRYING TO SEND TO: ");
-        System.out.println("    website address: " + url);
-        System.out.println("    website token: " + myWriteToken);
-        System.out.println("    connection type: " + myConnType);
-        System.out.println("======================================");
-        System.out.println("======================================");
 
         //data to send
         data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
@@ -103,112 +105,10 @@ public class DatabaseConnectionService {
                     .build();
 
             try (Response response = client.newCall(request).execute()) {
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println( response.body().string());
-                System.out.println("    sent: ");
-                System.out.println("    website address: " + myWebsite);
-                System.out.println("    website token: " + myWriteToken);
-                System.out.println("    data : " + data);
-                System.out.println("    connection type: " + myConnType);
-                System.out.println("======================================");
-                System.out.println("======================================");
             }
         }
         catch (Exception e) {
             System.out.println("    Error: " + sensorType + " "+ e);
-        }
-    }
-
-    //==============================================================================================
-    //  MQTT CONNECTION
-    //==============================================================================================
-    public static void sendDataMqtt(DataObject dataObject){
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println("    TRYING TO SEND TO: ");
-        System.out.println("    website address: " + myWebsite);
-        System.out.println("    website token: " + myWriteToken);
-        System.out.println("    connection type: " + myConnType);
-        System.out.println("======================================");
-        System.out.println("======================================");
-
-        if(!mqttAndroidClient.equals(null) && mqttAndroidClient.isConnected()) {
-            String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
-            try {
-                mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
-
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("    sent: ");
-                System.out.println("    website address: " + myWebsite);
-                System.out.println("    website token: " + myWriteToken);
-                System.out.println("    data : " + jsonData);
-                System.out.println("    connection type: " + myConnType);
-                System.out.println("======================================");
-                System.out.println("======================================");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            } ;
-        }
-    }
-
-    public static void mqttInit(){
-
-        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-        mqttConnectOptions.setCleanSession(true);
-        mqttConnectOptions.setAutomaticReconnect(true);
-        mqttConnectOptions.setUserName(myWriteToken);
-
-        try {
-
-            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Log.e("MQTT Connection", "Success");
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    i++;
-                    Log.e("MQTT Connection", "Connection no." + i+ " - Failed");
-                    if(i<3)
-                        Toast.makeText(ExperimentDetailsFragment.context, "Connection Failed. Retrying...", Toast.LENGTH_LONG).show();
-                    else
-                        Toast.makeText(ExperimentDetailsFragment.context, "FAIL!!", Toast.LENGTH_LONG).show();
-                }
-            });
-        }catch (Exception e){e.printStackTrace();}
-    }
-
-    public static void mqttDisconnect() {
-        if (mqttAndroidClient != null) {
-            if (mqttAndroidClient.isConnected()) {
-                    try {
-                        mqttAndroidClient.disconnect().setActionCallback(new IMqttActionListener() {
-                            @Override
-                            public void onSuccess(IMqttToken asyncActionToken) {
-                                mqttAndroidClient.unregisterResources();
-                                mqttAndroidClient.close();
-                                mqttAndroidClient = null;
-                                Log.e("MQTT disconnect", "Success");
-                            }
-
-                            @Override
-                            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                                Log.e("MQTT disconnect", exception.getMessage());
-                            }
-                        });
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-            } else {
-                mqttAndroidClient.unregisterResources();
-                mqttAndroidClient.close();
-            }
         }
     }
 }

@@ -27,7 +27,7 @@ public class Exiter extends Service {
        @Override
     public void onTaskRemoved(Intent rootIntent){
         BleSensorManager.getInstance().disconnect();
-        DatabaseConnectionService.mqttDisconnect();
+        //DatabaseConnectionService.mqttDisconnect();
         AppSingleton.getInstance(this).getSensorRegistry().refreshBuiltinSensors(this);
         stopForeground(true);
         stopSelf();

@@ -552,7 +552,7 @@ public class ExperimentDetailsFragment extends Fragment
                 System.out.println("         calling mqtt disconnect");
                 System.out.println("======================================");
                 System.out.println("======================================");
-                DatabaseConnectionService.mqttDisconnect();
+                //DatabaseConnectionService.mqttDisconnect();
             }
             displayNamePromptOrGoUp();
             return true;
@@ -630,7 +630,7 @@ public class ExperimentDetailsFragment extends Fragment
             System.out.println("         calling mqtt disconnect");
             System.out.println("======================================");
             System.out.println("======================================");
-            DatabaseConnectionService.mqttDisconnect();
+            //DatabaseConnectionService.mqttDisconnect();
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
