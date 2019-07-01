@@ -136,7 +136,7 @@ public class ExperimentDetailsFragment extends Fragment
 
     //==============================================================================================
 
-    static String title = "";
+    static String title = null;
     private static SharedPreferences storedData;
     private static SharedPreferences.Editor editor;
     private static int sensorFrequency;
@@ -291,50 +291,49 @@ public class ExperimentDetailsFragment extends Fragment
         }
         return RxDataController.getExperimentById(getDataController(), mExperimentId)
                                .doOnSuccess(experiment -> {
-                                   if (experiment == null) {
-                                       // This was deleted on us. Finish and return so we don't
-                                       // try to load.
-                                       getActivity().finish();
-                                       return;
-                                   }
-                                   attachExperimentDetails(experiment);
-                                   loadExperimentData(experiment);
-                                   //===============================================================
-                                   // if the title exists:
-                                   // retrieve it and retrieve the stored data for sensors
-                                   //===============================================================
-                                   if(mExperiment.getTitle() != "" && mExperiment.getTitle() != null){
-                                       title = mExperiment.getTitle();
-                                   }
-                                   //===============================================================
-                                   // this was added so as to ask user for title at the very start
-                                   //===============================================================
-                                   if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
-                                      // show the update experiment details window
-                                       UpdateExperimentActivity.launch(getActivity(), mExperimentId);
-                                   }
-                                   //===============================================================
-                                   //  check for a stored token and/or connection type
-                                   //===============================================================
-                                   // get preferences
-                                   storedData = context.getSharedPreferences("info", MODE_PRIVATE);
-                                   // THIS IS FOR LATER
-                                   // interface used for modifying values in a sharedPreference object
-                                   editor = storedData.edit();
-                                   //get the stored access token for this experiment
-                                   String word1 = title + "_experimentAccessToken";
-                                   String accessToken = storedData.getString(word1, "");
-                                   //get the stored connection type for this experiment
-                                   String word2 = title + "_experimentConnectionType";
-                                   String connType = storedData.getString(word2, "");
-                                   //  if there is a token, set it now
-                                   if(!accessToken.equals("")){
-                                       DatabaseConnectionService.setMyAccessToken(accessToken);
-                                   }
-                                   //  if there is a connection type, set it now
-                                   if(!connType.equals("")){
-                                       DatabaseConnectionService.setMyConnectionType(connType);
-                                   }
+                                           if (experiment == null) {
+                                               // it was deleted. Finish and return
+                                               getActivity().finish();
+                                               return;
+                                           }
+                                           attachExperimentDetails(experiment);
+                                           loadExperimentData(experiment);
+                                           //===============================================================
+                                           // this was added so as to ask user for title at the very start
+                                           //===============================================================
+                                           if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
+                                               // show the update experiment details window
+                                               UpdateExperimentActivity.launch(getActivity(), mExperimentId);
+                                           }
+                                           //===============================================================
+                                           // if the title exists:
+                                           // retrieve it and retrieve the stored data for sensors
+                                           //===============================================================
+                                           if (mExperiment.getTitle() != "" && mExperiment.getTitle() != null) {
+                                               title = mExperiment.getTitle();
+                                           //===============================================================
+                                           //  check for a stored token and/or connection type
+                                           //===============================================================
+                                           // get preferences
+                                           storedData = context.getSharedPreferences("info", MODE_PRIVATE);
+                                           // THIS IS FOR LATER
+                                           // interface used for modifying values in a sharedPreference object
+                                           editor = storedData.edit();
+                                           //get the stored access token for this experiment
+                                           String word1 = title + "_experimentAccessToken";
+                                           String accessToken = storedData.getString(word1, "");
+                                           //get the stored connection type for this experiment
+                                           String word2 = title + "_experimentConnectionType";
+                                           String connType = storedData.getString(word2, "");
+                                           //  if there is a token, set it now
+                                           if (!accessToken.equals("")) {
+                                               DatabaseConnectionService.setMyAccessToken(accessToken);
+                                           }
+                                           //  if there is a connection type, set it now
+                                           if (!connType.equals("")) {
+                                               DatabaseConnectionService.setMyConnectionType(connType);
+                                           }
+                                       }
                                    //===============================================================
                                })
                                .toCompletable();
@@ -529,7 +528,7 @@ public class ExperimentDetailsFragment extends Fragment
                 // disconnect the MQTT connection
                 System.out.println("======================================");
                 System.out.println("======================================");
-                System.out.println("         calling mqtt disconnect");
+                System.out.println("    ExperimentDetailsFragment - calling mqtt disconnect");
                 System.out.println("======================================");
                 System.out.println("======================================");
                 DatabaseConnectionService.mqttDisconnect();

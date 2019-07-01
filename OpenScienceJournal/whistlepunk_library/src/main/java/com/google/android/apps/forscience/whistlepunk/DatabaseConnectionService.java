@@ -78,7 +78,7 @@ public class DatabaseConnectionService {
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println("    TRYING TO SEND TO: ");
+        System.out.println("    TRYING TO SEND TO HTTP: ");
         System.out.println("    website address: " + url);
         System.out.println("    website token: " + myWriteToken);
         System.out.println("    connection type: " + myConnType);
@@ -128,31 +128,34 @@ public class DatabaseConnectionService {
 
         System.out.println("======================================");
         System.out.println("======================================");
-        System.out.println("    TRYING TO SEND TO: ");
+        System.out.println("    TRYING TO SEND TO MQTT: ");
         System.out.println("    website address: " + myWebsite);
         System.out.println("    website token: " + myWriteToken);
         System.out.println("    connection type: " + myConnType);
         System.out.println("======================================");
         System.out.println("======================================");
 
-        if(!mqttAndroidClient.equals(null) && mqttAndroidClient.isConnected()) {
-            String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
-            try {
-                mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
+        if(mqttAndroidClient != null) {
+            if (mqttAndroidClient.isConnected()) {
 
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("    sent: ");
-                System.out.println("    website address: " + myWebsite);
-                System.out.println("    website token: " + myWriteToken);
-                System.out.println("    data : " + jsonData);
-                System.out.println("    connection type: " + myConnType);
-                System.out.println("======================================");
-                System.out.println("======================================");
+                String jsonData = "{" + (experimentName + "_" + dataObject.Id) + ":" + dataObject.dataValue + "}";
+                try {
+                    mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            } ;
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("    sent: ");
+                    System.out.println("    website address: " + myWebsite);
+                    System.out.println("    website token: " + myWriteToken);
+                    System.out.println("    data : " + jsonData);
+                    System.out.println("    connection type: " + myConnType);
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

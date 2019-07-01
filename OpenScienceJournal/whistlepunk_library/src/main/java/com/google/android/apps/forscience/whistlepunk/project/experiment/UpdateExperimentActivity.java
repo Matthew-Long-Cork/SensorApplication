@@ -44,7 +44,6 @@ public class UpdateExperimentActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction().add(R.id.container, fragment,
                     FRAGMENT_TAG).commit();
         }
-
     }
 
     public static void launch(Context context, String experimentId) {
@@ -67,5 +66,4 @@ public class UpdateExperimentActivity extends AppCompatActivity {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
-
 }
