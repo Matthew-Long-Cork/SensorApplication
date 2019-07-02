@@ -62,6 +62,8 @@ public class AppSingleton {
     private ConnectableSensor.Connector mSensorConnector;
     private PublishSubject<Label> mLabelsAdded = PublishSubject.create();
 
+
+
     private SensorEnvironment mSensorEnvironment = new SensorEnvironment() {
                 @Override
                 public RecordingDataController getDataController() {

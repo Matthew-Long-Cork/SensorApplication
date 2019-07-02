@@ -10,6 +10,7 @@ import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.util.Arrays;
 
@@ -110,5 +111,17 @@ public class DatabaseConnectionService {
         catch (Exception e) {
             System.out.println("    Error: " + sensorType + " "+ e);
         }
+    }
+
+    public static boolean isConnected(){
+        if(myConnType.equals("MQTT Connection")){
+            return  mqttManager.isConnected();
+        } else {
+            return  true;
+        }
+    }
+
+    public static void kill() throws MqttException {
+        mqttManager.kill();
     }
 }
