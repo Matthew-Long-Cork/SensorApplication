@@ -15,7 +15,8 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class BarometerSensorT extends BleSensor {
+    public static String ID = "BarometerSensorT";
     public  BarometerSensorT(){
-        super("BarometerSensorT", Sensor.BAR);
+        super(ID, Sensor.BAR);
     }
 }

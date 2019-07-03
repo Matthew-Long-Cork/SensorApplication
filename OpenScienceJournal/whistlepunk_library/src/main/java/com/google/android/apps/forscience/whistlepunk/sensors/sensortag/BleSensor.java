@@ -18,14 +18,14 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public abstract class BleSensor extends ScalarSensor {
 
-    public static String ID;
+    private final String id;
     private static boolean available = true;
     private BleObserver observer;
     private final Sensor sensor;
 
     public BleSensor(final String ID, Sensor sensor){
         super(ID);
-        this.ID = ID;
+        this.id = ID;
         this.sensor = sensor;
     }
 
@@ -45,7 +45,7 @@ public abstract class BleSensor extends ScalarSensor {
                         //Show value on the graph
                         c.addData(clock.getNow(), value);
                         //Send Data to the thingsboard
-                        DatabaseConnectionService.sendData(new DataObject(ID, value));
+                        DatabaseConnectionService.sendData(new DataObject(id, value));
                     }
                 };
                 BleObservable.registerObserver(observer);

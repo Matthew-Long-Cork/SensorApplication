@@ -21,8 +21,8 @@ public class MqttManager {
     private final int RECONNECT_DELAY = 15000;
 
     private final String mqttTag = "v1/devices/me/telemetry";
-    private final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
-    private final String deviceToken = "password123";
+    private String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
+    private String deviceToken = "password123";
 
     private MqttAndroidClient mqttAndroidClient;
     private MqttConnectOptions mqttConnectOptions;
@@ -31,11 +31,15 @@ public class MqttManager {
 
     private long currentTime;
 
-    private MqttManager(){
+    private MqttManager(String URL, String deviceToken){
+
+        mqttURL = "tcp://" + URL + ":1883";
+        this.deviceToken = deviceToken;
+
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(false);
-        //mqttConnectOptions.setConnectionTimeout(60000);
+        mqttConnectOptions.setConnectionTimeout(15000);
         mqttConnectOptions.setUserName(deviceToken);
 
         mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context,
@@ -62,8 +66,12 @@ public class MqttManager {
     }
 
     public static MqttManager getInstance(){
+        return mqttManager;
+    }
+
+    public static MqttManager getInstance(String mqttURL, String deviceToken){
         if(mqttManager == null)
-            mqttManager = new MqttManager();
+            mqttManager = new MqttManager(mqttURL, deviceToken);
         return mqttManager;
     }
 

@@ -15,7 +15,8 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class HumiditySensorT extends BleSensor {
+    public static String ID = "HumiditySensorT";
     public  HumiditySensorT(){
-        super("HumiditySensort", Sensor.HUM);
+        super(ID, Sensor.HUM);
     }
 }

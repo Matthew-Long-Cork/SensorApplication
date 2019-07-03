@@ -32,6 +32,10 @@ import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SineWavePseudoSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.TemperatureSensorT;
 import com.google.common.base.Preconditions;
 
 import java.util.HashMap;
@@ -196,6 +200,31 @@ public class SensorAppearanceProviderImpl implements SensorAppearanceProvider {
                 R.string.temperature_units, new SensorAnimationBehavior(
                 R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON),
                 TestSensor.ID));*/
+
+        putAppearance(BarometerSensorT.ID, new BuiltInSensorAppearance(
+                R.string.barometer_stag, R.drawable.ic_send_white_24dp,
+                R.string.barometer_units, new SensorAnimationBehavior(
+                R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
+                        , BarometerSensorT.ID));
+
+        putAppearance(HumiditySensorT.ID, new BuiltInSensorAppearance(
+                R.string.humidity_stag, R.drawable.ic_send_white_24dp,
+                R.string.humidity_unit, new SensorAnimationBehavior(
+                R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
+                , HumiditySensorT.ID));
+
+        putAppearance(LightSensorT.ID, new BuiltInSensorAppearance(
+                R.string.ambient_light_stag, R.drawable.ic_send_white_24dp,
+                R.string.ambient_light_units, new SensorAnimationBehavior(
+                R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
+                , LightSensorT.ID));
+
+        putAppearance(TemperatureSensorT.ID, new BuiltInSensorAppearance(
+                R.string.ambient_temerature_stag, R.drawable.ic_send_white_24dp,
+                R.string.temperature_units, new SensorAnimationBehavior(
+                R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
+                , TemperatureSensorT.ID));
+
     }
 
     private void putExternalSensorAppearance(String sensorId, ExternalSensorSpec sensor) {

@@ -15,7 +15,8 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class LightSensorT extends BleSensor {
+    public static String ID = "LuxSensorT";
     public LightSensorT(){
-        super("LuxSensorT", Sensor.LUX);
+        super(ID, Sensor.LUX);
     }
 }

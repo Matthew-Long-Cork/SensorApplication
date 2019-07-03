@@ -23,6 +23,7 @@ import android.support.v4.util.ArraySet;
 import android.util.Pair;
 
 import com.google.android.apps.forscience.javalib.Consumer;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciGadgetInfo;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorAppearance;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorSpec;
@@ -40,6 +41,10 @@ import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SineWavePseudoSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.TemperatureSensorT;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -238,6 +243,13 @@ public class SensorRegistry {
         if (DevOptionsFragment.isSineWaveEnabled(context)) {
             addBuiltInSensor(new SineWavePseudoSensor());
         }
+
+     /*   if(BleSensorManager.getInstance().connected){
+            addBuiltInSensor(new BarometerSensorT());
+            addBuiltInSensor(new TemperatureSensorT());
+            addBuiltInSensor(new LightSensorT());
+            addBuiltInSensor(new HumiditySensorT());
+        }*/
     }
 
     public void addBuiltInSensor(SensorChoice source) {

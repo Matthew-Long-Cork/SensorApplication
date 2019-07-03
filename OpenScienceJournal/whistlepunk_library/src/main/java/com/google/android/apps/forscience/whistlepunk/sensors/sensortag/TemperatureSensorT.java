@@ -18,7 +18,8 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusList
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
 public class TemperatureSensorT extends BleSensor {
+    public static String ID = "TemperatureSensorT";
     public TemperatureSensorT(){
-        super("TemperatureSensorT", Sensor.TEMP_AMB);
+        super(ID, Sensor.TEMP_AMB);
     }
 }

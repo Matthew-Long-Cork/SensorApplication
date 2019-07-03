@@ -24,6 +24,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,6 +38,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
+import com.google.android.apps.forscience.javalib.MaybeConsumer;
+import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
@@ -79,6 +82,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     private Menu mMainMenu;
     //private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
+    private SensorAppearanceProvider sensorAppearanceProvider;
     private BleSensorManager bleSensorManager;
 
     //Add Sensors Here!
@@ -102,6 +106,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 deviceRegistry, appearanceProvider, tracker, appSingleton.getSensorConnector());
 
         mSensorRegistry = appSingleton.getSensorRegistry();
+        sensorAppearanceProvider = appSingleton.getSensorAppearanceProvider();
         bleSensorManager = BleSensorManager.getInstance();
         //
         // creating empty adapters
@@ -165,6 +170,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                     deviceListView.setVisibility(View.VISIBLE);
                     bluetoothButton.setText("Search Bluetooth Device");
                     mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+
                 } else {
                     bleSensorManager.scan(arrayAdapter);
                     deviceListView.setAdapter(arrayAdapter);
@@ -193,6 +199,18 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
 
         return view;
     }
+
+    MaybeConsumer<Success> consumer = new MaybeConsumer<Success>() {
+        @Override
+        public void success(Success value) {
+            Log.i("Appearances Load: ", "Success");
+        }
+
+        @Override
+        public void fail(Exception e) {
+            Log.i("Appearances Load: ", "Fail");
+        }
+    };
 
     @Override
     public void onResume() {
