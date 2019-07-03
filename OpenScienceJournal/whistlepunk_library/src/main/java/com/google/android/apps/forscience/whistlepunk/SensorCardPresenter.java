@@ -170,7 +170,7 @@ public class SensorCardPresenter {
     private static final String[] SENSOR_ID_ORDER = {AmbientLightSensor.ID, DecibelSensor.ID,
             LinearAccelerometerSensor.ID, AccelerometerSensor.Axis.X.getSensorId(),
             AccelerometerSensor.Axis.Y.getSensorId(), AccelerometerSensor.Axis.Z.getSensorId(),
-            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID/*, TestSensor.ID*/};
+            BarometerSensor.ID, CompassSensor.ID, MagneticStrengthSensor.ID};
 
     // Update the back data textview every .25 seconds maximum.
     private static final int MAX_TEXT_UPDATE_TIME_MS = 250;

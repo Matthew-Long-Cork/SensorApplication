@@ -16,6 +16,8 @@ import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 public class Exiter extends Service {
 
     @Override
@@ -26,8 +28,13 @@ public class Exiter extends Service {
 
        @Override
     public void onTaskRemoved(Intent rootIntent){
-        BleSensorManager.getInstance().disconnect();
-        DatabaseConnectionService.mqttDisconnect();
+
+       try {
+           DatabaseConnectionService.kill();
+           BleSensorManager.getInstance().disconnect();
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
         AppSingleton.getInstance(this).getSensorRegistry().refreshBuiltinSensors(this);
         stopForeground(true);
         stopSelf();

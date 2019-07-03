@@ -504,7 +504,7 @@ public class RecorderControllerImpl implements RecorderController {
     public void shutDownAllSensors(){
         // we loop though the mRecorders list to stop sending data to Thingsboard
         // there always has to ber the one display-card ['serviceObserver'] // N/A
-        DatabaseConnectionService.mqttDisconnect();
+        //DatabaseConnectionService.mqttDisconnect();
         sensorIdList.size();
 
         for (int j = 0; j < mRecorders.size(); j++) {
