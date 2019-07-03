@@ -48,7 +48,7 @@ public class DatabaseConnectionService {
         if(myConnType.equals("MQTT Connection")) {
             if (mqttAndroidClient == null) {
                 mqttURL = "tcp://" + myWebsite + ":1883";
-                mqttManager = new MqttManager();
+                mqttManager = MqttManager.getInstance();
                 //mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
                 try {
                     mqttManager.connect();

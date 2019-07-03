@@ -14,43 +14,8 @@ import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorStatusListener;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.StreamConsumer;
 
-public class BarometerSensorT extends ScalarSensor {
-    public static final String ID = "BarometerSensorT";
-    private static boolean available = true;
-    private BleObserver observer;
-    private final Sensor sensor = Sensor.BAR;
-
-    public BarometerSensorT(){super(ID); }
-
-    public static boolean isAvailable(){
-        return available;
-    }
-
-    @Override
-    protected SensorRecorder makeScalarControl(StreamConsumer c, SensorEnvironment environment, Context context, SensorStatusListener listener) {
-
-        return new AbstractSensorRecorder(){
-            @Override
-            public void startObserving() {
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                BleSensorManager.getInstance().updateSensor(sensor);
-                final Clock clock = environment.getDefaultClock();
-
-                observer = new BleObserver() {
-                    @Override
-                    public void onValueChange(float value) {
-                        c.addData(clock.getNow(), value);
-                    }
-                };
-
-                BleObservable.registerObserver(observer);
-            }
-
-            @Override
-            public void stopObserving() {
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
-                BleObservable.unregisterObserver(observer);
-            }
-        };
+public class BarometerSensorT extends BleSensor {
+    public  BarometerSensorT(){
+        super("BarometerSensorT", Sensor.BAR);
     }
 }

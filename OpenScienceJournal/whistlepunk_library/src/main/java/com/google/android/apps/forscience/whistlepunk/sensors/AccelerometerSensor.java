@@ -156,6 +156,7 @@ public class AccelerometerSensor extends ScalarSensor {
 
                     // stop the timer task as the observing of the sensors is no longer needed
 
+                    if(timer != null)
                         timer.cancel();
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);

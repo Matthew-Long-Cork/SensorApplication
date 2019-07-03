@@ -40,7 +40,6 @@ import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SineWavePseudoSensor;
-import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -221,9 +220,6 @@ public class SensorRegistry {
         if (BarometerSensor.isBarometerSensorAvailable(available)) {
             addBuiltInSensor(new BarometerSensor());
         }
-
-        /*if(TestSensor.isAvailable())
-            addBuiltInSensor(new TestSensor());*/
 
         if (MagneticStrengthSensor.isMagneticRotationSensorAvailable(available)) {
             addBuiltInSensor(new MagneticStrengthSensor());

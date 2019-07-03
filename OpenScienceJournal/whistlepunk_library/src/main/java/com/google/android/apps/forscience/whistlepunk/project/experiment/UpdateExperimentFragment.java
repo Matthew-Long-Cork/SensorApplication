@@ -357,6 +357,7 @@ public class UpdateExperimentFragment extends Fragment {
         sensorsList.add("SensorTagValue4");                  //<-- class not modified for this version
         sensorsList.add("SensorTagValue5");                  //<-- class not modified for this version
         sensorsList.add(BarometerSensorT.ID);
+
     }
 
     @Override

@@ -14,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import android.util.Log;
+import android.widget.Toast;
 
 public class MqttManager {
 
@@ -26,11 +27,15 @@ public class MqttManager {
     private MqttAndroidClient mqttAndroidClient;
     private MqttConnectOptions mqttConnectOptions;
 
-    public MqttManager(){
+    private static MqttManager mqttManager;
+
+    private long currentTime;
+
+    private MqttManager(){
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(false);
-        mqttConnectOptions.setConnectionTimeout(15000);
+        //mqttConnectOptions.setConnectionTimeout(60000);
         mqttConnectOptions.setUserName(deviceToken);
 
         mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context,
@@ -39,7 +44,7 @@ public class MqttManager {
         mqttAndroidClient.setCallback(new MqttCallback() {
             @Override
             public void connectionLost(Throwable cause) {
-                Log.e("MQTT: ", "Connection Lost");
+                Log.e("MQTT: ", "Connection Lost" + (System.currentTimeMillis() - currentTime));
                 //Start Connection Retry
                 try {
                     connect();
@@ -56,10 +61,18 @@ public class MqttManager {
         });
     }
 
+    public static MqttManager getInstance(){
+        if(mqttManager == null)
+            mqttManager = new MqttManager();
+        return mqttManager;
+    }
+
     private IMqttActionListener mqttActionListener = new IMqttActionListener() {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.e("Connected: ", "True");
+            currentTime = System.currentTimeMillis();
+            Toast.makeText(ExperimentDetailsFragment.context, "Mqtt Connected!!!!", Toast.LENGTH_LONG);
             //Ideally throw a Toast
         }
 
@@ -81,7 +94,8 @@ public class MqttManager {
     };
 
     public void connect() throws Exception{
-        mqttAndroidClient.connect(mqttConnectOptions, ExperimentDetailsFragment.context, mqttActionListener);
+        if(!mqttAndroidClient.isConnected())
+            mqttAndroidClient.connect(mqttConnectOptions, ExperimentDetailsFragment.context, mqttActionListener);
     }
 
    public void sendDataMqtt(String jsonObject) throws Exception{

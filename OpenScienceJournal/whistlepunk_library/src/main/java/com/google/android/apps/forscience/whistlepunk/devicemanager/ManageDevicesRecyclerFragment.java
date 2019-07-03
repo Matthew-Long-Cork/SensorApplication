@@ -24,7 +24,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,7 +40,6 @@ import android.widget.TextView;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
 import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
-//import com.google.android.apps.forscience.whistlepunk.DeviceScanner;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.R;
 import com.google.android.apps.forscience.whistlepunk.SensorAppearanceProvider;
@@ -50,12 +48,10 @@ import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.UsageTracker;
 import com.google.android.apps.forscience.whistlepunk.api.scalarinput.InputDeviceSpec;
 import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
-import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.SystemScheduler;
-import com.google.android.apps.forscience.whistlepunk.sensors.TestSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
@@ -189,8 +185,6 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
 
                     deviceListView.setVisibility(View.GONE);
                     bluetoothButton.setText("Disconnect Bluetooth Device");
-                    //mSensorRegistry.addBuiltInSensor(new TestSensor());
-                    //bleSensorManager.getTelemetry(Sensor.TEMP_AMB, i);
                     //Go Back To Previous Menu
                 //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
                 //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
