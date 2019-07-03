@@ -6,7 +6,10 @@ import com.google.android.apps.forscience.whistlepunk.Clock;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
 import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
 import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
+import android.hardware.SensorManager;
+
 import com.google.android.apps.forscience.whistlepunk.blew.Sensor;
+import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.AbstractSensorRecorder;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.ScalarSensor;
 import com.google.android.apps.forscience.whistlepunk.sensorapi.SensorEnvironment;
@@ -19,6 +22,7 @@ public class LightSensorT extends ScalarSensor {
     private static boolean available = true;
     private BleObserver observer;
     private final Sensor sensor = Sensor.LUX;
+    private int frequencyTime;
 
     public LightSensorT(){super(ID); }
 
@@ -27,23 +31,52 @@ public class LightSensorT extends ScalarSensor {
     }
 
     @Override
-    protected SensorRecorder makeScalarControl(StreamConsumer c, SensorEnvironment environment, Context context, SensorStatusListener listener) {
+    protected SensorRecorder makeScalarControl(final StreamConsumer c,
+            final SensorEnvironment environment, final Context context,
+            final SensorStatusListener listener) {
 
         return new AbstractSensorRecorder(){
             @Override
             public void startObserving() {
-                listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
-                BleSensorManager.getInstance().updateSensor(sensor);
-                final Clock clock = environment.getDefaultClock();
 
-                observer = new BleObserver() {
-                    @Override
-                    public void onValueChange(float value) {
-                        c.addData(clock.getNow(), value);
-                    }
-                };
+                // if the sensor is not yet active
+                if (!ExperimentDetailsFragment.getTheSensorState(ID)) {
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(ID, true);
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                BleObservable.registerObserver(observer);
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("        STARTING the sensorTag-light ");
+                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+
+                    //=========================================================================
+
+                    listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
+                    BleSensorManager.getInstance().updateSensor(sensor);
+                    final Clock clock = environment.getDefaultClock();
+
+                    observer = new BleObserver() {
+                        @Override
+                        public void onValueChange(float value) {
+                            c.addData(clock.getNow(), value);
+                        }
+                    };
+
+                    BleObservable.registerObserver(observer);
+
+                    //=========================================================================
+                }
+                else{
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("    sensorTag-light is ALREADY ACTIVE");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
             }
 
             @Override

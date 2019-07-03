@@ -5,7 +5,7 @@ import java.util.List;
 
 public class BleObservable {
 
-    private static List<BleObserver> observerList = new ArrayList<BleObserver>();
+    public static List<BleObserver> observerList = new ArrayList<BleObserver>();
 
     public static void registerObserver(BleObserver observer){observerList.add(observer);}
     public static void unregisterObserver(BleObserver observer){observerList.remove(observer);}
@@ -14,5 +14,4 @@ public class BleObservable {
         for(BleObserver observer : observerList)
             observer.onValueChange(value);
     }
-
 }

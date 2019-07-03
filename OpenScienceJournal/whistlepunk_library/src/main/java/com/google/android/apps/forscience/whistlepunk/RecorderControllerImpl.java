@@ -31,6 +31,8 @@ import com.google.android.apps.forscience.javalib.MaybeConsumer;
 import com.google.android.apps.forscience.javalib.Scheduler;
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
+import com.google.android.apps.forscience.whistlepunk.blew.BleObservable;
+import com.google.android.apps.forscience.whistlepunk.blew.BleObserver;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorSpec;
 import com.google.android.apps.forscience.whistlepunk.devicemanager.ManageDevicesActivity;
@@ -462,7 +464,7 @@ public class RecorderControllerImpl implements RecorderController {
 
         boolean swapSensor = false, sensorInList = false;
 
-        if (mRecorders.containsKey(sensorId)) {
+        if (mRecorders.containsKey(sensorId) || BleObservable.observerList.contains(sensorId)) {
             sensorInList = true;
         }
 
@@ -477,8 +479,11 @@ public class RecorderControllerImpl implements RecorderController {
 
             // is is the on screen registry
             ExperimentDetailsFragment.changeTheSensorState(sensorId, false);
-            mRecorders.get(sensorId).stopObserving();
-            mRecorders.remove(sensorId);
+            if(mRecorders.containsKey(sensorId)){
+                mRecorders.get(sensorId).stopObserving();
+                mRecorders.remove(sensorId);
+            }
+
             sensorIdList.remove(sensorId);
             observerIdList.remove(observerId);
             mRegistry.remove(sensorId, observerId);

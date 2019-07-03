@@ -16,6 +16,11 @@ import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.MainActivity;
 import com.google.android.apps.forscience.whistlepunk.R;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class DatabaseLinkSetup extends Activity {
 
     // declare the variables
@@ -26,6 +31,7 @@ public class DatabaseLinkSetup extends Activity {
     private TextView message1, message2, headerMessage;
     private SharedPreferences storedData;
     private static boolean CONNECTION_SETUP;
+    private  Set<String> experimentNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +149,8 @@ public class DatabaseLinkSetup extends Activity {
         //=====================================================================================
         confirmBtn.setOnClickListener((View v) -> {
 
+            experimentNames = new HashSet<>();
+
             CONNECTION_SETUP = true;
             // send this to the DatabaseConnectionService.java to be used later
             DatabaseConnectionService.setMyWebsiteAddress(websiteAddress);
@@ -151,6 +159,7 @@ public class DatabaseLinkSetup extends Activity {
             editor.putString("websiteAddress", websiteAddress);
             editor.putString("websiteAddressType", websiteAddressType);
             editor.putBoolean("CONNECTION_SETUP", CONNECTION_SETUP);
+            editor.putStringSet("experimentNames",experimentNames);
             //finally, when you are done adding the values, call the commit() method.
             editor.commit();
             finish();

@@ -31,7 +31,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -49,6 +51,7 @@ import android.widget.Toast;
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
+import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.PermissionUtils;
@@ -59,6 +62,10 @@ import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.TemperatureSensorT;
 import com.google.common.io.ByteStreams;
 
 import java.io.File;
@@ -68,6 +75,7 @@ import java.io.InputStream;
 import java.io.PipedReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -98,14 +106,16 @@ public class UpdateExperimentFragment extends Fragment {
     private int Frequency = 5000;
     private String newSensorVariableFrequency;
     private String newSensorVariableState;
-    private String previousTitle = null;
+    private String defaultTitle = "Untitled Experiment";
+    private String currentTitle;
     private String newValue;
     private List sensorsList;
     private boolean swap = false, state;
     private String variableName, variableName2;
-    private  boolean saveChanges;
-    //==============================================================================================
+    private boolean ignoreChange = false;
+    Set<String> existingExperiments;
     private static Context context;
+    //==============================================================================================
 
     public UpdateExperimentFragment() {
 
@@ -135,6 +145,11 @@ public class UpdateExperimentFragment extends Fragment {
                 });
 
         context = getContext();
+
+        // get preferences
+        storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
+        // set of already created titles
+        existingExperiments = storedData.getStringSet("experimentNames",null);
 
         getActivity().setTitle(getString(R.string.title_activity_update_experiment));
         setHasOptionsMenu(true);
@@ -195,49 +210,57 @@ public class UpdateExperimentFragment extends Fragment {
                 mPhotoPreview.getResources().getColor(R.color.text_color_light_grey),
                 PorterDuff.Mode.SRC_IN);
 
-        // get preferences
-        storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
-        // interface used for modifying values in a sharedPreference object
-        SharedPreferences.Editor editor = storedData.edit();
-
         mExperiment.subscribe(experiment -> {
 
-            previousTitle = experiment.getTitle();
+            newTitle.setText(currentTitle);
+            newTitle.setSelection(currentTitle.length()); // focus
 
-            newTitle.setText(previousTitle); // for now
-
-            //==================================================================================
             mSaved.happens().subscribe(o -> {
-
-                if(previousTitle.equals(null)){
-                    Toast.makeText(getContext(), "NULL.", Toast.LENGTH_SHORT).show();
-
+                //get the user input
+                String input =  newTitle.getText().toString().trim();
+                // if new experiment, check for valid title
+                if (currentTitle.equals("Untitled Experiment")) {
+                    // it the title is blank
+                    if(input.equals(null) || input.equals(""))
+                        Toast.makeText(getContext(), "Please enter the experiment title.", Toast.LENGTH_SHORT).show();
+                    else
+                        saveChanges(experiment, newTitle);
                 }
-                else if(!(previousTitle.equals("")) || !(previousTitle.equals(null))){
+                // else if title is bring modified
+                else if (!(currentTitle.equals("Untitled Experiment"))) {
+                    // it the title is still the same
+                    if (currentTitle.equals(input))
+                        Toast.makeText(getContext(), "Title is still the same.", Toast.LENGTH_SHORT).show();
+                    // else if the title is now blank
+                    else if(input.equals(null) || input.equals(""))
+                        Toast.makeText(getContext(), "Please enter the experiment title.", Toast.LENGTH_SHORT).show();
+                    else if(existingExperiments.contains(newValue))
+                        notifyUser();
+                    else {
+                        // inform the user of the changes that are about to happen.
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        saveChanges(experiment, newTitle);
+                                        break;
 
-                    // inform the user about the changes that are about to happen.
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    //Yes button clicked
-                                    saveChanges(experiment, newTitle);
-                                    break;
-
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    //No button clicked
-                                    Toast.makeText(getContext(), "Changes cancelled.", Toast.LENGTH_SHORT).show();
-                                    getActivity().finish();
-                                    break;
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        Toast.makeText(getContext(), "Changes cancelled.", Toast.LENGTH_SHORT).show();
+                                        getActivity().finish();
+                                        break;
+                                }
                             }
-                        }
-                    };
+                        };
 
-                    //  yes/no? prompt for user
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setMessage("Changing the title will change the name of the values being sent to Thingsboard.com").setPositiveButton("Continue", dialogClickListener)
-                            .setNegativeButton("Cancel", dialogClickListener).show();
+                        //  yes/no? prompt for user
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setMessage("Changing the title will change the name of the values being sent to Thingsboard.com").setPositiveButton("Continue", dialogClickListener)
+                                .setNegativeButton("Cancel", dialogClickListener).show();
+                    }
                 }
             });
 
@@ -288,9 +311,36 @@ public class UpdateExperimentFragment extends Fragment {
             return false;
         });
         newTitle.setOnTouchListener((v, e) -> {
+
             newTitle.setFocusableInTouchMode(true);
             newTitle.requestFocus();
             return false;
+        });
+
+        newTitle.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // when user starts typing:
+                // need the ignoreChange boolean to stop loop
+                if(currentTitle == defaultTitle && !ignoreChange) {
+                    ignoreChange = true;
+                    // set the text to the char user inputted [last char in sequence]
+                    newTitle.setText(String.valueOf(s.charAt(newTitle.length()-1)).toUpperCase());
+                    newTitle.setSelection(1);
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
         });
         return view;
     }
@@ -299,25 +349,33 @@ public class UpdateExperimentFragment extends Fragment {
 
         // interface used for modifying values in a sharedPreference object
         SharedPreferences.Editor editor = storedData.edit();
+
         // get the user input
         newValue = newTitle.getText().toString().trim();
+        // check if 'newValue' is in set
+        if(existingExperiments.contains(newValue)){
+          notifyUser();
+        }
         //compare to currently stored title
-        if (!newValue.equals(previousTitle)) {
+        else if(!newValue.equals(currentTitle) && (!existingExperiments.contains(newValue))) {
             // change the title
             experiment.setTitle(newValue);
             // pass to ExperimentDetailsFragment to reference later
             ExperimentDetailsFragment.setCurrentTitle(newValue);
-            //==============================================================================
-            // access token and connection type
-            //==============================================================================
-            // check if there is a token set for this experiment and a connection type
-            String accessToken = storedData.getString(previousTitle + "_experimentAccessToken", "");
-            String connectionType = storedData.getString(previousTitle + "_experimentConnectionType", "");
+            //save the title to the set
+            existingExperiments.add(newValue);
+            //======================================================================================
+            //if old title exists, remove it from the set
+            if(existingExperiments.contains(currentTitle))
+                existingExperiments.remove(currentTitle);
 
+            // check if there is a token set for this experiment and a connection type
+            String accessToken = storedData.getString(currentTitle + "_experimentAccessToken", "");
+            String connectionType = storedData.getString(currentTitle + "_experimentConnectionType", "");
             // if there is a token entered
             if (!accessToken.equals(null)) {
                 // remove the old variable as it will no longer be referenced
-                storedData.edit().remove(previousTitle + "_experimentAccessToken");
+                storedData.edit().remove(currentTitle + "_experimentAccessToken");
                 // then add the new token
                 editor.putString(newValue + "_experimentAccessToken", accessToken);
             } else {
@@ -327,7 +385,7 @@ public class UpdateExperimentFragment extends Fragment {
             // if there is a connection type selected
             if (!connectionType.equals(null)) {
                 // remove the old variable as it will no longer be referenced
-                storedData.edit().remove(previousTitle + "_experimentConnectionType");
+                storedData.edit().remove(currentTitle + "_experimentConnectionType");
                 // then add the new token
                 editor.putString(newValue + "_experimentConnectionType", connectionType);
 
@@ -339,11 +397,11 @@ public class UpdateExperimentFragment extends Fragment {
             if (accessToken.equals("") || connectionType.equals("")) {
                 updateConnectionSetup();
             }
-            //==============================================================================
+            //======================================================================================
             //  experiment variables
-            //==============================================================================
+            //======================================================================================
             // if the current title is not the default title
-            if (!previousTitle.equals("")) {
+            if (!currentTitle.equals("Untitled Experiment")) {
                 // user is renaming the experiment
                 swap = true;
             }
@@ -355,13 +413,13 @@ public class UpdateExperimentFragment extends Fragment {
                 // if we are swapping the stored frequency values to the new title
                 if (swap) {
                     // get the sensor frequency
-                    variableName = previousTitle + "_" + sensorsList.get(i) + "_frequency";
+                    variableName = currentTitle + "_" + sensorsList.get(i) + "_frequency";
                     Frequency = storedData.getInt(variableName, 0);
                     // then remove old variable
                     storedData.edit().remove(variableName);
 
                     // get the sensor state
-                    variableName2 = previousTitle + "_" + sensorsList.get(i) + "_state";
+                    variableName2 = currentTitle + "_" + sensorsList.get(i) + "_state";
                     state = storedData.getBoolean(variableName2, false);
                     // then remove old variable
                     storedData.edit().remove(variableName2);
@@ -375,13 +433,31 @@ public class UpdateExperimentFragment extends Fragment {
                 newSensorVariableState = newValue + "_" + sensorsList.get(i) + "_state";
                 editor.putBoolean(newSensorVariableState, state);
             }
+            // when you are done adding/changing the values, call the commit() method to commit all
+            editor.commit();
+            //==============================================================================
+            // finally save the experiment
+            saveExperiment();
+            //==============================================================================
         }
-        // when you are done adding/changing the values, call the commit() method to commit all
-        editor.commit();
-        //==============================================================================
-        // finally save the experiment
-        saveExperiment();
-        //==============================================================================
+    }
+
+    private void notifyUser(){
+        // inform the user of the changes that are about to happen.
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        break;
+                }
+            }
+        };
+
+        //  yes/no? prompt for user
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("An experiment with this name already exists.").setPositiveButton("OK", dialogClickListener).show();
     }
 
     private void makeDefaultListOfSensors(){
@@ -395,11 +471,10 @@ public class UpdateExperimentFragment extends Fragment {
         sensorsList.add("AccZ");
         sensorsList.add("CompassSensor");
         sensorsList.add("MagneticRotationSensor");
-        sensorsList.add("SensorTagTemperature");             //<-- class CREATED for this version
-        sensorsList.add("SensorTagValue2");                  //<-- class not modified for this version
-        sensorsList.add("SensorTagValue3");                  //<-- class not modified for this version
-        sensorsList.add("SensorTagValue4");                  //<-- class not modified for this version
-        sensorsList.add("SensorTagValue5");                  //<-- class not modified for this version
+        sensorsList.add(TemperatureSensorT.ID);
+        sensorsList.add(BarometerSensorT.ID);
+        sensorsList.add(HumiditySensorT.ID);
+        sensorsList.add(LightSensorT.ID);
     }
 
     @Override
@@ -477,6 +552,12 @@ public class UpdateExperimentFragment extends Fragment {
     }
 
     private void attachExperimentDetails(final Experiment experiment) {
+
+        // check for the title, if new experiment set a default title for now
+        currentTitle = experiment.getTitle();
+        if(currentTitle.equals(""))
+            currentTitle = defaultTitle;
+
         mExperiment.onNext(experiment);
     }
 
@@ -511,7 +592,7 @@ public class UpdateExperimentFragment extends Fragment {
 
             Intent SetupIntent = new Intent(getContext(), AccessTokenSetupAndConnType.class);
             SetupIntent.putExtra( "CURRENT_TITLE", newValue);
-            SetupIntent.putExtra( "OLD_TITLE", previousTitle);
+            SetupIntent.putExtra( "OLD_TITLE", currentTitle);
             startActivity(SetupIntent);
     }
 }

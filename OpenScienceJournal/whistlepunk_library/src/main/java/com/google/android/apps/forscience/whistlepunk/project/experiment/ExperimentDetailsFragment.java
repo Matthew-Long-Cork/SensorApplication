@@ -136,7 +136,7 @@ public class ExperimentDetailsFragment extends Fragment
 
     //==============================================================================================
 
-    static String title = null;
+    static String title = "no title";
     private static SharedPreferences storedData;
     private static SharedPreferences.Editor editor;
     private static int sensorFrequency;
