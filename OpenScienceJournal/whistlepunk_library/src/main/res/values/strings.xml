@@ -45,7 +45,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - website token label-->
-    <string name="website_token">Enter Device Token:</string>
+    <string name="website_token">Enter Access Token:</string>
 
     <!--added:-->
     <!-- connection_settings_popup - website connection type label-->

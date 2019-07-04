@@ -90,7 +90,6 @@ public class DatabaseConnectionService {
 
         //data to send
         data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
-
         myUrl = url + "/api/v1/" + myWriteToken + "/telemetry";
 
         try{

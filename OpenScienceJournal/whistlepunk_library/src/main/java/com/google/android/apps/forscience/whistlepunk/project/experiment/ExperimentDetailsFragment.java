@@ -99,6 +99,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Consumer;
@@ -142,6 +143,8 @@ public class ExperimentDetailsFragment extends Fragment
     private static int sensorFrequency;
     private static Boolean sensorState;
     private int TOKEN_REQUEST = 1;
+    private Set<String> existingExperiments;
+
 
     public static String getCurrentTitle(){return title;}
 
@@ -786,6 +789,11 @@ public class ExperimentDetailsFragment extends Fragment
                                     TrackerConstants.ACTION_DELETED,
                                     TrackerConstants.LABEL_EXPERIMENT_DETAIL,
                                     0);
+
+                    // access set of created experiment titles
+                    existingExperiments = storedData.getStringSet("experimentNames",null);
+                    // remove from the set of existing experiments
+                    existingExperiments.remove(mExperiment.getTitle());
                     getActivity().finish();
                 }
             });
