@@ -16,22 +16,24 @@
 
 package com.google.android.apps.forscience.whistlepunk.project.experiment;
 
-import android.Manifest;
 import android.app.Activity;
+
 import android.content.Context;
+
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -44,10 +46,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
 import com.google.android.apps.forscience.whistlepunk.AppSingleton;
+import com.google.android.apps.forscience.whistlepunk.CurrentTimeClock;
 import com.google.android.apps.forscience.whistlepunk.DataController;
 import com.google.android.apps.forscience.whistlepunk.LoggingConsumer;
 import com.google.android.apps.forscience.whistlepunk.PermissionUtils;
@@ -58,14 +62,20 @@ import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
+import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.TemperatureSensorT;
 import com.google.common.io.ByteStreams;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -93,13 +103,19 @@ public class UpdateExperimentFragment extends Fragment {
 
     //==============================================================================================
     private SharedPreferences storedData;
-    private int defaultFrequency = 5000;
+    private int Frequency = 5000;
     private String newSensorVariableFrequency;
     private String newSensorVariableState;
-    private String previousTitle = "";
+    private String defaultTitle = "Untitled Experiment";
+    private String currentTitle;
     private String newValue;
-    //==============================================================================================
+    private List sensorsList;
+    private boolean swap = false, state;
+    private String variableName, variableName2;
+    private boolean ignoreChange = false;
+    Set<String> existingExperiments;
     private static Context context;
+    //==============================================================================================
 
     public UpdateExperimentFragment() {
 
@@ -130,6 +146,11 @@ public class UpdateExperimentFragment extends Fragment {
 
         context = getContext();
 
+        // get preferences
+        storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
+        // set of already created titles
+        existingExperiments = storedData.getStringSet("experimentNames",null);
+
         getActivity().setTitle(getString(R.string.title_activity_update_experiment));
         setHasOptionsMenu(true);
     }
@@ -143,17 +164,19 @@ public class UpdateExperimentFragment extends Fragment {
         actionBar.setHomeActionContentDescription(android.R.string.cancel);
 
         super.onCreateOptionsMenu(menu, inflater);
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_save) {
+            // respond to save clicked
             mSaved.onHappened();
             WhistlePunkApplication.getUsageTracker(getActivity())
                                   .trackEvent(TrackerConstants.CATEGORY_EXPERIMENTS,
                                           TrackerConstants.ACTION_EDITED,
                                           TrackerConstants.LABEL_UPDATE_EXPERIMENT, 0);
-            getActivity().finish();
+
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -176,13 +199,10 @@ public class UpdateExperimentFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_update_experiment, container, false);
-        EditText title = (EditText) view.findViewById(R.id.experiment_title);
+        EditText newTitle = (EditText) view.findViewById(R.id.experiment_title);
         mPhotoPreview = (ImageView) view.findViewById(R.id.experiment_cover);
         Button chooseButton = (Button) view.findViewById(R.id.btn_choose_photo);
         ImageButton takeButton = (ImageButton) view.findViewById(R.id.btn_take_photo);
-
-
-
 
         // Set the color of the placeholder drawable. This isn't used anywhere else
         // so we don't need to mutate() the drawable.
@@ -190,80 +210,57 @@ public class UpdateExperimentFragment extends Fragment {
                 mPhotoPreview.getResources().getColor(R.color.text_color_light_grey),
                 PorterDuff.Mode.SRC_IN);
 
-
-
         mExperiment.subscribe(experiment -> {
 
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WAKE_LOCK, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-            if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-
-
-
-            title.setText(experiment.getTitle());
-            previousTitle = experiment.getTitle();
+            newTitle.setText(currentTitle);
+            newTitle.setSelection(currentTitle.length()); // focus
 
             mSaved.happens().subscribe(o -> {
-                newValue = title.getText().toString().trim();
-                if (!newValue.equals(previousTitle)) {
+                //get the user input
+                String input =  newTitle.getText().toString().trim();
+                // if new experiment, check for valid title
+                if (currentTitle.equals("Untitled Experiment")) {
+                    // it the title is blank
+                    if(input.equals(null) || input.equals(""))
+                        Toast.makeText(getContext(), "Please enter the experiment title.", Toast.LENGTH_SHORT).show();
+                    else
+                        saveChanges(experiment, newTitle);
+                }
+                // else if title is bring modified
+                else if (!(currentTitle.equals("Untitled Experiment"))) {
+                    // it the title is still the same
+                    if (currentTitle.equals(input))
+                        Toast.makeText(getContext(), "Title is still the same.", Toast.LENGTH_SHORT).show();
+                    // else if the title is now blank
+                    else if(input.equals(null) || input.equals(""))
+                        Toast.makeText(getContext(), "Please enter the experiment title.", Toast.LENGTH_SHORT).show();
+                    else if(existingExperiments.contains(newValue))
+                        notifyUser();
+                    else {
+                        // inform the user of the changes that are about to happen.
+                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case DialogInterface.BUTTON_POSITIVE:
+                                        //Yes button clicked
+                                        saveChanges(experiment, newTitle);
+                                        break;
 
-                    //==============================================================================
-                    // here we set the title so we pass that through to ExperimentDetailsFragment
-                    // to keep track of the title future on
-                    experiment.setTitle(newValue);
-                    ExperimentDetailsFragment.setCurrentTitle(newValue);
+                                    case DialogInterface.BUTTON_NEGATIVE:
+                                        //No button clicked
+                                        Toast.makeText(getContext(), "Changes cancelled.", Toast.LENGTH_SHORT).show();
+                                        getActivity().finish();
+                                        break;
+                                }
+                            }
+                        };
 
-                    //==============================================================================
-                    // now we need to create stored data variables for each new set of sensors as
-                    // the experiment is created
-                    //===========================================================================
-
-                    storedData = this.getContext().getSharedPreferences("info", MODE_PRIVATE);
-                    // interface used for modifying values in a sharedPreference object
-                    SharedPreferences.Editor editor = storedData.edit();
-                    // the 10 sensors we use:
-                    List newList = new ArrayList();
-                    newList.add("AmbientLightSensor");
-                    newList.add("DecibelSource");
-                    newList.add("LinearAccelerometerSensor");
-                    newList.add("AccX");
-                    newList.add("AccY");
-                    newList.add("AccZ");
-                    newList.add("CompassSensor");
-                    newList.add("MagneticRotationSensor");
-                    newList.add("RemoteTemperature");               //<-- class not modified for this version
-                    newList.add("RemoteHumidity");                  //<-- class not modified for this version
-
-                    // create all the names of these new stored variables for this experiment
-                    for(int i =0; i< newList.size(); i++) {
-
-                        // starting with the sensors
-                        // name  of the experiment + the current sensor + '_frequency'
-                        // this is the new stored data variable:
-                        newSensorVariableFrequency = newValue + "_" + newList.get(i) + "_frequency";
-                        editor.putInt(newSensorVariableFrequency, defaultFrequency);
-
-                        // then the sensor state
-                        // name  of the experiment + the current sensor + '_state'
-                        // this is the new stored data variable:
-                        newSensorVariableState = newValue + "_" + newList.get(i) + "_state";
-                        editor.putBoolean(newSensorVariableState, false);
+                        //  yes/no? prompt for user
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setMessage("Changing the title will change the name of the values being sent to Thingsboard.com").setPositiveButton("Continue", dialogClickListener)
+                                .setNegativeButton("Cancel", dialogClickListener).show();
                     }
-
-                    // put in a default websiteAccessToken
-                    editor.putString(newValue + "_experimentAccessToken", null);
-                    // keep the access token up to date
-                    updateAccessToken();
-
-                    // when you are done adding the values, call the commit() method to commit all
-                    editor.commit();
-                    //==============================================================================
-                    // finally save the experiment
-                    saveExperiment();
-                    //==============================================================================
                 }
             });
 
@@ -306,19 +303,178 @@ public class UpdateExperimentFragment extends Fragment {
             });
         });
 
-        title.setOnEditorActionListener((textView, i, keyEvent) -> {
+        newTitle.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_DONE) {
-                title.clearFocus();
-                title.setFocusable(false);
+                newTitle.clearFocus();
+                newTitle.setFocusable(false);
             }
             return false;
         });
-        title.setOnTouchListener((v, e) -> {
-            title.setFocusableInTouchMode(true);
-            title.requestFocus();
+        newTitle.setOnTouchListener((v, e) -> {
+
+            newTitle.setFocusableInTouchMode(true);
+            newTitle.requestFocus();
             return false;
         });
+
+        newTitle.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // when user starts typing:
+                // need the ignoreChange boolean to stop loop
+                if(currentTitle == defaultTitle && !ignoreChange) {
+                    ignoreChange = true;
+                    // set the text to the char user inputted [last char in sequence]
+                    newTitle.setText(String.valueOf(s.charAt(newTitle.length()-1)).toUpperCase());
+                    newTitle.setSelection(1);
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
         return view;
+    }
+
+    private void saveChanges(Experiment experiment, EditText newTitle){
+
+        // interface used for modifying values in a sharedPreference object
+        SharedPreferences.Editor editor = storedData.edit();
+
+        // get the user input
+        newValue = newTitle.getText().toString().trim();
+        // check if 'newValue' is in set
+        if(existingExperiments.contains(newValue)){
+          notifyUser();
+        }
+        //compare to currently stored title
+        else if(!newValue.equals(currentTitle) && (!existingExperiments.contains(newValue))) {
+            // change the title
+            experiment.setTitle(newValue);
+            // pass to ExperimentDetailsFragment to reference later
+            ExperimentDetailsFragment.setCurrentTitle(newValue);
+            //save the title to the set
+            existingExperiments.add(newValue);
+            //======================================================================================
+            //if old title exists, remove it from the set
+            if(existingExperiments.contains(currentTitle))
+                existingExperiments.remove(currentTitle);
+
+            // check if there is a token set for this experiment and a connection type
+            String accessToken = storedData.getString(currentTitle + "_experimentAccessToken", "");
+            String connectionType = storedData.getString(currentTitle + "_experimentConnectionType", "");
+            // if there is a token entered
+            if (!accessToken.equals(null)) {
+                // remove the old variable as it will no longer be referenced
+                storedData.edit().remove(currentTitle + "_experimentAccessToken");
+                // then add the new token
+                editor.putString(newValue + "_experimentAccessToken", accessToken);
+            } else {
+                // put in a default websiteAccessToken
+                editor.putString(newValue + "_experimentAccessToken", null);
+            }
+            // if there is a connection type selected
+            if (!connectionType.equals(null)) {
+                // remove the old variable as it will no longer be referenced
+                storedData.edit().remove(currentTitle + "_experimentConnectionType");
+                // then add the new token
+                editor.putString(newValue + "_experimentConnectionType", connectionType);
+
+            } else {
+                // put in a default connection type
+                editor.putString(newValue + "_experimentConnectionType", null);
+            }
+            // if either values are null then prompt user
+            if (accessToken.equals("") || connectionType.equals("")) {
+                updateConnectionSetup();
+            }
+            //======================================================================================
+            //  experiment variables
+            //======================================================================================
+            // if the current title is not the default title
+            if (!currentTitle.equals("Untitled Experiment")) {
+                // user is renaming the experiment
+                swap = true;
+            }
+            makeDefaultListOfSensors();
+            // create the variables for this newly titled experiment
+            for (int i = 0; i < sensorsList.size(); i++) {
+                //default sensor state
+                state = false;
+                // if we are swapping the stored frequency values to the new title
+                if (swap) {
+                    // get the sensor frequency
+                    variableName = currentTitle + "_" + sensorsList.get(i) + "_frequency";
+                    Frequency = storedData.getInt(variableName, 0);
+                    // then remove old variable
+                    storedData.edit().remove(variableName);
+
+                    // get the sensor state
+                    variableName2 = currentTitle + "_" + sensorsList.get(i) + "_state";
+                    state = storedData.getBoolean(variableName2, false);
+                    // then remove old variable
+                    storedData.edit().remove(variableName2);
+                }
+
+                // this is the new stored data variable:
+                newSensorVariableFrequency = newValue + "_" + sensorsList.get(i) + "_frequency";
+                editor.putInt(newSensorVariableFrequency, Frequency);
+
+                // this is the new stored data variable:
+                newSensorVariableState = newValue + "_" + sensorsList.get(i) + "_state";
+                editor.putBoolean(newSensorVariableState, state);
+            }
+            // when you are done adding/changing the values, call the commit() method to commit all
+            editor.commit();
+            //==============================================================================
+            // finally save the experiment
+            saveExperiment();
+            //==============================================================================
+        }
+    }
+
+    private void notifyUser(){
+        // inform the user of the changes that are about to happen.
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        break;
+                }
+            }
+        };
+
+        //  yes/no? prompt for user
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("An experiment with this name already exists.").setPositiveButton("OK", dialogClickListener).show();
+    }
+
+    private void makeDefaultListOfSensors(){
+        // the 13 sensors we use:
+        sensorsList = new ArrayList();
+        sensorsList.add("AmbientLightSensor");
+        sensorsList.add("DecibelSource");
+        sensorsList.add("LinearAccelerometerSensor");
+        sensorsList.add("AccX");
+        sensorsList.add("AccY");
+        sensorsList.add("AccZ");
+        sensorsList.add("CompassSensor");
+        sensorsList.add("MagneticRotationSensor");
+        sensorsList.add(TemperatureSensorT.ID);
+        sensorsList.add(BarometerSensorT.ID);
+        sensorsList.add(HumiditySensorT.ID);
+        sensorsList.add(LightSensorT.ID);
     }
 
     @Override
@@ -396,6 +552,12 @@ public class UpdateExperimentFragment extends Fragment {
     }
 
     private void attachExperimentDetails(final Experiment experiment) {
+
+        // check for the title, if new experiment set a default title for now
+        currentTitle = experiment.getTitle();
+        if(currentTitle.equals(""))
+            currentTitle = defaultTitle;
+
         mExperiment.onNext(experiment);
     }
 
@@ -421,17 +583,16 @@ public class UpdateExperimentFragment extends Fragment {
                     @Override
                     public void success(Success value) {
                         // Do nothing
+                        getActivity().finish();
                     }
                 });
     }
 
-    private void updateAccessToken(){
+    private void updateConnectionSetup(){
 
-            Intent SetupIntent = new Intent(getContext(), AccessTokenSetup.class);
+            Intent SetupIntent = new Intent(getContext(), AccessTokenSetupAndConnType.class);
             SetupIntent.putExtra( "CURRENT_TITLE", newValue);
-            SetupIntent.putExtra( "OLD_TITLE", previousTitle);
+            SetupIntent.putExtra( "OLD_TITLE", currentTitle);
             startActivity(SetupIntent);
-
     }
-
 }

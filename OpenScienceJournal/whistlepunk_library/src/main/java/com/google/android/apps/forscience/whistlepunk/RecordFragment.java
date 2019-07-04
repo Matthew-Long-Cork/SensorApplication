@@ -177,7 +177,6 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
     // the decibel sensor before the permission to use microphone is granted
     // in Android M.
     private SensorCardPresenter mDecibelSensorCardPresenter;
-    private static List<SensorCardPresenter> presenters;
 
     private Handler mHandler;
     private FeatureDiscoveryProvider mFeatureDiscoveryProvider;
@@ -264,7 +263,7 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         if (mSensorCardAdapter == null) {
             return;
         }
-        presenters = mSensorCardAdapter.getSensorCardPresenters();
+        List<SensorCardPresenter> presenters = mSensorCardAdapter.getSensorCardPresenters();
 
         int size = presenters.size();
         for (int i = 0; i < size; i++) {
@@ -466,54 +465,18 @@ public class RecordFragment extends PanesToolFragment implements Handler.Callbac
         super.onDestroy();
     }
 
-    public static void stopObservingThisSensor(String sensor) {
-
-// search the
-
-
-        //int index = mSensorCardAdapter.getSensorCardPresenters().indexOf();
-       // SensorCardPresenter presenter = presenters.get(index);
-        //presenter.stopObserving();
-
-        presenters = mSensorCardAdapter.getSensorCardPresenters();
-
-        int size = presenters.size();
-        for (int i = 0; i < size; i++) {
-            SensorCardPresenter presenter = presenters.get(i);
-            if (presenter.equals(sensor)) {
-                presenter.stopObserving();
-            }
-        }
-
-
-
-    }
-
     public static void stopObservingCurrentSensors() {
 
-        if (mSensorCardAdapter == null) {
-
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("      mSensorCardAdapter is null");
-            System.out.println("======================================");
-            System.out.println("======================================");
-        }
         if (mSensorCardAdapter != null) {
             for (SensorCardPresenter presenter : mSensorCardAdapter.getSensorCardPresenters()) {
-                    presenter.stopObserving();
-                System.out.println("======================================");
-                System.out.println("======================================\n\n");
-                System.out.println("        stopping observing" + presenter);
-                System.out.println("\n\n======================================");
-                System.out.println("======================================");
+                presenter.stopObserving();
             }
         }
     }
 
     @Override
     public View onCreatePanesView(LayoutInflater inflater, ViewGroup container,
-                                  Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_record, container,
                 false);
 

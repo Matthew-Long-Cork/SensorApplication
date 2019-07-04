@@ -48,7 +48,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.audiogen.SonificationTypeAdapterFactory;
 import com.google.android.apps.forscience.whistlepunk.data.GoosciSensorLayout;
@@ -86,7 +85,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.PrimitiveIterator;
 
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
@@ -703,7 +701,6 @@ public class SensorCardPresenter {
                     if (mParentFragment == null) {
                         return false;
                     }
-
                     Intent intent = new Intent(mParentFragment.getActivity(),
                             TriggerListActivity.class);
                     intent.putExtra(TriggerListActivity.EXTRA_SENSOR_ID, mSensorId);

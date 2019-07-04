@@ -33,11 +33,24 @@
         />
 
     <android.support.v7.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/recycler"
-        android:background="@color/text_color_white"
-        >
+        android:layout_width="match_parent"
+        android:layout_height="338dp"
+        android:background="@color/text_color_white">
 
     </android.support.v7.widget.RecyclerView>
+
+    <Button
+        android:id="@+id/ble_con_btn"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:text="Search Bluetooth Device" />
+
+    <ListView
+        android:id="@+id/ble_device_list"
+        android:layout_width="match_parent"
+        android:layout_height="349dp"
+        android:background="@drawable/bt_devices_list"
+        android:divider="@color/colorPrimary"
+        android:dividerHeight="5dp" />
 </LinearLayout>

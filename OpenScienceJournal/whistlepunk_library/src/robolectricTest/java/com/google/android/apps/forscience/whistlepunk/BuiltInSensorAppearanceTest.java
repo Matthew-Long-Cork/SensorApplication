@@ -52,7 +52,8 @@ public class BuiltInSensorAppearanceTest {
                         firstParagraphStringId, secondParagraphStringId, infoDrawableId, behavior,
                         pointsAfterDecimalInNumberFormat, sensorId);
 
-        Context context = new StubContext() {
+        Context context = null;
+        /*Context context = new StubContext() {
             @Override
             public Resources getResources() {
                 Resources appResources =
@@ -66,7 +67,7 @@ public class BuiltInSensorAppearanceTest {
                     }
                 };
             }
-        };
+        };*/
 
         assertEquals(nameStringId, (int) Integer.valueOf(appearance.getName(context)));
         assertEquals(firstParagraphStringId, (int) Integer.valueOf(

@@ -20,19 +20,23 @@ import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 
 import android.bluetooth.BluetoothManager;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -42,6 +46,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -49,6 +54,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
+import com.google.android.apps.forscience.whistlepunk.blew.BleSensorManager;
+import com.google.android.apps.forscience.whistlepunk.blew.Exiter;
 import com.google.android.apps.forscience.whistlepunk.feedback.FeedbackProvider;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.intro.AgeVerifier;
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity
     private int mSelectedItemId = NO_SELECTED_ITEM;
     private boolean mIsRecording = false;
     public static BluetoothAdapter BLUETOOTH_ADAPTER;
+
     Boolean isDatabaseLinkSetup;
 
     /** Receives an event every time the activity pauses */
@@ -87,17 +95,28 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        bindExiter();
+
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN}, 2);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WAKE_LOCK}, 2);
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 2);
+
+
+
+        BleSensorManager.enable();
+
         setContentView(R.layout.activity_main);
 
         super.onCreate(savedInstanceState);
-
-        /*if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WAKE_LOCK, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED)
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 2);
-*/
 
 
         WhistlePunkApplication.getPerfTrackerProvider(this).onActivityInit();
@@ -109,29 +128,12 @@ public class MainActivity extends AppCompatActivity
         if(showConnectionSetupScreenIfNeeded()){
             return;
         }
-        if(isSetup) {
-            // check if the database connections page was filled in. If so, collect that stored data
-            storedData = getSharedPreferences("info", MODE_PRIVATE);
-            myWebsite = storedData.getString("websiteAddress", myWebsite);
-            myWriteToken = storedData.getString("websiteToken", myWriteToken);
-            // send this to the DatabaseConnectionService.java to be used later
 
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println(" ");
-            System.out.println(" ");
-            System.out.println("        Address: "+ myWebsite);
-            System.out.println("        Token: " + myWriteToken);
-            System.out.println(" ");
-            System.out.println(" ");
-            System.out.println("======================================");
-            System.out.println("======================================");
-
-            DatabaseConnectionService.setData(myWebsite,myWriteToken);
-            DatabaseConnectionService.setStaticContext(this);
-            //
-            // as soon are we enter an experiment we will collect stored values in that experiment
-        }
+        // get the URL for website
+        String myWebsiteAddress = storedData.getString("websiteAddress", "");
+        String myWebsiteAddressType = storedData.getString("websiteAddressType", "");
+        // send this to the DatabaseConnectionService.java to be used later
+        DatabaseConnectionService.setMyWebsiteAddress(myWebsiteAddress);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -406,7 +408,6 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         }
-
         return false;
     }
 
@@ -546,6 +547,48 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+    }
+
+
+    private boolean mShouldUnbind = false;
+    private ServiceConnection sc = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.e("Connected Service ", "");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            Log.e("Disconnected Service", "");
+        }
+    };
+
+    private void bindExiter(){
+        Intent intent = new Intent(MainActivity.this, Exiter.class);
+
+        if (bindService(intent, sc, Context.BIND_AUTO_CREATE)) {
+            ContextCompat.startForegroundService(this, intent);
+            //Service.startForground();
+
+            mShouldUnbind = true;
+        } else {
+            Log.e("MY_APP_TAG", "Error: The requested service doesn't " +
+                    "exist, or this client isn't allowed access to it.");
+        }
+    }
+
+    private  void unbindExiter(){
+        if (mShouldUnbind) {
+            unbindService(sc);
+            mShouldUnbind = false;
+        }
+        //this.onStartCommand();
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        unbindExiter();
     }
 
 }

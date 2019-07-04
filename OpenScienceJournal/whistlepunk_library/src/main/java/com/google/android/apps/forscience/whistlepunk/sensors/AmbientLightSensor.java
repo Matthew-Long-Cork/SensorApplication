@@ -56,7 +56,7 @@ public class AmbientLightSensor extends ScalarSensor {
     private DataObject data;
     private float dataValue;
     private Timer timer;
-    private int frequencyTime, currentFrequencyTime;
+    private int frequencyTime;
     private boolean firstTime = true;
 
     public AmbientLightSensor() {
@@ -72,21 +72,17 @@ public class AmbientLightSensor extends ScalarSensor {
             @Override
             public void startObserving() {
 
-                    // if the sensor is not yet active
-                    if(!ExperimentDetailsFragment.getTheSensorState(ID)){
-                        // now active - so change its state to ACTIVE
-                        ExperimentDetailsFragment.changeTheSensorState(ID, true);
-                        // retrieve the stored frequency value
-                        frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
+                // if the sensor is not yet active
+                if(!ExperimentDetailsFragment.getTheSensorState(ID)){
+                    // now active - so change its state to ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState(ID, true);
+                    // retrieve the stored frequency value
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Starting the light sensor");
+                    System.out.println("        STARTING the light sensor");
                     System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("======================================");
                     System.out.println("======================================");
 
@@ -100,7 +96,7 @@ public class AmbientLightSensor extends ScalarSensor {
 
                     // method to schedule data to be sent to database every 'frequency' milliseconds
                     timer = new Timer();
-                    timer.schedule(new sendData(), 0, 10000);
+                    timer.schedule(new sendData(), 0, frequencyTime);
 
                     mSensorEventListener = new SensorEventListener() {
                         @Override
@@ -121,32 +117,17 @@ public class AmbientLightSensor extends ScalarSensor {
                             SensorManager.SENSOR_DELAY_UI);
                     mDataRefresher.setStreamConsumer(c);
                 }
-                    else{
+                else{
+                    //this may have been called because the frequency of this timer has changed
+                    frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                        // this may have been called because the frequency of this timer has changed
-                        //check current frequency
-                        currentFrequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
-                        // compare and change if needed
-                       /* if(!(frequencyTime == currentFrequencyTime)){
-                            // stop the timer task as the observing of the sensor is no longer needed
-                            timer.cancel();
-
-
-                        }*/
-                        // if not just ignore
-                        System.out.println("======================================");
-                        System.out.println("                  ");
-                        System.out.println("======================================");
-                        System.out.println(" ");
-                        System.out.println(" ");
-                        System.out.println("        +++ambient light sensor is already active+++");
-                        System.out.println("     THE TIMER IS SET TO : "+ frequencyTime);
-                        System.out.println(" ");
-                        System.out.println(" ");
-                        System.out.println("======================================");
-                        System.out.println("                  ");
-                        System.out.println("======================================");
-                    }
+                    // if not just ignore
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                    System.out.println("    ambient light sensor is ALREADY ACTIVE");
+                    System.out.println("======================================");
+                    System.out.println("======================================");
+                }
             }
 
             @Override
@@ -155,21 +136,6 @@ public class AmbientLightSensor extends ScalarSensor {
 
                 boolean sensorActive =  ExperimentDetailsFragment.getTheSensorState(ID);
                 // if experiment is no longer active
-
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        sensor active is: " + sensorActive);
-                System.out.println("        experiment active is: " + ExperimentDetailsFragment.getIsActiveStatus());
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-
-
                 if (!(ExperimentDetailsFragment.getIsActiveStatus()) || !(sensorActive)) {
 
                     if(sensorActive) {
@@ -178,19 +144,14 @@ public class AmbientLightSensor extends ScalarSensor {
                     }
 
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Stopping ambient light sensor");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("        STOPPING ambient light sensor");
                     System.out.println("======================================");
-                    System.out.println("                  ");
                     System.out.println("======================================");
 
                     // stop the timer task as the observing of the sensor is no longer needed
-                    timer.cancel();
+                    if (timer != null)
+                        timer.cancel();
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
@@ -202,12 +163,8 @@ public class AmbientLightSensor extends ScalarSensor {
                 else{
                     System.out.println("======================================");
                     System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
                     System.out.println("         sensor: "+ ID);
-                    System.out.println("         Experiment is still active. data still sending");
-                    System.out.println(" ");
-                    System.out.println(" ");
+                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
                     System.out.println("======================================");
                     System.out.println("======================================");
                 }
@@ -225,26 +182,26 @@ public class AmbientLightSensor extends ScalarSensor {
     }
 
     // this class was added to sends the data to collection class that will then sent to database
-        class sendData extends TimerTask {
-            public void run() {
+    class sendData extends TimerTask {
+        public void run() {
+            //if data == null without firstTime variable
+            if (firstTime) {
+                // if first time, create the data object
+                data = new DataObject(ID, dataValue);
 
-                if (firstTime) {
-                    // if first time, create the data object
-                    data = new DataObject(ID, dataValue);
-
-                    try {
-                        Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
-                        firstTime = false;
-                    } catch (InterruptedException ex) {}
-                }
-                // get current data value
-                data.setDataValue(dataValue);
-
-
-                // send the data to the DatabaseConnectionService
-                DatabaseConnectionService.sendData(data);
-
+                try {
+                    Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
+                    firstTime = false;
+                } catch (InterruptedException ex) {}
             }
+            // get current data value
+            data.setDataValue(dataValue);
+            // send the data to the DatabaseConnectionService
+            if(DatabaseConnectionService.isConnected())
+                DatabaseConnectionService.sendData(data);
+            else
+                timer.cancel();
+        }
     }
 }
 

@@ -47,7 +47,6 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.apps.forscience.javalib.Success;
 import com.google.android.apps.forscience.whistlepunk.AccessibilityUtils;
@@ -64,6 +63,7 @@ import com.google.android.apps.forscience.whistlepunk.NoteViewHolder;
 import com.google.android.apps.forscience.whistlepunk.PanesActivity;
 import com.google.android.apps.forscience.whistlepunk.PictureUtils;
 import com.google.android.apps.forscience.whistlepunk.R;
+import com.google.android.apps.forscience.whistlepunk.RecorderController;
 import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
 import com.google.android.apps.forscience.whistlepunk.RelativeTimeTextView;
 import com.google.android.apps.forscience.whistlepunk.RxDataController;
@@ -99,11 +99,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.PrimitiveIterator;
 
 import io.reactivex.Completable;
 import io.reactivex.functions.Consumer;
 
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
 
 /**
@@ -135,11 +136,12 @@ public class ExperimentDetailsFragment extends Fragment
 
     //==============================================================================================
 
-    static String title = "";
+    static String title = "no title";
     private static SharedPreferences storedData;
     private static SharedPreferences.Editor editor;
     private static int sensorFrequency;
     private static Boolean sensorState;
+    private int TOKEN_REQUEST = 1;
 
     public static String getCurrentTitle(){return title;}
 
@@ -180,7 +182,7 @@ public class ExperimentDetailsFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // this is a ref for getting the context  for storedData
+        // this is a ref for getting the context for storedData
         ExperimentDetailsFragment.context = getActivity();
 
         mExperimentId = getArguments().getString(ARG_EXPERIMENT_ID);
@@ -196,22 +198,6 @@ public class ExperimentDetailsFragment extends Fragment
         String word1 = title + "_" + sensor + "_frequency";
         // retrieve its value
         sensorFrequency = storedData.getInt(word1, 0);
-
-        String word2 = title + "_experimentAccessToken";
-        String accessToken = storedData.getString(word2, "");
-
-        System.out.println("======================================");
-        System.out.println("======================================");
-        System.out.println(" ");
-        System.out.println("         experimentDetailsFragment()   ");
-        System.out.println("         The title is: " + title);
-        System.out.println("         The token is: " + accessToken);
-        System.out.println("         The sensor is: " + sensor);
-        System.out.println("         The sensorFrequency is: " + sensorFrequency);
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("======================================");
-        System.out.println("======================================");
 
         return sensorFrequency;
     }
@@ -238,18 +224,6 @@ public class ExperimentDetailsFragment extends Fragment
 
        boolean currentState = state;
 
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
-        System.out.println(" ");
-        System.out.println(" changeTheSensorState()");
-        System.out.println("        the "+sensor + " sensor state is now " + state);
-        System.out.println(" ");
-        System.out.println(" ");
-        System.out.println("======================================");
-        System.out.println("                  ");
-        System.out.println("======================================");
-
         // create the name of the variable we now need
         String word = title + "_" + sensor + "_state";
         editor.putBoolean(word, currentState);
@@ -272,7 +246,6 @@ public class ExperimentDetailsFragment extends Fragment
 
         // experiment is active
         isActive = true;
-
         super.onStart();
 
         WhistlePunkApplication.getUsageTracker(getActivity()).trackScreenView(
@@ -318,40 +291,49 @@ public class ExperimentDetailsFragment extends Fragment
         }
         return RxDataController.getExperimentById(getDataController(), mExperimentId)
                                .doOnSuccess(experiment -> {
-                                   if (experiment == null) {
-                                       // This was deleted on us. Finish and return so we don't
-                                       // try to load.
-                                       getActivity().finish();
-                                       return;
-                                   }
-                                   attachExperimentDetails(experiment);
-                                   loadExperimentData(experiment);
-                                   //===============================================================
-                                   // if the title exists:
-                                   // retrieve it and retrieve the stored data for sensors
-                                   //===============================================================
-                                   if(mExperiment.getTitle() != "" && mExperiment.getTitle() != null){
-                                       title = mExperiment.getTitle();
-                                   }
-                                   //===============================================================
-                                   // this was added so as to ask user for title at the very start
-                                   //===============================================================
-                                   if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
-                                      // show the update experiment details window
-                                       UpdateExperimentActivity.launch(getActivity(), mExperimentId);
-                                   }
-                                   // get preferences
-                                   storedData = context.getSharedPreferences("info", MODE_PRIVATE);
-                                   // THIS IS FOR LATER
-                                   // interface used for modifying values in a sharedPreference object
-                                   editor = storedData.edit();
-                                   //get the stored access token for this experiment
-                                   String word = title + "_experimentAccessToken";
-                                   String accessToken = storedData.getString(word, "");
-
-                                   if(!accessToken.equals("")){
-                                       DatabaseConnectionService.setMyAccessToken(accessToken);
-                                   }
+                                           if (experiment == null) {
+                                               // it was deleted. Finish and return
+                                               getActivity().finish();
+                                               return;
+                                           }
+                                           attachExperimentDetails(experiment);
+                                           loadExperimentData(experiment);
+                                           //===============================================================
+                                           // this was added so as to ask user for title at the very start
+                                           //===============================================================
+                                           if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
+                                               // show the update experiment details window
+                                               UpdateExperimentActivity.launch(getActivity(), mExperimentId);
+                                           }
+                                           //===============================================================
+                                           // if the title exists:
+                                           // retrieve it and retrieve the stored data for sensors
+                                           //===============================================================
+                                           if (mExperiment.getTitle() != "" && mExperiment.getTitle() != null) {
+                                               title = mExperiment.getTitle();
+                                           //===============================================================
+                                           //  check for a stored token and/or connection type
+                                           //===============================================================
+                                           // get preferences
+                                           storedData = context.getSharedPreferences("info", MODE_PRIVATE);
+                                           // THIS IS FOR LATER
+                                           // interface used for modifying values in a sharedPreference object
+                                           editor = storedData.edit();
+                                           //get the stored access token for this experiment
+                                           String word1 = title + "_experimentAccessToken";
+                                           String accessToken = storedData.getString(word1, "");
+                                           //get the stored connection type for this experiment
+                                           String word2 = title + "_experimentConnectionType";
+                                           String connType = storedData.getString(word2, "");
+                                           //  if there is a token, set it now
+                                           if (!accessToken.equals("")) {
+                                               DatabaseConnectionService.setMyAccessToken(accessToken);
+                                           }
+                                           //  if there is a connection type, set it now
+                                           if (!connType.equals("")) {
+                                               DatabaseConnectionService.setMyConnectionType(connType);
+                                           }
+                                       }
                                    //===============================================================
                                })
                                .toCompletable();
@@ -409,7 +391,6 @@ public class ExperimentDetailsFragment extends Fragment
             mIncludeArchived = savedInstanceState.getBoolean(EXTRA_INCLUDE_ARCHIVED, false);
             getActivity().invalidateOptionsMenu();
         }
-
         return view;
     }
 
@@ -544,12 +525,19 @@ public class ExperimentDetailsFragment extends Fragment
             }
             if(isActive) {
                 isActive = false;
+                // disconnect the MQTT connection
+                System.out.println("======================================");
+                System.out.println("======================================");
+                System.out.println("    ExperimentDetailsFragment - calling mqtt disconnect");
+                System.out.println("======================================");
+                System.out.println("======================================");
+                //DatabaseConnectionService.mqttDisconnect();
             }
-
             displayNamePromptOrGoUp();
             return true;
         }
         else if (itemId == R.id.action_edit_experiment) {
+            RecorderControllerImpl.setSensorsOnDisplay(false);
             UpdateExperimentActivity.launch(getActivity(), mExperimentId);
             return true;
         } else if (itemId == R.id.action_archive_experiment
@@ -570,6 +558,8 @@ public class ExperimentDetailsFragment extends Fragment
             confirmDeleteExperiment();
         }
         else if (itemId == R.id.action_change_access_token) {
+            // might already by false, but no issue if that is the case
+            RecorderControllerImpl.setSensorsOnDisplay(false);
             changeAccessToken();
     }
         return super.onOptionsItemSelected(item);
@@ -613,6 +603,13 @@ public class ExperimentDetailsFragment extends Fragment
         // check isActive state
         if(isActive) {
             isActive = false;
+            // disconnect the MQTT connection
+            System.out.println("======================================");
+            System.out.println("======================================");
+            System.out.println("         calling mqtt disconnect");
+            System.out.println("======================================");
+            System.out.println("======================================");
+            //DatabaseConnectionService.mqttDisconnect();
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
@@ -699,6 +696,12 @@ public class ExperimentDetailsFragment extends Fragment
                 dialog.onActivityResult(requestCode, resultCode, data);
             }
         }
+        // Check if request was for token
+        if (requestCode == TOKEN_REQUEST) {
+            int currentTab = PanesActivity.getTabIndex();
+            if(currentTab==1)
+                RecorderControllerImpl.setSensorsOnDisplay(true);
+        }
     }
 
     void deleteLabel(Label label) {
@@ -759,10 +762,10 @@ public class ExperimentDetailsFragment extends Fragment
 
     private void changeAccessToken(){
 
-        Intent SetupIntent = new Intent(getActivity(), AccessTokenSetup.class);
+        Intent SetupIntent = new Intent(getActivity(), AccessTokenSetupAndConnType.class);
         SetupIntent.putExtra( "CURRENT_TITLE", mExperiment.getTitle());
         SetupIntent.putExtra( "OLD_TITLE", ""); // BLANK VALUE
-        startActivity(SetupIntent);
+        startActivityForResult(SetupIntent, TOKEN_REQUEST);
     }
 
     @Override

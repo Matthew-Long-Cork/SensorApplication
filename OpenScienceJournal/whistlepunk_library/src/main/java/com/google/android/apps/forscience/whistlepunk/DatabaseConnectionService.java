@@ -1,22 +1,18 @@
 package com.google.android.apps.forscience.whistlepunk;
 
-import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.blew.MqttManager;
 import com.google.android.apps.forscience.whistlepunk.project.experiment.ExperimentDetailsFragment;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttClient;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
@@ -27,167 +23,105 @@ import okhttp3.Response;
 
 public class DatabaseConnectionService {
 
-    private static Context contexts;
-    private static String myWebsite;
-    private static String myWriteToken;
+    private static String myWebsite = "", myWriteToken = "", myConnType;
+    private static String experimentName;
 
-    private static final String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
+    private static String mqttURL, url;
+    private static int i = 0;
     private static final String mqttTag = "v1/devices/me/telemetry";
+
+    private static MqttManager mqttManager;
+
     private static MqttAndroidClient mqttAndroidClient;
+    //private static boolean isConnected = false;
 
     public static void setMyWebsiteAddress(String website){
         myWebsite = website;
     }
 
-    public static void setMyAccessToken(String token){
-        myWriteToken = token;
+    public static void setMyAccessToken(String token){ myWriteToken = token; }
+
+    public static void setMyConnectionType(String connType){
+
+        myConnType = connType;
+        // if mqtt is selected and there is not a current connection. Connect
+        if(myConnType.equals("MQTT Connection")) {
+            if (mqttAndroidClient == null) {
+                mqttURL = "tcp://" + myWebsite + ":1883";
+                mqttManager = MqttManager.getInstance(myWebsite, myWriteToken);
+                //mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
+                try {
+                    mqttManager.connect();
+                } catch (Exception e) {
+                    Log.e("Mqtt Connection: " ,  "Failed");
+                }
+            }
+        }
+        else
+            url  = "http://" + myWebsite;
     }
 
-    public static void setStaticContext(Context context){
-        contexts = context;
+    public static void sendData(DataObject dataObject){
+
+        // get the experiment name
+        experimentName = ExperimentDetailsFragment.getCurrentTitle();
+        // check which option was selected:
+        if(myConnType.equals("MQTT Connection")) {
+            String jsonData = "{" + ( experimentName + "_" +  dataObject.Id) + ":" + dataObject.dataValue + "}";
+            try {
+                mqttManager.sendDataMqtt(jsonData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            sendDataHttp(dataObject);
+        }
     }
 
+    //==============================================================================================
+    //  HTTP CONNECTION
+    //==============================================================================================
     public static void sendDataHttp(DataObject dataObject){
 
-       String sensorType;
-       Float sensorValue;
-       String dataField = null;
-       String data;
-       String experimentName;
-       String myUrl;
+        String sensorType,data,myUrl;
+        Float sensorValue;
+        sensorType = dataObject.Id;
+        sensorValue = dataObject.dataValue;
 
-       sensorType = dataObject.Id;
-       sensorValue = dataObject.dataValue;
+        //data to send
+        data = "{" + (experimentName + "_" + sensorType) + ":" + sensorValue + "}";
 
-       experimentName = ExperimentDetailsFragment.getCurrentTitle();
+        myUrl = url + "/api/v1/" + myWriteToken + "/telemetry";
 
-       if(sensorType == "AmbientLightSensor")       // light
-           dataField = experimentName + "_" + "AmbientLight";
-       if(sensorType == "DecibelSource")            // sound
-           dataField = experimentName + "_" + "DecibelSource";
-       if(sensorType == "LinearAccelerometerSensor")// accelerometer
-           dataField = experimentName + "_" + "GeneralAcceleration";
-       if(sensorType == "AccX")       // left/right tilt     (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "X-axisAcceleration";
-       if(sensorType == "AccY")              // front/back tilt      (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "Y-axisAcceleration";
-       if(sensorType == "AccZ")              // up/down tilt         (AccelerometerSensor.java)
-           dataField = experimentName + "_" + "Z-axisAcceleration";
-       if(sensorType == "CompassSensor")            // compass degrees
-           dataField = experimentName + "_" + "CompassDegrees";
-       if(sensorType == "MagneticRotationSensor")   // magnetic levels
-           dataField = experimentName + "_" + "MagneticLevel";
+        try{
 
-       //==========================================================================
-       // this is the thingsBoard connection
-       // ==========================================================================
-       //data to send
-       data = "{" + dataField + ":" + sensorValue + "}";
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+                    .build();
 
-       // for thingsBoard: token/website/the full URL link.//
-       //
-       myWriteToken = "temp";
-       myWebsite = "http://thingsboard.tec-gateway.com";
-       myUrl = myWebsite + "/api/v1/" + myWriteToken + "/telemetry";
+            RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
+            Request request = new Request.Builder()
+                    .url(myUrl)
+                    .post(body)
+                    .build();
 
-       try{
-
-           OkHttpClient client = new OkHttpClient.Builder()
-                   .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
-                   .build();
-
-           RequestBody body = RequestBody.create( MediaType.get("application/json; charset=utf-8"),data);
-           Request request = new Request.Builder()
-                   .url(myUrl)
-                   .post(body)
-                   .build();
-
-           try (Response response = client.newCall(request).execute()) {
-
-               System.out.println("======================================");
-               System.out.println(" ");
-               System.out.println("======================================");
-               System.out.println( response.body().string());
-               System.out.println(" ");
-               System.out.println(" ");
-               System.out.println("    sent: ");
-               System.out.println("    data : " + data);
-               System.out.println(" ");
-               System.out.println(" ");
-               System.out.println("======================================");
-               System.out.println(" ");
-               System.out.println("======================================");
-           }
-
-       }
-       catch (Exception e) {
-
-           System.out.println("\n====================================");
-           System.out.println("                  ");
-           System.out.println("======================================");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("      Error: " + sensorType);
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("        " + e);
-           System.out.println(" ");
-           System.out.println(" ");
-           System.out.println("======================================");
-           System.out.println("======================================");
-
-       }
-   }
-
-   public static  void sendData(DataObject dataObject){
-        sendDataMqtt(dataObject);
-        sendDataHttp(dataObject);
-   }
-
-   public static void sendDataMqtt(DataObject dataObject){
-      if(mqttAndroidClient.isConnected()) {
-
-          Log.e("MQTT Connection: ", "SUcksAss");
-          String jsonData = "{" + dataObject.Id + ":" + dataObject.dataValue + "}";
-          try {
-              mqttAndroidClient.publish(mqttTag, jsonData.getBytes(), 0, true);
-          } catch (Exception e) {
-              e.printStackTrace();
-          } ;
-      }
-   }
-
-   public static void mqttInit(){
-       myWriteToken = "KNRP2S4471i6BEzUAHan";
-       mqttAndroidClient = new MqttAndroidClient( ExperimentDetailsFragment.context, mqttURL, "AppClient");
-
-       MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-       mqttConnectOptions.setCleanSession(true);
-       mqttConnectOptions.setAutomaticReconnect(true);
-       mqttConnectOptions.setUserName(myWriteToken);
-
-       try {
-           mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
-               @Override
-               public void onSuccess(IMqttToken asyncActionToken) {
-                   Log.e("MQTT Connection", "Success");
-               }
-
-               @Override
-               public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                   Log.e("MQTT Connection", "Failed");
-               }
-           });
-       }catch (Exception e){e.printStackTrace();}
+            try (Response response = client.newCall(request).execute()) {
+            }
+        }
+        catch (Exception e) {
+            System.out.println("    Error: " + sensorType + " "+ e);
+        }
     }
 
-   public static void mqttDisconnect(){
-            try {
-                mqttAndroidClient.disconnect();
-            }catch (Exception e){e.printStackTrace();}
-   }
+    public static boolean isConnected(){
+        if(myConnType.equals("MQTT Connection")){
+            return  mqttManager.isConnected();
+        } else {
+            return  true;
+        }
+    }
 
-
+    public static void kill() throws MqttException {
+        mqttManager.kill();
+    }
 }

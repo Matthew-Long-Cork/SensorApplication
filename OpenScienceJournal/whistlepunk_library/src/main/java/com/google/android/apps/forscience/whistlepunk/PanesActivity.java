@@ -86,8 +86,10 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
 
 
     private int TOKEN_REQUEST = 1;
-    private int FREQUENCY_CHANGED = 2;
 
+    public static int getTabIndex(){
+       return mSelectedTabIndex;
+    }
     public PanesActivity() {
 
         mSnackbarManager = new SnackbarManager();
@@ -96,7 +98,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
     public static class DrawerLayoutState {
         private final int mActivityHeight;
         private final int mDrawerState;
-        private Experiment mExperiment;
+        public static Experiment mExperiment;
 
         private DrawerLayoutState(int activityHeight, int drawerState, Experiment experiment) {
             mActivityHeight = activityHeight;
@@ -736,6 +738,7 @@ public class PanesActivity extends AppCompatActivity implements RecordFragment.C
             mExperimentFragment.setExperimentId(experiment.getExperimentId());
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

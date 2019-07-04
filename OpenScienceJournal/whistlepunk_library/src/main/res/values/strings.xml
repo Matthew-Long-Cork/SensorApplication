@@ -21,6 +21,25 @@
     <!--===============================================================================-->
 
     <!--added:-->
+    <!-- connection_settings_popup - connection types-->
+    <string-array name="web_address_types">
+        <item>Please Select</item>
+        <item>Default (Thingsboards)</item>
+        <item>Custom Address</item>
+    </string-array>
+
+    <!--added:-->
+    <!-- connection_settings_popup - connection types-->
+    <string-array name="connection_types">
+        <item>Please Select</item>
+        <item>HTTP Connection</item>
+        <item>MQTT Connection</item>
+    </string-array>
+
+    <!--added:-->
+    <!-- connection_settings_popup - website connection type label-->
+    <string name="website_address_type">Select Address Type:</string>
+    <!--added:-->
     <!-- connection_settings_popup - website address label-->
     <string name="website_address">Enter Web Address:</string>
 
@@ -29,8 +48,12 @@
     <string name="website_token">Enter Device Token:</string>
 
     <!--added:-->
+    <!-- connection_settings_popup - website connection type label-->
+    <string name="website_connection_type">Select Connection Type:</string>
+
+    <!--added:-->
     <!-- connection_settings_popup - website input hint-->
-    <string name="website_input_hint"><font size="14">"https://thingsboard.nameHere.com"</font></string>
+    <string name="website_input_hint"><font size="14">"thingsboard.nameHere.com"</font></string>
 
     <!--added:-->
     <!-- connection_settings_popup - website token hint-->
@@ -42,7 +65,7 @@
 
     <!--added:-->
     <!-- connection_settings_popup - connection notice-->
-    <string name="connnection_setup_note">"NOTE: You must enter the information below to allow for data to be sent to ThingsBoard.com"</string>
+    <string name="connnection_setup_note">"NOTE: You must enter the information below to allow for data to be sent."</string>
 
     <!--added:-->
     <!-- connection_settings_popup - 'please confirm' message-->
@@ -77,11 +100,11 @@
 
     <!--added:-->
     <!-- frequency_popup - select sensor -->
-    <string name="selected_sensor_to_set_frequency">Selected Sensor:</string>
+    <string name="selected_sensor_to_set_frequency">Sensor:</string>
 
     <!--added:-->
     <!-- frequency_popup - units label -->
-    <string name="select_frequency_units">Units:</string>
+    <string name="select_frequency_units">Select Units:</string>
 
     <!--added:-->
     <!-- frequency_popup - select frequency label -->
@@ -101,7 +124,7 @@
     <string name="BT_Devices_list_title">"Nearby Bluetooth Devices"</string>
 
     <!-- Menu option for deleting an entity (e.g. project, experiment) [CHAR_LIMIT=10] -->
-    <string name="action_change_access_token">Change Access Token</string>
+    <string name="action_change_access_token">Change Experiment Setup</string>
 
     <!--===============================================================================-->
     <!--===============================================================================-->
@@ -165,6 +188,23 @@
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
     <string name="ambient_temperature">Ambient temperature</string>
+
+    <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
+    <string name="ambient_temerature_stag" translatable="false">Sensor Tag Ambient temperature</string>
+
+    <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
+    <string name="barometer_stag" translatable="false">Sensor Tag Barometer</string>
+
+    <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
+    <string name="humidity_stag" translatable="false">Sensor Tag Humidity</string>
+
+    <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
+    <string name="ambient_light_stag" translatable="false">Sensor Tag Ambient light</string>
+
+    <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
+    <string name="humidity_unit" translatable="false">RH</string>
+
+
 
     <!-- Displayed name of a sensor that records and displays a video stream [CHAR_LIMIT=25] -->
     <string name="video_stream">Video stream</string>
@@ -440,7 +480,7 @@
     <string name="export_run_chooser_title">Save to\u2026</string>
 
     <!-- Settings strings -->
-    <skip/>
+    <skip />
 
     <!-- Title of a settings item that displays the app's version [CHAR_LIMIT=25]-->
     <string name="settings_version_title">Version</string>
@@ -846,7 +886,7 @@
     <string name="menu_btn_content_description">menu</string>
 
     <!-- Age verifier strings -->
-    <skip/>
+    <skip />
 
     <!-- Header on age verifier screen tells the user what this screen is doing [CHAR_LIMIT=30]-->
     <string name="age_verifier_header">Verify your age</string>
@@ -1495,5 +1535,8 @@ Permissions notice:
 
     <!-- NOTE! newly-added strings should have char limits and context comments
          (see the first elements in this file for examples) -->
+
+    <string name="ble_ambient_temperature" translatable="false">"Ble Ambient Temperature"</string>
+
 
 </resources>
