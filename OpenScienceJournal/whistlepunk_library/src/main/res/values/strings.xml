@@ -190,16 +190,16 @@
     <string name="ambient_temperature">Ambient temperature</string>
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
-    <string name="ambient_temerature_stag" translatable="false">Sensor Tag Ambient temperature</string>
+    <string name="ambient_temerature_stag" translatable="false">Sensor Tag Ambient temperature(°C)</string>
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
-    <string name="barometer_stag" translatable="false">Sensor Tag Barometer</string>
+    <string name="barometer_stag" translatable="false">Sensor Tag Barometer </string>
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
-    <string name="humidity_stag" translatable="false">Sensor Tag Humidity</string>
+    <string name="humidity_stag" translatable="false">Sensor Tag Humidity (%)</string>
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
-    <string name="ambient_light_stag" translatable="false">Sensor Tag Ambient light</string>
+    <string name="ambient_light_stag" translatable="false">Sensor Tag Ambient light(LUX)</string>
 
     <!-- Displayed name of a sensor that measure ambient temperature [CHAR_LIMIT=25] -->
     <string name="humidity_unit" translatable="false">RH</string>

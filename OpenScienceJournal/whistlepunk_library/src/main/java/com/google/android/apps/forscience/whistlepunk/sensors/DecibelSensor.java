@@ -85,13 +85,6 @@ public class DecibelSensor extends ScalarSensor {
                     // retrieve the stored frequency value
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("        STARTING sound sensor ");
-                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
                     if (mBytesInBuffer < 0) {
                         // If this is the case, AudioRecord.getMinBufferSize returned an error.
@@ -169,14 +162,6 @@ public class DecibelSensor extends ScalarSensor {
                         }
                     });
                 }
-                // else if it is active. Ignore
-                else{
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("        sound sensor is ALREADY ACTIVE");
-                System.out.println("======================================");
-                System.out.println("======================================");
-            }
         }
 
             @Override
@@ -192,12 +177,6 @@ public class DecibelSensor extends ScalarSensor {
                         ExperimentDetailsFragment.changeTheSensorState(ID, false);
                     }
 
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("        STOPPING sound sensor");
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-
                     // added: stop the timer task as the observing of the sensors is no longer needed
                     if(timer != null){
                         timer.cancel();
@@ -212,14 +191,6 @@ public class DecibelSensor extends ScalarSensor {
                     }
                     mRecord = null;
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
-                }
-                else{
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("         sensor: "+ ID);
-                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
-                    System.out.println("======================================");
-                    System.out.println("======================================");
                 }
             }
 
@@ -238,11 +209,12 @@ public class DecibelSensor extends ScalarSensor {
         return reading > -Double.MAX_VALUE;
     }
 
-    // added: this class was added to sends the data to collection class that will then sent to database
+    // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
-
+            //if data == null without firstTime variable
             if (firstTime) {
+                // if first time, create the data object
                 data = new DataObject(ID, dataValue);
 
                 try {
@@ -250,9 +222,22 @@ public class DecibelSensor extends ScalarSensor {
                     firstTime = false;
                 } catch (InterruptedException ex) {}
             }
+            // get current data value
             data.setDataValue(dataValue);
             // send the data to the DatabaseConnectionService
-            DatabaseConnectionService.sendData(data);
+            if(DatabaseConnectionService.isConnected())
+                DatabaseConnectionService.sendData(data);
+            else {
+                timer.cancel();
+                timer = null;
+                DatabaseConnectionService.setCallBack(new Runnable(){
+                    @Override
+                    public void run() {
+                        timer = new Timer();
+                        timer.schedule(new sendData(), 0, frequencyTime);
+                    }
+                });
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ package com.google.android.apps.forscience.whistlepunk.project;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -73,6 +74,9 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Experiment List Fragment lists all experiments.
@@ -92,6 +96,9 @@ public class ExperimentListFragment extends Fragment implements
     private ExperimentListAdapter mExperimentListAdapter;
     private boolean mIncludeArchived;
 
+    private Set<String> existingExperiments;
+    private static SharedPreferences storedData;
+
     public static ExperimentListFragment newInstance(boolean usePanes) {
         ExperimentListFragment fragment = new ExperimentListFragment();
         Bundle args = new Bundle();
@@ -109,6 +116,7 @@ public class ExperimentListFragment extends Fragment implements
         if (savedInstanceState != null) {
             mIncludeArchived = savedInstanceState.getBoolean(EXTRA_INCLUDE_ARCHIVED, false);
             getActivity().invalidateOptionsMenu();
+
         }
         setHasOptionsMenu(true);
     }
@@ -323,6 +331,13 @@ public class ExperimentListFragment extends Fragment implements
                                                     TrackerConstants.ACTION_DELETED,
                                                     TrackerConstants.LABEL_EXPERIMENT_LIST,
                                                     0);
+
+                                    // not the only place we call delete
+                                    // access set of created experiment titles
+                                    existingExperiments = storedData.getStringSet("experimentNames",null);
+                                    // remove from the set of existing experiments
+                                    existingExperiments.remove(fullExperiment.getTitle());
+
                                 }
                             });
                 });
@@ -483,6 +498,10 @@ public class ExperimentListFragment extends Fragment implements
 
                 int position = mItems.indexOf(item);
                 Context context = holder.menuButton.getContext();
+
+                // get preferences
+                storedData = context.getSharedPreferences("info", MODE_PRIVATE);
+
                 PopupMenu popup = new PopupMenu(context, holder.menuButton);
                 popup.getMenuInflater().inflate(R.menu.menu_experiment_overview, popup.getMenu());
                 popup.getMenu().findItem(R.id.menu_item_archive).setVisible(

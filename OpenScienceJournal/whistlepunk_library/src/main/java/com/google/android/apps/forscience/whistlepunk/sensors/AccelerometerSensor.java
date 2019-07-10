@@ -38,7 +38,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AccelerometerSensor extends ScalarSensor {
-    private Axis mAxis;
+    public Axis mAxis;
     public String ID = "";
 
     public enum Axis {
@@ -84,20 +84,15 @@ public class AccelerometerSensor extends ScalarSensor {
         return new AbstractSensorRecorder() {
             @Override
             public void startObserving() {
+                 String x = mAxis.getSensorId();
 
                 // if the sensor is not yet active
                 if(!ExperimentDetailsFragment.getTheSensorState(mAxis.getSensorId())){
+
                     // now active - so change its state to ACTIVE
                     ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), true);
                     // retrieve the stored frequency value
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(mAxis.getSensorId());
-
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("        STARTING Accelerometer sensor " + mAxis.getSensorId());
-                    System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                    System.out.println("======================================");
-                    System.out.println("======================================");
 
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
                     SensorManager sensorManager = getSensorManager(context);
@@ -127,12 +122,6 @@ public class AccelerometerSensor extends ScalarSensor {
                     };
                     sensorManager.registerListener(mSensorEventListener, sensor,
                             SensorManager.SENSOR_DELAY_UI);
-                } else {
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("        Acc sensor " + mAxis.getSensorId() + " is ALREADY ACTIVE");
-                    System.out.println("======================================");
-                    System.out.println("======================================");
                 }
             }
 
@@ -147,28 +136,11 @@ public class AccelerometerSensor extends ScalarSensor {
                         // change sensor state to NOT ACTIVE
                         ExperimentDetailsFragment.changeTheSensorState(mAxis.getSensorId(), false);
                     }
-
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("        STOPPING Accelerometer sensor " + mAxis.getSensorId());
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-
                     // stop the timer task as the observing of the sensors is no longer needed
-
                     if(timer != null)
                         timer.cancel();
-
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
-                }
-                else{
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println("         sensor: "+ mAxis.getSensorId());
-                    System.out.println("         Experiment is still active. DATA STILL BEING SENT");
-                    System.out.println("======================================");
-                    System.out.println("======================================");
                 }
             }
         };
@@ -181,10 +153,10 @@ public class AccelerometerSensor extends ScalarSensor {
     // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
-
+            //if data == null without firstTime variable
             if (firstTime) {
                 // if first time, create the data object
-                data = new DataObject(mAxis.getSensorId(), dataValue);
+                data = new DataObject(ID, dataValue);
 
                 try {
                     Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
@@ -194,7 +166,20 @@ public class AccelerometerSensor extends ScalarSensor {
             // get current data value
             data.setDataValue(dataValue);
             // send the data to the DatabaseConnectionService
-            DatabaseConnectionService.sendData(data);
+            if(DatabaseConnectionService.isConnected())
+                DatabaseConnectionService.sendData(data);
+            else {
+                timer.cancel();
+                timer = null;
+                DatabaseConnectionService.setCallBack(new Runnable(){
+                    @Override
+                    public void run() {
+                        timer = new Timer();
+                        timer.schedule(new sendData(), 0, frequencyTime);
+                    }
+                });
+            }
         }
     }
 }
+

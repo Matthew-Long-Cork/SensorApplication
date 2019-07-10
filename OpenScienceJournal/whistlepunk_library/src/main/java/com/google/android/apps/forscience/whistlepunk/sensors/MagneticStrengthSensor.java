@@ -74,19 +74,6 @@ public class MagneticStrengthSensor extends ScalarSensor {
                     // retrieve the stored frequency value
                     frequencyTime = ExperimentDetailsFragment.getTheStoredFrequency(ID);
 
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("        Starting magnetic sensor");
-                System.out.println("        FrequencyTime in milliseconds: " + frequencyTime);
-                System.out.println(" ");
-                System.out.println(" ");
-                System.out.println("======================================");
-                System.out.println("                  ");
-                System.out.println("======================================");
-
                 listener.onSourceStatus(getId(), SensorStatusListener.STATUS_CONNECTED);
                 SensorManager sensorManager = getSensorManager(context);
                 Sensor magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -122,20 +109,6 @@ public class MagneticStrengthSensor extends ScalarSensor {
                 sensorManager.registerListener(mSensorEventListener, magnetometer,
                         SensorManager.SENSOR_DELAY_UI);
                 }
-                // else if it is active. Ignore
-                else{
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        +++magnet sensor is already active+++");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
-                }
             }
 
             @Override
@@ -150,35 +123,12 @@ public class MagneticStrengthSensor extends ScalarSensor {
                         // change sensor state to NOT ACTIVE
                         ExperimentDetailsFragment.changeTheSensorState(ID, false);
                     }
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("        Stopping magnetic sensor");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("======================================");
-                    System.out.println("                  ");
-                    System.out.println("======================================");
 
                     // added: stop the timer task as the observing of the sensors is no longer needed
                     timer.cancel();
 
                     getSensorManager(context).unregisterListener(mSensorEventListener);
                     listener.onSourceStatus(getId(), SensorStatusListener.STATUS_DISCONNECTED);
-                }
-                else {
-                    System.out.println("======================================");
-                    System.out.println("======================================");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("         sensor: " + ID);
-                    System.out.println("         Experiment is still active. not stopping");
-                    System.out.println(" ");
-                    System.out.println(" ");
-                    System.out.println("======================================");
-                    System.out.println("======================================");
                 }
             }
         };
@@ -187,25 +137,36 @@ public class MagneticStrengthSensor extends ScalarSensor {
     public static boolean isMagneticRotationSensorAvailable(AvailableSensors availableSensors) {
         return availableSensors.isSensorAvailable(Sensor.TYPE_MAGNETIC_FIELD);
     }
-
-    // added: this class was added to sends the data to collection class that will then sent to database
+    // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
-
-            // added: data object that will be sent to connection class to then go to the Database
-            data = new DataObject(ID, dataValue);
-
+            //if data == null without firstTime variable
             if (firstTime) {
+                // if first time, create the data object
+                data = new DataObject(ID, dataValue);
+
                 try {
                     Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
-                    // as this sensor records movement
-                    data.setDataValue(dataValue);
                     firstTime = false;
                 } catch (InterruptedException ex) {}
             }
-
+            // get current data value
+            data.setDataValue(dataValue);
             // send the data to the DatabaseConnectionService
-            DatabaseConnectionService.sendData(data);
+            if(DatabaseConnectionService.isConnected())
+                DatabaseConnectionService.sendData(data);
+            else {
+                timer.cancel();
+                timer = null;
+                DatabaseConnectionService.setCallBack(new Runnable(){
+                    @Override
+                    public void run() {
+                        timer = new Timer();
+                        timer.schedule(new sendData(), 0, frequencyTime);
+                    }
+                });
+            }
         }
     }
 }
+

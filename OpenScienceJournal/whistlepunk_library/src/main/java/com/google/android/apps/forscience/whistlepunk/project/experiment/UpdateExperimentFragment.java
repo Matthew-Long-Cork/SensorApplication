@@ -35,6 +35,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -62,6 +63,12 @@ import com.google.android.apps.forscience.whistlepunk.WhistlePunkApplication;
 import com.google.android.apps.forscience.whistlepunk.analytics.TrackerConstants;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.Experiment;
 import com.google.android.apps.forscience.whistlepunk.filemetadata.FileMetadataManager;
+import com.google.android.apps.forscience.whistlepunk.sensors.AccelerometerSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.AmbientLightSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.CompassSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.DecibelSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.LinearAccelerometerSensor;
+import com.google.android.apps.forscience.whistlepunk.sensors.MagneticStrengthSensor;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.BarometerSensorT;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.HumiditySensorT;
 import com.google.android.apps.forscience.whistlepunk.sensors.sensortag.LightSensorT;
@@ -104,12 +111,13 @@ public class UpdateExperimentFragment extends Fragment {
     //==============================================================================================
     private SharedPreferences storedData;
     private int Frequency = 5000;
+    private int BleFrequency = 5000;
     private String newSensorVariableFrequency;
     private String newSensorVariableState;
     private String defaultTitle = "Untitled Experiment";
     private String currentTitle;
     private String newValue;
-    private List sensorsList;
+    private static List sensorsList;
     private boolean swap = false, state;
     private String variableName, variableName2;
     private boolean ignoreChange = false;
@@ -119,6 +127,9 @@ public class UpdateExperimentFragment extends Fragment {
 
     public UpdateExperimentFragment() {
 
+    }
+    public static List getSensorsList(){
+        return sensorsList;
     }
 
     public static UpdateExperimentFragment newInstance(String experimentId) {
@@ -158,7 +169,6 @@ public class UpdateExperimentFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_update_experiment, menu);
-
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
         actionBar.setHomeActionContentDescription(android.R.string.cancel);
@@ -166,6 +176,31 @@ public class UpdateExperimentFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
 
     }
+
+
+//==================================================================================================
+
+/*
+    AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity != null) {
+        ActionBar actionBar = activity.getSupportActionBar();
+        if (actionBar != null) {
+            final Drawable upArrow = ContextCompat.getDrawable(activity,
+                    R.drawable.ic_arrow_back_white_24dp);
+            {
+                upArrow.setAlpha(
+                        getResources().getInteger(R.integer.home_enabled_drawable_alpha));
+            }
+            actionBar.setHomeAsUpIndicator(upArrow);
+        }
+    }
+        */
+//==================================================================================================
+
+
+
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -325,9 +360,16 @@ public class UpdateExperimentFragment extends Fragment {
                 // need the ignoreChange boolean to stop loop
                 if(currentTitle == defaultTitle && !ignoreChange) {
                     ignoreChange = true;
-                    // set the text to the char user inputted [last char in sequence]
-                    newTitle.setText(String.valueOf(s.charAt(newTitle.length()-1)).toUpperCase());
-                    newTitle.setSelection(1);
+
+                    // delete/backspace pressed
+                    if (before > count) {
+                        newTitle.setText("");
+                    } else {
+                        if (Character.isLetterOrDigit(s.charAt(start - 1))) {
+                            newTitle.setText(String.valueOf(s.charAt(newTitle.length() - 1)).toUpperCase());
+                            newTitle.setSelection(1);
+                        }
+                    }
                 }
             }
 
@@ -342,6 +384,7 @@ public class UpdateExperimentFragment extends Fragment {
 
             }
         });
+
         return view;
     }
 
@@ -388,7 +431,6 @@ public class UpdateExperimentFragment extends Fragment {
                 storedData.edit().remove(currentTitle + "_experimentConnectionType");
                 // then add the new token
                 editor.putString(newValue + "_experimentConnectionType", connectionType);
-
             } else {
                 // put in a default connection type
                 editor.putString(newValue + "_experimentConnectionType", null);
@@ -461,16 +503,17 @@ public class UpdateExperimentFragment extends Fragment {
     }
 
     private void makeDefaultListOfSensors(){
-        // the 13 sensors we use:
+        // the 12 sensors we use:
+
         sensorsList = new ArrayList();
-        sensorsList.add("AmbientLightSensor");
-        sensorsList.add("DecibelSource");
-        sensorsList.add("LinearAccelerometerSensor");
-        sensorsList.add("AccX");
-        sensorsList.add("AccY");
-        sensorsList.add("AccZ");
-        sensorsList.add("CompassSensor");
-        sensorsList.add("MagneticRotationSensor");
+        sensorsList.add(AmbientLightSensor.ID);
+        sensorsList.add(DecibelSensor.ID);
+        sensorsList.add(LinearAccelerometerSensor.ID);
+        sensorsList.add(AccelerometerSensor.Axis.X.getSensorId());
+        sensorsList.add(AccelerometerSensor.Axis.Y.getSensorId());
+        sensorsList.add(AccelerometerSensor.Axis.Z.getSensorId());
+        sensorsList.add(CompassSensor.ID);
+        sensorsList.add(MagneticStrengthSensor.ID);
         sensorsList.add(TemperatureSensorT.ID);
         sensorsList.add(BarometerSensorT.ID);
         sensorsList.add(HumiditySensorT.ID);

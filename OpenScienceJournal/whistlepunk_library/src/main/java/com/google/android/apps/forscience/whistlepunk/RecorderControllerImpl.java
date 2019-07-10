@@ -143,15 +143,9 @@ public class RecorderControllerImpl implements RecorderController {
     // ==================================================
 
     public static void setSensorsOnDisplay(boolean state){
-
-        System.out.println("======================================");
-        System.out.println("======================================\n\n");
-        System.out.println("      sensors on display: " + state + " \n\n");
-        System.out.println("======================================");
-        System.out.println("======================================");
-
         sensorsOnDisplay = state;
     }
+
     /**
      * The latest recorded value for each sensor
      */

@@ -145,7 +145,6 @@ public class ExperimentDetailsFragment extends Fragment
     private int TOKEN_REQUEST = 1;
     private Set<String> existingExperiments;
 
-
     public static String getCurrentTitle(){return title;}
 
     public static void setCurrentTitle(String currentTitle) { title = currentTitle; }
@@ -225,11 +224,15 @@ public class ExperimentDetailsFragment extends Fragment
     // it changes the state of the sensor (true/false)
     public static void changeTheSensorState(String sensor, boolean state){
 
-       boolean currentState = state;
+        System.out.println("------------------------------------------------");
+        System.out.println("------------------------------------------------");
+        System.out.println("        " + sensor + " is now "+ state);
+        System.out.println("------------------------------------------------");
+        System.out.println("------------------------------------------------");
 
         // create the name of the variable we now need
         String word = title + "_" + sensor + "_state";
-        editor.putBoolean(word, currentState);
+        editor.putBoolean(word, state);
         // commit this change
         editor.commit();
     }
@@ -528,13 +531,6 @@ public class ExperimentDetailsFragment extends Fragment
             }
             if(isActive) {
                 isActive = false;
-                // disconnect the MQTT connection
-                System.out.println("======================================");
-                System.out.println("======================================");
-                System.out.println("    ExperimentDetailsFragment - calling mqtt disconnect");
-                System.out.println("======================================");
-                System.out.println("======================================");
-                //DatabaseConnectionService.mqttDisconnect();
             }
             displayNamePromptOrGoUp();
             return true;
@@ -606,13 +602,6 @@ public class ExperimentDetailsFragment extends Fragment
         // check isActive state
         if(isActive) {
             isActive = false;
-            // disconnect the MQTT connection
-            System.out.println("======================================");
-            System.out.println("======================================");
-            System.out.println("         calling mqtt disconnect");
-            System.out.println("======================================");
-            System.out.println("======================================");
-            //DatabaseConnectionService.mqttDisconnect();
         }
         if (TextUtils.isEmpty(mExperiment.getTitle()) && !mExperiment.isArchived()) {
             displayNamePrompt();
@@ -790,6 +779,7 @@ public class ExperimentDetailsFragment extends Fragment
                                     TrackerConstants.LABEL_EXPERIMENT_DETAIL,
                                     0);
 
+                    // not the only place we call delete
                     // access set of created experiment titles
                     existingExperiments = storedData.getStringSet("experimentNames",null);
                     // remove from the set of existing experiments
@@ -929,16 +919,6 @@ public class ExperimentDetailsFragment extends Fragment
             // This is temporarily removed per b/65063919 but planned to be re-enabled later.
             holder.captionView.setVisibility(View.GONE);
             holder.captionIcon.setVisibility(View.GONE);
-
-            /*
-            if (!TextUtils.isEmpty(caption)) {
-                holder.captionView.setVisibility(View.VISIBLE);
-                holder.captionTextView.setText(caption);
-                holder.captionIcon.setVisibility(View.GONE);
-            } else {
-                holder.captionView.setVisibility(View.GONE);
-                holder.captionIcon.setVisibility(View.VISIBLE);
-            }*/
         }
 
         private void setupTrialMenu(ExperimentDetailItem item, PopupMenu popup) {
@@ -1137,17 +1117,14 @@ public class ExperimentDetailsFragment extends Fragment
                         hasRunsOrLabels = true;
                         break;
                 }
-
                 if (hasRunsOrLabels) {
                     // Don't need to look anymore.
                     break;
                 }
             }
-
             mHasRunsOrLabels = hasRunsOrLabels;
             mParentReference.get().mEmptyView.setVisibility(hasRunsOrLabels ? View.GONE :
                     View.VISIBLE);
-
         }
 
         void bindRun(final DetailsViewHolder holder, final ExperimentDetailItem item) {
@@ -1256,14 +1233,12 @@ public class ExperimentDetailsFragment extends Fragment
             } else {
                 noteView.findViewById(R.id.caption_section).setVisibility(View.GONE);
             }
-
             if (label.getType() == GoosciLabel.Label.TEXT) {
                 ((TextView) noteView.findViewById(R.id.note_text)).setText(
                         label.getTextLabelValue().text);
             } else {
                 noteView.findViewById(R.id.note_text).setVisibility(View.GONE);
             }
-
             if (label.getType() == GoosciLabel.Label.PICTURE) {
                 GoosciPictureLabelValue.PictureLabelValue labelValue = label.getPictureLabelValue();
                 noteView.findViewById(R.id.note_image).setVisibility(View.VISIBLE);
@@ -1271,7 +1246,6 @@ public class ExperimentDetailsFragment extends Fragment
                         (ImageView) noteView.findViewById(R.id.note_image),
                         mExperiment.getExperimentId(), labelValue.filePath);
             }
-
             if (label.getType() != GoosciLabel.Label.SENSOR_TRIGGER &&
                     label.getType() != GoosciLabel.Label.SNAPSHOT) {
                 noteView.findViewById(R.id.snapshot_values_list).setVisibility(View.GONE);
@@ -1280,13 +1254,11 @@ public class ExperimentDetailsFragment extends Fragment
                     NoteViewHolder.loadTriggerIntoList((ViewGroup)
                             noteView.findViewById(R.id.snapshot_values_list), label);
                 }
-
                 if (label.getType() == GoosciLabel.Label.SNAPSHOT) {
                     NoteViewHolder.loadSnapshotsIntoList((ViewGroup)
                             noteView.findViewById(R.id.snapshot_values_list), label);
                 }
             }
-
             noteHolder.addView(noteView);
         }
 
@@ -1371,7 +1343,6 @@ public class ExperimentDetailsFragment extends Fragment
                         R.string.run_review_switch_sensor_btn_prev, item.getPrevSensorId(),
                         appContext);
             }
-
             TrialStats stats = getStatsOrDefault(trial, sensorId);
             holder.statsList.updateColor(color);
             if (!stats.statsAreValid()) {
@@ -1381,7 +1352,6 @@ public class ExperimentDetailsFragment extends Fragment
                         .updateStreamStats(stats);
                 holder.statsList.updateStats(streamStats);
             }
-
             // Load sensor readings into a chart.
             final ChartController chartController = item.getChartController();
             chartController.setChartView(holder.chartView);

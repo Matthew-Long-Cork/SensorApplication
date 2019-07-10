@@ -27,12 +27,11 @@ public class DatabaseConnectionService {
     private static String experimentName;
 
     private static String mqttURL, url;
-    private static int i = 0;
     private static final String mqttTag = "v1/devices/me/telemetry";
 
-    private static MqttManager mqttManager;
+    private static MqttManager mqttManager = MqttManager.getInstance();
 
-    private static MqttAndroidClient mqttAndroidClient;
+    //private static MqttAndroidClient mqttAndroidClient;
     //private static boolean isConnected = false;
 
     public static void setMyWebsiteAddress(String website){
@@ -44,12 +43,22 @@ public class DatabaseConnectionService {
     public static void setMyConnectionType(String connType){
 
         myConnType = connType;
-        // if mqtt is selected and there is not a current connection. Connect
+
+        // if MQTT is selected and there is not a current connection. Connect
         if(myConnType.equals("MQTT Connection")) {
-            if (mqttAndroidClient == null) {
+            // disconnect the current connection
+
+            if (mqttManager.isConnected()) {
+                try {
+                    mqttManager.mqttDisconnect();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } // then check & make new connection
+            if (!mqttManager.isConnected()) {
                 mqttURL = "tcp://" + myWebsite + ":1883";
                 mqttManager = MqttManager.getInstance(myWebsite, myWriteToken);
-                //mqttAndroidClient = new MqttAndroidClient(ExperimentDetailsFragment.context, mqttURL, "AppClient");
                 try {
                     mqttManager.connect();
                 } catch (Exception e) {
@@ -57,8 +66,18 @@ public class DatabaseConnectionService {
                 }
             }
         }
-        else
-            url  = "http://" + myWebsite;
+        else{ // HTTP connection is needed
+            if (mqttManager.isConnected()) {
+                try {
+                    mqttManager.mqttDisconnect();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            // make HTTP url
+            url = "http://" + myWebsite;
+        }
     }
 
     public static void sendData(DataObject dataObject){
@@ -93,7 +112,6 @@ public class DatabaseConnectionService {
         myUrl = url + "/api/v1/" + myWriteToken + "/telemetry";
 
         try{
-
             OkHttpClient client = new OkHttpClient.Builder()
                     .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
                     .build();
@@ -122,5 +140,9 @@ public class DatabaseConnectionService {
 
     public static void kill() throws MqttException {
         mqttManager.kill();
+    }
+
+    public static void setCallBack(Runnable runnable){
+        mqttManager.setSuccessCallback(runnable);
     }
 }

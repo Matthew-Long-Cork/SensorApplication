@@ -21,20 +21,28 @@ public class MqttManager {
     private final int RECONNECT_DELAY = 15000;
 
     private final String mqttTag = "v1/devices/me/telemetry";
-    private String mqttURL = "tcp://thingsboard.tec-gateway.com:1883";
-    private String deviceToken = "password123";
+    public static String mqttURL;
+    public static String deviceToken;
+
+    private Runnable sucRunnable;
 
     private MqttAndroidClient mqttAndroidClient;
-    private MqttConnectOptions mqttConnectOptions;
+    private static MqttConnectOptions mqttConnectOptions;
 
     private static MqttManager mqttManager;
 
     private long currentTime;
 
     private MqttManager(String URL, String deviceToken){
-
         mqttURL = "tcp://" + URL + ":1883";
         this.deviceToken = deviceToken;
+
+        sucRunnable = new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        };
 
         mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
@@ -65,13 +73,21 @@ public class MqttManager {
         });
     }
 
+    private MqttManager(){}
+
     public static MqttManager getInstance(){
-        return mqttManager;
+        return new MqttManager();
     }
 
-    public static MqttManager getInstance(String mqttURL, String deviceToken){
-        if(mqttManager == null)
-            mqttManager = new MqttManager(mqttURL, deviceToken);
+    public static MqttManager getInstance(String mqttURLT, String deviceTokenT){
+       if(mqttManager == null)
+            mqttManager = new MqttManager(mqttURLT, deviceTokenT);
+       else{
+           mqttURL = mqttURLT;
+           deviceToken = deviceTokenT;
+           mqttConnectOptions.setUserName(deviceToken);
+       }
+
         return mqttManager;
     }
 
@@ -79,6 +95,7 @@ public class MqttManager {
         @Override
         public void onSuccess(IMqttToken asyncActionToken) {
             Log.e("Connected: ", "True");
+            sucRunnable.run();
             currentTime = System.currentTimeMillis();
             Toast.makeText(ExperimentDetailsFragment.context, "Mqtt Connected!!!!", Toast.LENGTH_LONG);
             //Ideally throw a Toast
@@ -137,13 +154,19 @@ public class MqttManager {
             @Override
             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                 Log.e("MQTT disconnect", exception.getMessage());
-                //Poxyi;
             }
         });
     }
 
     public boolean isConnected(){
-        return  mqttAndroidClient.isConnected();
+        try {
+            return mqttAndroidClient != null && mqttAndroidClient.isConnected();
+        } catch (Exception e){
+            return false;
+        }
     }
 
+    public void setSuccessCallback(Runnable runnable){
+        sucRunnable = runnable;
+    }
 }

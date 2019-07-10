@@ -202,25 +202,25 @@ public class SensorAppearanceProviderImpl implements SensorAppearanceProvider {
                 TestSensor.ID));*/
 
         putAppearance(BarometerSensorT.ID, new BuiltInSensorAppearance(
-                R.string.barometer_stag, R.drawable.ic_send_white_24dp,
+                R.string.barometer_stag, R.drawable.external_sensor_icon,
                 R.string.barometer_units, new SensorAnimationBehavior(
                 R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
                         , BarometerSensorT.ID));
 
         putAppearance(HumiditySensorT.ID, new BuiltInSensorAppearance(
-                R.string.humidity_stag, R.drawable.ic_send_white_24dp,
+                R.string.humidity_stag, R.drawable.external_sensor_icon,
                 R.string.humidity_unit, new SensorAnimationBehavior(
                 R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
                 , HumiditySensorT.ID));
 
         putAppearance(LightSensorT.ID, new BuiltInSensorAppearance(
-                R.string.ambient_light_stag, R.drawable.ic_send_white_24dp,
+                R.string.ambient_light_stag, R.drawable.external_sensor_icon,
                 R.string.ambient_light_units, new SensorAnimationBehavior(
                 R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
                 , LightSensorT.ID));
 
         putAppearance(TemperatureSensorT.ID, new BuiltInSensorAppearance(
-                R.string.ambient_temerature_stag, R.drawable.ic_send_white_24dp,
+                R.string.ambient_temerature_stag, R.drawable.external_sensor_icon,
                 R.string.temperature_units, new SensorAnimationBehavior(
                 R.drawable.bluetooth_level_drawable, SensorAnimationBehavior.TYPE_STATIC_ICON)
                 , TemperatureSensorT.ID));
