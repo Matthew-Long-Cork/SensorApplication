@@ -83,7 +83,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
     //private ConnectableSensorRegistry mRegistry;
     private SensorRegistry mSensorRegistry;
     private SensorAppearanceProvider sensorAppearanceProvider;
-    private BleSensorManager bleSensorManager;
+    public static BleSensorManager bleSensorManager;
 
     //Add Sensors Here!
     private final List<ScalarSensor> sensorList = new ArrayList<ScalarSensor>(Arrays.asList(
@@ -117,7 +117,6 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         mAvailableDevices = ExpandableServiceAdapter.createEmpty(mSensorRegistry, mRegistry, 1,
                deviceRegistry, getFragmentManager(), appearanceProvider);
         setHasOptionsMenu(true);
-
     }
 
     @Nullable
@@ -150,9 +149,8 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         animator.setSupportsChangeAnimations(false);
         recyclerView.setItemAnimator(animator);
 
-
         //Init Bluetooth
-        Button bluetoothButton = view.findViewById(R.id.ble_con_btn);
+        Button bluetoothButton = view.findViewById(R.id.ble_search_btn);
         ListView deviceListView = view.findViewById(R.id.ble_device_list);
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(ExperimentDetailsFragment.context, android.R.layout.simple_list_item_1);
 
@@ -162,6 +160,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         } else
             mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
 
+
         bluetoothButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -170,6 +169,8 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                     deviceListView.setVisibility(View.VISIBLE);
                     bluetoothButton.setText("Search Bluetooth Device");
                     mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+                    // then go back to activity we came from
+                    ManageDevicesRecyclerFragment.this.getActivity().finish();
 
                 } else {
                     bleSensorManager.scan(arrayAdapter);
@@ -189,11 +190,13 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
 
                     bleSensorManager.connect(i);
 
-                    deviceListView.setVisibility(View.GONE);
-                    bluetoothButton.setText("Disconnect Bluetooth Device");
+                deviceListView.setVisibility(View.GONE);
+                bluetoothButton.setText("Disconnect Bluetooth Device");
+                //go back to sensors display
+                ManageDevicesRecyclerFragment.this.getActivity().finish();
+
                     //Go Back To Previous Menu
                 //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-                //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
             }
         });
 
@@ -299,15 +302,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
                 });
     }
 
-    //==========================================================================================
-    //              ADDED CODE BLOCK
-    //==========================================================================================
 
-
-
-    //==========================================================================================
-    //              END OF ADDED CODE BLOCK
-    //==========================================================================================
     private void stopScanning() {
         mRegistry.stopScanningInDiscoverers();
     }

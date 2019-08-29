@@ -227,17 +227,6 @@ public class DecibelSensor extends ScalarSensor {
             // send the data to the DatabaseConnectionService
             if(DatabaseConnectionService.isConnected())
                 DatabaseConnectionService.sendData(data);
-            else {
-                timer.cancel();
-                timer = null;
-                DatabaseConnectionService.setCallBack(new Runnable(){
-                    @Override
-                    public void run() {
-                        timer = new Timer();
-                        timer.schedule(new sendData(), 0, frequencyTime);
-                    }
-                });
-            }
         }
     }
 }

@@ -156,8 +156,7 @@ public class AccelerometerSensor extends ScalarSensor {
             //if data == null without firstTime variable
             if (firstTime) {
                 // if first time, create the data object
-                data = new DataObject(ID, dataValue);
-
+                data = new DataObject(mAxis.getSensorId(), dataValue);
                 try {
                     Thread.sleep(250); // 250 millisecond delay to allow first collection of sensor data.
                     firstTime = false;
@@ -168,17 +167,6 @@ public class AccelerometerSensor extends ScalarSensor {
             // send the data to the DatabaseConnectionService
             if(DatabaseConnectionService.isConnected())
                 DatabaseConnectionService.sendData(data);
-            else {
-                timer.cancel();
-                timer = null;
-                DatabaseConnectionService.setCallBack(new Runnable(){
-                    @Override
-                    public void run() {
-                        timer = new Timer();
-                        timer.schedule(new sendData(), 0, frequencyTime);
-                    }
-                });
-            }
         }
     }
 }

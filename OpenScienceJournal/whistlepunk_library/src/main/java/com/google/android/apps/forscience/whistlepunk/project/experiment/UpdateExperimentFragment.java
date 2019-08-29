@@ -248,7 +248,7 @@ public class UpdateExperimentFragment extends Fragment {
         mExperiment.subscribe(experiment -> {
 
             newTitle.setText(currentTitle);
-            newTitle.setSelection(currentTitle.length()); // focus
+            newTitle.setSelection(currentTitle.length()); // focus for next char
 
             mSaved.happens().subscribe(o -> {
                 //get the user input

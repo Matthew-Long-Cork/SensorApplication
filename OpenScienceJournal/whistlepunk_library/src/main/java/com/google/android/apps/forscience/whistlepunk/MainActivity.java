@@ -124,14 +124,11 @@ public class MainActivity extends AppCompatActivity
         if (showAgeVerifierScreenIfNeeded()) {
             return;
         }
-
         if(showConnectionSetupScreenIfNeeded()){
             return;
         }
-
         // get the URL for website
         String myWebsiteAddress = storedData.getString("websiteAddress", "");
-        String myWebsiteAddressType = storedData.getString("websiteAddressType", "");
         // send this to the DatabaseConnectionService.java to be used later
         DatabaseConnectionService.setMyWebsiteAddress(myWebsiteAddress);
 
@@ -187,7 +184,6 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "BLE NOT SUPPORTED", Toast.LENGTH_SHORT).show();
             finish();
         }
-
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);

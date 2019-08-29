@@ -31,9 +31,6 @@ public class DatabaseConnectionService {
 
     private static MqttManager mqttManager = MqttManager.getInstance();
 
-    //private static MqttAndroidClient mqttAndroidClient;
-    //private static boolean isConnected = false;
-
     public static void setMyWebsiteAddress(String website){
         myWebsite = website;
     }
@@ -48,7 +45,10 @@ public class DatabaseConnectionService {
         if(myConnType.equals("MQTT Connection")) {
             // disconnect the current connection
 
-            if (mqttManager.isConnected()) {
+            boolean x = mqttManager.isConnected();
+
+            if (x) {
+
                 try {
                     mqttManager.mqttDisconnect();
 

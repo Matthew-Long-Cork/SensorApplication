@@ -155,7 +155,6 @@ public class AmbientLightSensor extends ScalarSensor {
         return availableSensors.isSensorAvailable(Sensor.TYPE_LIGHT);
     }
 
-    // this class was added to sends the data to collection class that will then sent to database
     class sendData extends TimerTask {
         public void run() {
             //if data == null without firstTime variable
@@ -173,17 +172,6 @@ public class AmbientLightSensor extends ScalarSensor {
             // send the data to the DatabaseConnectionService
             if(DatabaseConnectionService.isConnected())
                 DatabaseConnectionService.sendData(data);
-            else {
-                timer.cancel();
-                timer = null;
-                DatabaseConnectionService.setCallBack(new Runnable(){
-                    @Override
-                    public void run() {
-                        timer = new Timer();
-                        timer.schedule(new sendData(), 0, frequencyTime);
-                    }
-                });
-            }
         }
     }
 }

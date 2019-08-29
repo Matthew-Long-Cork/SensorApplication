@@ -11,6 +11,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.apps.forscience.whistlepunk.DatabaseConnectionService;
 import com.google.android.apps.forscience.whistlepunk.ProxyRecorderController;
 import com.google.android.apps.forscience.whistlepunk.R;
 import com.google.android.apps.forscience.whistlepunk.RecorderControllerImpl;
@@ -40,7 +41,7 @@ public class AccessTokenSetupAndConnType extends AppCompatActivity {
     private SharedPreferences storedData;
     private int currentFrequency;
     private SharedPreferences.Editor editor;
-private int x;
+
     private static List sensorsList;
 
     @Override
@@ -146,6 +147,11 @@ private int x;
             }
             //finally, when you are done adding the values, call the apply() method.
             editor.apply();  // done in the background
+
+            //set/reset the connection info
+            DatabaseConnectionService.setMyAccessToken(experimentAccessToken);
+            DatabaseConnectionService.setMyConnectionType(experimentConnectionType);
+
             // returns RESULT_OK
             Intent resultIntent = new Intent();
             setResult(RESULT_OK, resultIntent);
@@ -156,8 +162,9 @@ private int x;
         //=====================================================================================
         cancelBtn.setOnClickListener((View v) -> {
 
-            // clear the variable
+            // clear the variables
             experimentAccessToken = "";
+            spinner.setSelection(0);
 
             // enable user input
             websiteTokenTxtBox.setEnabled(true);
@@ -190,32 +197,35 @@ private int x;
         for (int i = 0; i < sensorsList.size(); i++) {
             // get the frequency
             String sensor =sensorsList.get(i).toString();
+
             currentFrequency = storedData.getInt(currentTitle + "_"  + sensor + "_frequency", currentFrequency);
             // check the frequency
             if(experimentConnectionType.equals("HTTP Connection")){
                 if(currentFrequency < 1000) {  // 1 second
                     // change if needed
-                    editor.putInt(currentTitle + sensorsList.get(i) + "_frequency", 1000);
+                    editor.putInt(currentTitle + "_" + sensor + "_frequency", 1000);
                     //stop the sensor & restart it
                     RecorderControllerImpl.stopObservingSelectedSensor(sensor, "observerIdUnknown");
-                    //RecorderControllerImpl.startObserving(); // startObserving();
+                    // change sensor state to NOT ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState( sensor, false);
+                    // this activity will close and the sensor will restart
 
+                    //RecorderControllerImpl.startObserving(); // startObserving();
                     /*
                     RecorderControllerImpl.startObserving(sensor, Collections.EMPTY_LIST,
                             proxyObserver(observer), proxyStatusListener(listener, mFailureListener),
                             initialOptions, mRegistry);
                     */
-                    // restart the sensor ?????
-
-                }
+               }
             } else{                   //59 seconds
-                if(currentFrequency > 3540000) {
+               if(currentFrequency > 3540000) {
                     // change if needed
-                    editor.putInt(currentTitle + sensorsList.get(i) + "_frequency", 3540000);
-                    //stop the sensor & restart it
+                    editor.putInt(currentTitle + "_" + sensor + "_frequency", 3540000);
+                    //stop the sensor
                     RecorderControllerImpl.stopObservingSelectedSensor(sensor, "observerIdUnknown");
-                    // restart the sensor ?????
-
+                    // change sensor state to NOT ACTIVE
+                    ExperimentDetailsFragment.changeTheSensorState( sensor, false);
+                // this activity will close and the sensor will restart
                 }
             }
         }

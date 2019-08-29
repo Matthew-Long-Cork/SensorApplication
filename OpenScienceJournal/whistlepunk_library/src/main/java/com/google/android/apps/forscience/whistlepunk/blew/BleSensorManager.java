@@ -48,11 +48,9 @@ public class BleSensorManager {
     private BleSensorManager(){
         bluetoothManager = (BluetoothManager) ExperimentDetailsFragment.context.getSystemService(Context.BLUETOOTH_SERVICE);
         connected = false;
-        //currentSensor = Sensor.VOID;
         bluetoothDeviceList = new ArrayList<BluetoothDevice>();
-        checkPermission();
-        checkBluetooth();
-
+        //checkPermission();
+        //checkBluetooth();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -88,9 +86,7 @@ public class BleSensorManager {
                     disableSensor(currentSensor);
                 }
             }else {
-
                 turnSensor(sensor, 1);
-
             }
 
         } else{
