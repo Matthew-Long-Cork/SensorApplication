@@ -167,12 +167,12 @@ public class LicenseActivity extends AppCompatActivity {
                 return getLicenses();
             }
 
-            @Override
-            protected void onPostExecute(List<License> licenses) {
-                mAdapter = new ArrayAdapter<>(getActivity(),
-                        android.R.layout.simple_list_item_1, android.R.id.text1, licenses);
-                setListAdapter(mAdapter);
-            }
+//            @Override
+//            protected void onPostExecute(List<License> licenses) {
+//                mAdapter = new ArrayAdapter<>(getActivity(),
+//                        android.R.layout.simple_list_item_1, android.R.id.text1, licenses);
+//                setListAdapter(mAdapter);
+//            }
         }
 
         @Override

@@ -34,45 +34,55 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="match_parent"
         android:background="@color/text_color_white">
 
     </android.support.v7.widget.RecyclerView>
 
-    <ImageView
-        android:id="@+id/divder"
-        android:layout_width="fill_parent"
-        android:layout_height="10dp"
-        android:background="#673AB7"
-        android:contentDescription="@string/comment"
-        android:paddingLeft="5dp"
-        android:paddingTop="2dp"
-        android:paddingRight="5dp"
-        android:paddingBottom="2dp"
-        android:scaleType="fitXY"
-        android:src="@android:drawable/divider_horizontal_dark" />
 
-    <Button
-        android:id="@+id/ble_search_btn"
-        android:layout_width="300dp"
-        android:layout_height="75dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="15dp"
-        android:text="@string/BT_button"
-        android:textAlignment="center" />
-
-    <ListView
-        android:id="@+id/ble_device_list"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/bt_devices_list"
-        android:divider="@color/color_primary_dark"
-        android:dividerHeight="5dp"
+    <!--COMMENTED OUT BECAUSE BLUETOOTH IS INCOMPLETE-->
 
 
-        >
+    <!---->
+     <!--IN 'android.support.v7.widget.RecyclerView' (ABOVE)-->
+     <!--CHANGE  'android:layout_height="600dp"' TO &ndash;&gt; 600dp-->
+    <!--and uncomment all 'COMMENTED OUT BECAUSE BLUETOOTH IS INCOMPLETE' sections-->
+    <!---->
+    <!--<ImageView-->
+        <!--android:id="@+id/divder"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="10dp"-->
+        <!--android:background="#673AB7"-->
+        <!--android:contentDescription="@string/comment"-->
+        <!--android:paddingLeft="5dp"-->
+        <!--android:paddingTop="2dp"-->
+        <!--android:paddingRight="5dp"-->
+        <!--android:paddingBottom="2dp"-->
+        <!--android:scaleType="fitXY"-->
+        <!--android:src="@android:drawable/divider_horizontal_dark" />-->
 
-    </ListView>
+
+
+    <!--<Button-->
+        <!--android:id="@+id/ble_search_btn"-->
+        <!--android:layout_width="300dp"-->
+        <!--android:layout_height="75dp"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:layout_marginTop="15dp"-->
+        <!--android:text="@string/BT_button"-->
+        <!--android:textAlignment="center" />-->
+
+    <!--<ListView-->
+        <!--android:id="@+id/ble_device_list"-->
+        <!--android:layout_width="300dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--android:background="@drawable/bt_devices_list"-->
+        <!--android:divider="@color/color_primary_dark"-->
+        <!--android:dividerHeight="5dp"-->
+       <!--&gt;-->
+
+    <!--</ListView>-->
+
 
 </LinearLayout>

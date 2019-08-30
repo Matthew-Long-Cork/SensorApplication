@@ -149,56 +149,61 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
         animator.setSupportsChangeAnimations(false);
         recyclerView.setItemAnimator(animator);
 
+
+
+        //==========================================================================================
+        //          COMMENTED OUT BECAUSE BLUETOOTH IS INCOMPLETE !!!
+        //==========================================================================================
         //Init Bluetooth
-        Button bluetoothButton = view.findViewById(R.id.ble_search_btn);
-        ListView deviceListView = view.findViewById(R.id.ble_device_list);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(ExperimentDetailsFragment.context, android.R.layout.simple_list_item_1);
+       // Button bluetoothButton = view.findViewById(R.id.ble_search_btn);
+       // ListView deviceListView = view.findViewById(R.id.ble_device_list);
+        //ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(ExperimentDetailsFragment.context, android.R.layout.simple_list_item_1);
 
-        if(bleSensorManager.connected) {
-            deviceListView.setVisibility(View.GONE);
-            bluetoothButton.setText("Disconnect Bluetooth Device");
-        } else
-            mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+//        if(bleSensorManager.connected) {
+//            deviceListView.setVisibility(View.GONE);
+//            bluetoothButton.setText("Disconnect Bluetooth Device");
+//        } else
+//            mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+//
 
-
-        bluetoothButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(bleSensorManager.connected) {
-                    bleSensorManager.disconnect();
-                    deviceListView.setVisibility(View.VISIBLE);
-                    bluetoothButton.setText("Search Bluetooth Device");
-                    mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
-                    // then go back to activity we came from
-                    ManageDevicesRecyclerFragment.this.getActivity().finish();
-
-                } else {
-                    bleSensorManager.scan(arrayAdapter);
-                    deviceListView.setAdapter(arrayAdapter);
-                }
-
-            }
-        });
-
-        deviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    bleSensorManager.stopScan();
-
-                for(ScalarSensor sensor : sensorList)
-                    mSensorRegistry.addBuiltInSensor(sensor);
-
-                    bleSensorManager.connect(i);
-
-                deviceListView.setVisibility(View.GONE);
-                bluetoothButton.setText("Disconnect Bluetooth Device");
-                //go back to sensors display
-                ManageDevicesRecyclerFragment.this.getActivity().finish();
-
-                    //Go Back To Previous Menu
-                //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
-            }
-        });
+//        bluetoothButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if(bleSensorManager.connected) {
+//                    bleSensorManager.disconnect();
+//                    deviceListView.setVisibility(View.VISIBLE);
+//                    bluetoothButton.setText("Search Bluetooth Device");
+//                    mSensorRegistry.refreshBuiltinSensors(ExperimentDetailsFragment.context);
+//                    // then go back to activity we came from
+//                    ManageDevicesRecyclerFragment.this.getActivity().finish();
+//
+//                } else {
+//                    bleSensorManager.scan(arrayAdapter);
+//                    deviceListView.setAdapter(arrayAdapter);
+//                }
+//
+//            }
+//        });
+//
+//        deviceListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                    bleSensorManager.stopScan();
+//
+//                for(ScalarSensor sensor : sensorList)
+//                    mSensorRegistry.addBuiltInSensor(sensor);
+//
+//                    bleSensorManager.connect(i);
+//
+//                deviceListView.setVisibility(View.GONE);
+//                bluetoothButton.setText("Disconnect Bluetooth Device");
+//                //go back to sensors display
+//                ManageDevicesRecyclerFragment.this.getActivity().finish();
+//
+//                    //Go Back To Previous Menu
+//                //ManageDevicesRecyclerFragment.this.getActivity().dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+//            }
+//        });
 
         return view;
     }
@@ -336,7 +341,7 @@ public class ManageDevicesRecyclerFragment extends Fragment implements DevicesPr
 
 
     //==============================================================================================
-    //          THESE ARE THE PAIRED DEVICES AND THE NEW DEVICES!!
+    //          THESE ARE THE PAIRED DEVICES AND THE NEW DEVICES!! ... OLD CODE
     //==============================================================================================
     @Override
     public SensorGroup getPairedSensorGroup() {
